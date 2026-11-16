@@ -1,0 +1,662 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Programming Style Manual </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest Programming Style Manual</h1>
+
+<!--
+By:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+    <a href="mailto:paschul@sandia.gov"Quest Style Manual">
+       paschul@sandia.gov</a>    <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+<br>
+
+<hr>
+ -->
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+</tr>
+</table>
+
+<h3> Mission statement </h3>
+
+The purpose of this Style Manual is to enforce clarity and consistency
+in coding style for SeqQuest development.  Clear code is easier to
+develop further - rebugging (to add features), and debugging (to find
+and fix the bugs that inevitably arise in an actively developed and used
+code) - and a consistency of style is a vital aspect of code clarity.
+SeqQuest may have many conventions that are idiosyncratic, code that is
+not optimally efficient, and coding practices that may not reflect the
+latest thought in computer science.  It is, however, very consistent in
+its application of its idiosyncratic conventions, it is highly portable,
+scales well, and, key for the future viability of the code, is easily
+read, understood, and modified.  SeqQuest has its own distinctive style,
+that will be different from any other code, as all other codes will be
+different from each other.  Any changes to SeqQuest should respect the
+coding conventions that already exist, so that a future developer will
+continue to have a code as consistent, accessible, and understandable as
+the current version.   Mimic the patterns you see in the code, to the
+extent possible.  This manual will codify many of these conventions,
+and describe the basic rules to be followed in development of the
+current version of SeqQuest.
+
+<a name="outline"></a>
+<h3> Outline </h3>
+<ul>
+<li> <a href="#overview">
+     Overview</a> - basic design of the code
+<li> <a href="#laws">
+     The Laws</a> - thou shalt/thou shalt not
+<li> <a href="#basics">
+     The Basics</a> - the basics, and exceptions.
+<li> <a href="#conventions">
+     Conventions</a> - details, by kind
+     <ul>
+       <li>  <a href="#c_units"> Units</a>
+       <li>  <a href="#c_mainp"> Main program</a>
+       <li>  <a href="#c_memry"> Memory</a>
+       <li>  <a href="#c_files"> File I/O</a>
+       <li>  <a href="#c_names"> Variable names</a>
+       <li>  <a href="#c_cases"> Upper/lower case</a>
+       <li>  <a href="#c_calls"> Subroutine/function calls</a>
+       <li>  <a href="#c_strct"> Routine structure</a>
+       <li>  <a href="#c_famly"> Routine families</a>
+       <li>  <a href="#c_loops"> Loops</a>
+       <li>  <a href="#c_label"> Labels</a>
+       <li>  <a href="#c_indnt"> Indenting</a>
+       <li>  <a href="#c_space"> Space</a>
+     </ul>
+</ul>
+
+<a name="overview"></a>
+<h3> Overview </h3>
+
+SeqQuest is a code to do electronic structure calculations within the
+density functional approximation and pseudopotentials, using contracted
+Gaussian basis sets.  SeqQuest is written in Fortran 77, and a very
+vanilla, portable f77.  SeqQuest has a very "flat" structure, with a
+single main program that does very little computation itself.  The
+main program manages memory and program flow, and calls a sequence of
+(shallow) subroutines to do the computational work.  Data is
+communicated via passed argument lists, not common blocks.  Those
+familiar with BLAS/LAPACK libraries will recognize the style.  There
+is one large central workspace in the main program, <tt>wk(maxwkd)</tt>,
+from which all significant storage is taken, and <tt>maxwkd</tt> is set
+in the parameter file.  There is one main input file, and one main user
+output file, and a multitude of larger temporary binary files the
+program uses to do its work.
+The code also has a few emulated "modules", using common blocks strictly
+to manage private data within those modules, e.g.,
+for file and I/O management.
+
+<a name="laws"></a>
+<h3> The Laws </h3>
+<ol>
+<li> Consistency and clarity of code are paramount.  Only on very rare
+    occasions can clarity be subordinated to other considerations.
+    You will not see those occasions.
+<li> Conform to the existing style style in the code, not your own,
+    not the latest fad in computer science.  Consistency is the
+    key to the long-term viability of any code.  Mixing styles is fatal.
+<li> Clean up any new code.  Changes are NOT done when they work, they
+    are done when they work AND they are clean.
+<li> The language is FORTRAN 77, and a very vanilla f77.
+     <ul>
+       <li>"fixed form" 72-character lines (i.e. NO "extended source" a la f90)
+       <li>No machine dependent code.
+       <li>No dynamic memory allocations, no pointers, no structures,
+            no "clever" coding where a plainer implementation will serve.
+       <li>Sacrifice performance if necessary.
+     </ul>
+<li> Variable declarations will be consistent with <tt> IMPLICIT DOUBLE PRECISION (a-h,o-z)</tt>.
+    Apologies to all the strong typing types, but that's the rules.
+    All integer variable names will begin with <tt>i-n</tt>,
+    and no variables beginning with <tt>i-n</tt> will be reals.
+    All real variable names will begin with <tt>a-h,o-z)</tt>,
+    and no variables beginning with <tt>a-h,o-z</tt> will be integers.
+    Use of <tt> IMPLICIT NONE </tt> is permitted/encouraged in new routines,
+    but all variable types will conform to the above implicit typing conventions.
+<li> NO include statements.  SeqQuest has only one include statement,
+    in the main program to bring in dimension parameters, and there
+    will be no other include statements anywhere in the code.
+<li> NO creation of O(N**2) arrays anywhere in the program, where O(N)
+    parameters are: <tt>natmd, norbd, nkd, nlatd</tt>.  Space for all such
+    large arrays will be taken from central workspace in main program,
+    an array called <tt>wk()</tt>.
+<li> Original declaration of O(N) arrays occurs in main program only.
+    None of dimensioning parameters in the parameter file may be
+    used to create arrays in any subroutine, i.e., all O(N) arrays
+    used in subroutines must be passed in from main program.
+<li> NO new common blocks.
+    Data is to be communicated to subroutines via passed arguments.
+    The exception is to use common to enable new "modules".
+<li> NO file unit numbers done by explicit integers: all file
+    access shall be via integer variables.  E.g. "<tt>write(6,fmt)</tt>" must
+    be replaced by "<tt>write(IWR,fmt)</tt>", where <tt>IWR</tt> is an integer
+    variable that has been set to refer to this file.
+<li> NO direct use of Fortran OPEN or CLOSE.  All file manipulation will be
+    done using FLxxxx routines (that manage unit numbers).
+<li> NO passed real constants.  E.g., "<tt>call FOO(1.0)</tt>" should be
+    written as "<tt>call FOO( one )</tt>" where "<tt>one</tt>" is a real
+    variable set earlier in the code.  Passing integers is ok.
+<li> NO statement functions, beyond the few that already exist.
+<li> Comments only on lines beginning with "c", not "!" or other
+    funky characters.  White space should begin with "c", i.e. no
+    completely blank lines within a routine.
+<li> NO tabs; indenting is done using spaces.
+<li> Test thoroughly.
+<li> Only those who write the rules can change the rules.
+</ol>
+
+<a name="basics"></a>
+<h3> The Basics </h3>
+
+Many of the conventions described in this section will be apparent
+from inspecting the code itself.  Hence, the best approach is, to
+the extent possible, use existing code as a template/model for new
+development.  This section will highlight some of the less obvious
+conventions, and reiterate the more important ones.  Details will
+be expanded on in the next section.
+<ul>
+<li> Document carefully.  Describe the purpose of larger routines, and
+  explain complicated coding sections that may not be obvious to
+  someone looking at the code years from now after you have left to
+  go on to bigger and better things.  Focus on the why (and why not).
+<li> Use generic calls to library routines where possible.  There are
+  exceptions.  Use DERF/ERF explicitly as there are no safe generics
+  for the error function, and IABS for integers and ABS for reals.
+<li> Avoid using complex variables.  Use doubly dimensioned reals
+  instead where practical.
+<li> Avoid using ENTRY except in special cases.
+<li> All I/O of longer records (orbital matrices and grid fields) is
+  done through special "big" routines that break the records into smaller
+  pieces.  This is because write/read of long records can be faulty
+  on some machines.
+<li> Do not use BACKSPACE().
+<li> Avoid using explicit constants in the executable code.  Use named
+  constants (e.g. "zero", "half", "one") instead that have been set in
+  declarations via parameter or data statements.
+<li> Use careful indenting to format source code, TWO SPACES.
+<li> When writing data to output listing file, always include descriptive
+  statement in the output line.  Something that can be found with a "grep".
+<li> Looping is by <tt>do ... continue</tt> or <tt>do ... enddo</tt> only.
+     Do not use <tt>do while</tt> loops.
+<li> Line continuation character is a "$"
+<li> Labels should be used to properly numerically ordered, except for emphasis.
+<li> All labels are right justified, NOT left justified.
+<li> Use "<tt>call MKZERO( len, arr )</tt>" to clear (set to zeroes) an array
+ "<tt>arr(len)</tt>"
+<li> Branching by <tt>if/elseif/else/endif</tt> preferred.
+<li> Avoid compound calls.  E.g., avoid "<tt>call FOO( BAR( x ) )</tt>"
+</ul>
+
+
+
+<a name="conventions"></a>
+<h3> Conventions </h3>
+
+
+<a name="c_units"></a>
+<h4> Units
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+The program does its internal work in:
+<ul>
+<li> Rydberg energy units (1 Ry = 0.5 Hartree = 13.605 eV)
+<li> Bohr distance units (1 bohr = 0.52918 Ang = 0.052918 nm)
+</ul>
+
+
+<a name="c_mainp"></a>
+<h4> Main program <font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+The main program concentrates on memory management and flow control.
+It calls a sequence of subroutines, controlled by various flags, and
+manages the memory required by the large arrays used by SeqQuest.
+The main routine is special, and looks very different
+from any subroutine.
+<ul>
+<li> Computation should be in subroutines, not the main routine.
+<li> do-loops are heartily discouraged in the main routine.
+<li> write statements are self-documenting (no orphaned numbers in output!).
+<li> Memory is tightly controlled, and declared only in the main routine
+<li> File open/close done using FLxxxx routines,
+     NOT the fortran primitive OPEN/CLOSE.
+<li> Unit numbers for file i/o are named integer variables.
+     No undirected <tt>write(*,*)</tt> and no <tt>write(14,*)</tt>.
+<li> All data communicated to subroutines through passed arguments
+     (the exception being the use of emulated modules).
+</ul>
+
+
+<a name="c_memry"></a>
+<h4> Memory
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+The principal limiting factor in SeqQuest is usually the amount of
+memory needed to run a problem, rather than the amount of time it
+takes to run a problem.  I.e., SeqQuest is more memory-bound than
+cpu-bound.  Hence, the use of memory is very tightly controlled in
+SeqQuest.
+<p>
+All large-scale memory is taken from a single large workspace in
+<tt>wk(maxwkd)</tt>, where <tt>maxwkd</tt> is a parameter set in
+the main parameter file, using pointer-like integers.  The routine
+WKMEM is the most important routine in the code: it partitions
+memory within wk(), and checks for memory sufficiency FOR THE ENTIRE
+CODE.  Hence, WKMEM should be consulted before attempting any use of
+space within wk().<br>
+<p>
+The wk() array is sectioned into pieces at the beginning of the code by
+pointer-like integer variables i01-i12, with spacing dictated by the size
+of big arrays.  The first two, i01-i04, reserve enough space for either
+orbital matrices (nmat=nk*norb**2) or grid fields (nptr=n1r*n2r*n3r).
+(NB: this assumption is subject to change, check WKMEM for latest).
+The last ten spaces, i03-i12, only guarantee enough space for grid
+fields.  Each of these spaces may be used as temporary space,
+and the intermittent comments "MEM" enumerate the contents of all
+the active "pointers" at that point in the code.
+<ul>
+<li> No dynamic memory (the ONLY exception is for the arena wk(), if needed)
+<li> Orbital matrices/grid fields must come from main workspace wk() and
+  be given descriptive local names (and documented in main program).
+<li> O(N) work arrays should be passed from wksmX() in main program.
+<li> Memory is tightly scheduled - be careful not to overstep boundaries.
+</ul>
+
+
+<a name="c_files"></a>
+<h4> File I/O
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+The user listing output file should be self-documenting.  It is not just
+the source code, but the output file the user sees which needs to have
+documentation in order to be readable and understandable by humans.
+<p>
+I/O to all files is carefully structured to try and reduce the size
+of files, and to make data more easily accessible to the program without
+churning up disk.  The FLxxxx routines have been set up to manage files.
+They allocate available (free) unit numbers (unit numbers are not to be
+hard-coded!), connect to correct directory structure (as needed), and
+complete the file names.
+
+<ul>
+<li> Files will be explicitly opened using FLxxxx routines, not a
+     fortran OPEN/CLOSE.
+<li> I/O is always to named units (IRD,IWR,isetdat,ianalyz, etc.) and
+  not to explicit numbers.  I.e. <tt>write(6,*)</tt> is forbidden.  Sole
+  exception: exception/error handling in a deep routine that does not
+  have IWR locally can write diagnostics using "<tt>write(*,fmt)</tt>".
+<li> NO "print" statements, use "write" instead.
+<li> standard input unit is IRD [from <tt>call FLGETIRD( IRD )</tt>].
+<li> standard output unit is IWR [from <tt>call FLGETIWR( IWR )</tt>].
+<li> Format labels are 8xxx for a read, 9xxx for a write.
+<li> A write to the user output files should be carefully formatted and
+  documented with a descriptive (preferably uniquely "grep-"able
+  string) comment.  For example,
+  <pre>      write(IWR,*)  engy</pre>
+  should be replaced with something more descriptive:
+<pre>
+      write(IWR,9020) 'TOTAL energy (Ry) =',engy
+ 9020 format(1x,a,f20.10)
+</pre>
+<li> The preference is to do I/O from the top-level program, rather
+  than called routines.
+<li> Read/write of long records (grid fields, orbital matrices)
+  should be done through a special set of routines in the code
+  (WRITBIG/READBIG/BACKBIG/READSKP) that break up the long
+  record into smaller pieces (The read/write of long records
+  had been a problem on some old Alpha-based machines).
+</ul>
+
+
+<a name="c_names"></a>
+<h4> Variable names
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+Consistent naming conventions are important to being able to follow
+code easily.  The style used in SeqQuest is rather old-fashioned
+fortran: short, but descriptive names, with few underscores and using
+lower case (very specific exceptions are all upper case).  The virtue
+is that it leads to code, that while quite dense, is rather readable.
+In general, single character or double character variable names are
+used only as very local temporary variables (notable exception is
+that "i" and "j" are used frequently to index basis functions in the
+big orbital matrices), such as the loop index in a very short do-loop.
+Keep names short, to preserve code-space on a fortran 72-character
+line, and to conform to naming conventions used in other routines.
+
+<ul>
+<li> All lower case.
+<li> Restrict to eight characters or less (this convention may be
+  relaxed at a future time, but, for now, keep them short).
+<li> All variables with names beginning with i-n are integers, and v.v.<br>
+  Exception: logicals may begin with a capital "L".
+<li> Dimensioning parameters end in "d", e.g. nkd, norbd, natmd.
+<li> For passed variables, use the same name in the subroutine as was
+  used in the calling routine, except for big arrays from main
+  workspace wk(), which should be given a descriptive local name.
+<li> Local variables will have the same names, where available, as they
+  do in other routines.  E.g., iatm and jatm are used to index atoms,
+  not ia and ja, because the former are conventionally used elsewhere
+  in the code.  Always best to use existing routines as a model.
+<li> No underscore characters, except for logicals.
+<li> Logicals should have names that lead to descriptive use in an "if"
+  statement.  E.g. "<tt>if( do_neb )then</tt>" or "<tt>if( EVEN )then</tt>".
+</ul>
+
+
+<a name="c_cases"></a>
+<h4> Upper/lower case
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+<ul>
+<li> Upper case used for:
+     <ul>
+       <li> subroutine and functions names (<tt>call FOO( x )</tt>)
+       <li> file manipulations (e.g.,REWIND)
+       <li> declarations (DIMENSION/DATA/PARAMETER/CHARACTER, etc.)
+       <li> routine exits (STOP/RETURN/END)
+       <li> standard unit numbers (IRD,IWR being standard in/out)
+       <li> first character "L" in logical variable ("Loptall")
+     </ul>
+<li> Lower case used:
+     <ul>
+       <li> everything else
+     </ul>
+</ul>
+
+
+<a name="c_calls"></a>
+<h4> Subroutines/function calls
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+<ul>
+<li> Subroutine and function names are all upper case.
+<li> Subroutine and function names try to be eight characters or less.
+<li> Use generics for math calls where possible.  For the error
+  function, there is not a safe generic, so use ERF or DERF as
+  necessary.  Also, IABS and ABS to distinguish integer encouraged.
+<li> Use "call MKZERO( len, arr )" to clear array arr(len).
+<li> Use explicit arithmetic for 3-vectors and 2-vectors (complex)
+  rather than function/subroutine calls.  E.g., prefer this:
+  <pre>      adotb = a(1)*b(1) + a(2)*b(2) + a(3)*b(3)</pre>
+  rather than
+  <pre>      adotb = DDOT( 3, a,1, b,1 )</pre>
+<li> Communicate data through passed arguments rather than common.
+<li> Avoid compound calls.  E.g., replace "<tt>call FOO( BAR(x) )</tt>"
+  with "<tt>call FOO( barx )</tt>" where "<tt>barx = BAR( x )</tt>".
+<li> Should be space on the inside of parentheses of arguments.
+</ul>
+
+
+<a name="c_strct"></a>
+<h4> Routine structure
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+Subroutine and function source code is very highly structured.  Use
+an existing routine as a template if building a new routine, as it is
+easier to ensure conformance to style that way than to build on the
+basis of what will be necessarily incomplete instructions about style.
+The idea is to make all the routines look as similar to one another as
+possible, and, therefore, by inspection, notice bugs because patterns
+are violated.  Deviation from any pattern should be done only with
+compelling reason, and should be documented.
+<ul>
+<li> The typical routine has the following elements:
+     <ul>
+       <li> name banner (five comments lines, middle line >>>>> {name}
+       <li> the routine declaration: subroutine/function FOO( .... )
+       <li> main documentation section: purpose/author/revision history
+       <li> more detailed comments/notes/variable descriptor comments
+       <li> <tt>IMPLICIT DOUBLE PRECISION  (a-h,o-z)</tt>
+            or <tt>IMPLICIT NONE</tt>
+       <li> variable declarations, by kind (input/output/scratch/local).
+       <li> DATA declarations
+       <li> statement functions (HIGHLY discouraged)
+       <li> <tt>c >>>> EXECUTABLE CODE:</tt>
+       <li> executable part of code
+       <li> c    That's all, Folks!
+       <li> RETURN/END
+     </ul>
+<li> These elements are formatted in detail, use an existing routine
+  for a model.
+<li> Passed arguments take the same name as in the calling routine,
+  except that big arrays passed from big workspace "wk()" in
+  main routine should be given names descriptive of their use.
+<li> I/O units should be passed first, dimension variables next,
+  data arrays next, and arrays from workspace wk() last.  Try
+  to conform to order seen in other calls.  Arrays out of workspace
+  should be documented in calling program as to name and type (i-input,
+  o-output, s-scratch).  E.g.:
+     <pre>
+      call VESSLO( IWR, ibndpot, n1r,n2r,n3r,nptr, weight,
+     $ ws(is1),ws(is2),ws(is3),ftarray,
+     $ wk(i11),  wk(i06),  wk(i08) )
+c -->  rhoslo-io espot-2os gvecmag-i
+     </pre>
+   where i11=slow density, i06=electrostatic pot'l, i08=g-vectors mags.
+<li> RETURN from anywhere other than the end of a routine is discouraged.
+</ul>
+
+
+<a name="c_famly"></a>
+<h4> Routine families
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+Certain sets of subroutines have similar internal structure, and
+code is written to emphasize the similarities where possible.
+Two major distinct families exist.  First, the analytic "two-center"
+(SIJ=overlap, TIJ=kinetic, FRC2CTR=forces) and "three-center" routines
+(VLOCMAT, VLOCMII, VLOCFRC, NLOCMAT, NLOCFRC) for local and non-local
+integrals share much internal structure in common.  For example,
+label numbers are used to emphasize the similarities between routines
+rather than to have strict numerical ordering within routines.
+Second, the grid matrix element routines (GRDOVLP, GRIDRHO, VSLOMAT,
+VSLOFRC, ESLOFRC) share much common internal structure.  There are
+smaller sets of similar routines.  If developing a new routine,
+try to follow model of existing routine in a family.
+
+
+<a name="c_loops"></a>
+<h4> Loops
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+Looping should be done through do-loops, rather than do-while or
+if/goto constructs or other code construct.
+<ul>
+<li> Loops are via do/continue or do/enddo, not do while
+<li> Do NOT pass loop index into subroutine, e.g.,
+     <pre>
+     do  i=1,n
+       call VERYBAD( i )
+     enddo
+     </pre>
+     is to be avoided at all costs.  Some optimizing compilers will
+     get this wrong.
+<li> No compound label-sharing loops. E.g.,
+     <pre>
+      do 10 j=1,n
+        do 10 i=1,n
+          s1
+   10 continue
+     </pre>
+  should be written as two loops:
+     <pre>
+      do 20 j=1,n
+        do 10 i=1,n
+          s1
+   10   continue
+   20 continue
+     </pre>
+<li> do/enddo used for short loops without jumps to outside of loops.
+<li> labelled loops otherwise (long loops, branches, complicated).
+  This is fine:
+     <pre>
+      do  i=1,n
+        s1
+      enddo
+     </pre>
+  But, this should be changed:
+     <pre>
+      do  i=1,n
+        if( foobar ) goto 11
+      enddo
+   11 continue
+     </pre>
+  to a labelled loop:
+     <pre>
+      do 10 i=1,n
+        if( foobar ) goto 11
+   10 continue
+   11 continue
+     </pre>
+<li> Note that labels are right-justified, and two-space indenting.
+<li> Note that exception goto label is indexed 11 to the loop's 10.
+<li> Labelled do-loop ends with "continue" statement, not active statement.
+</ul>
+
+
+<a name="c_label"></a>
+<h4> Labels
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+Use of labels is highly conventional, and there are some special
+numbers to respect.  Code clarity is the goal.  "Big numbers" such
+as 1000,2000 or 100,200, etc should be use to denote "important"
+branch points or do-loops, with smaller increments for less
+important loops/branch points.  Use labels to highlight code,
+not simply to denote sequence.
+<ul>
+<li> Labels are right-justified, NOT left-justified.
+<li> Special label numbers reserved for specific purposes:
+     <ul>
+       <li>8xxx reserved for "read" format statements
+       <li>9xxx reserved for "write" format statements
+       <li>"13" reserved for error/exception handling (e.g., 13xx, xx13).
+       <li>999  reserved for final jump location before routine exit
+       <li>99x  reserved for exit with some final processing
+     </ul>
+<li> Labels should be in numerical order, but with special treatment
+  of I/O labels, and other exceptional labels.
+<li> read/write labels 8xxx/9xxx should be in numerical order as well,
+  where the "xxx" suggests the location within routine.
+</ul>
+
+
+<a name="c_indnt"></a>
+<h4> Indenting
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+Consistent indenting leads to more readable code.  Everyone has their
+own conventions; the convention for SeqQuest is as follows:
+<ul>
+<li> Code indent is by TWO spaces.
+<li> NO tabs
+<li> Open the first line after a "do" statement, close last line before
+  the final continue in a do-loop:
+     <pre>
+      do 10 i=1,n
+        s1
+        ...
+   10 continue
+     </pre>
+<li> Open within the branch points of an if-block:
+     <pre>
+      if( log1 )then
+        s1
+      elseif( log2 )then
+        s2
+      else
+        s3
+      endif
+     </pre>
+<li> Indent in continuation is one space:
+     <pre>
+      call FOO( arga,argb, ... ,argn,
+     $ argo, ... ,argz )
+     </pre>
+<li> Note: continuation character is a "$"
+<li> On (very) rare occasions, loops get deep enough that there is
+  little code space left on a fortran 72-character line.  In those
+  cases, forego indenting in top level loops, or, better yet, try
+  to use subroutine calls.  Use good judgment, with code clarity
+  being the goal rather than mindless adherence to a rule.
+</ul>
+
+
+<a name="c_space"></a>
+<h4> Space
+<font size=-2><a href="#outline">outline</a></font>
+</h4>
+
+Use of space in source code is highly conventional, and is designed
+for ease in reading code.  While not strictly obeyed, the conventions
+are followed rather closely barring some compelling reason not to.
+The following lists common cases, but as always, it is better to
+inspect existing code and conform to conventions seen in the code.
+
+<ul>
+<li> Two space indenting for code, one space for continuation
+<li> One space inside (but not outside) parentheses around routine
+  arguments: "<tt>call FOO( bar )</tt>" and not "<tt>call FOO (bar)</tt>".
+<li> One space inside (but not outside) if-statements:
+  "<tt>if( log )then</tt>" and not "<tt>if (log) then</tt>"
+<li> However, "<tt>if( log ) s1</tt>", when not an if-block.
+<li> Single space around labels in do-statement: "<tt>do 10 i=1,n</tt>"
+<li> Two spaces inside no-label do-statement: "<tt>do^^i=1,n</tt>"
+<li> Eliminate internal spaces in fortran terms, i.e.,<br>
+     USE: <tt>/ goto  / enddo  / elseif  / endif  /</tt>, <br>
+     NOT: <tt> / go to / end do / else if / end if /</tt>.
+<li> One space on either side of "<tt>=</tt>",
+     e.g. "<tt>a = b</tt>", not "<tt>a=b</tt>"
+  EXCEPT for do-statement, where there are no spaces: "<tt>do  i=1,n</tt>"
+<li> One space either side of "<tt>+</tt>" or "<tt>-</tt>": "a = b + c</tt>"
+<li> No space around "<tt>*</tt>" or "<tt>/</tt>", except for emphasis:
+     "<tt>a = b*c</tt>"
+<li> Space after read/write: "<tt>read(IRD,8000)  label</tt>"
+<li> No space around array index: "<tt>wk(i01)</tt>"
+<li> When in doubt, check existing code for examples.
+<li> These rules can be bent when confronted with the 72-character line
+  limit in fortran.  However, preference is to break into a continued
+  line rather than trying to squeeze everything onto one line.
+</ul>
+
+<font size=-2><a href="#top">Return to Top</a></font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Style Manual">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> June 15, 2015      <!-- typos, "modules" -->
+</font>
+
+</font>
+</body>
+</html>

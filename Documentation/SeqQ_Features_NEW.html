@@ -1,0 +1,302 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Features </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<font face="Arial, Helvetica, Sans Serif">
+
+<a name="top"></a>
+<h1 align="center">SeqQuest Features </h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov?Subject=SeqQuest">
+       paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html"> SeqQuest<br> Home</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Introduction</a>
+<li><a href="#features"> Feature summary</a>
+<li><a href="#future">   Future plans</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Introduction</h2>
+
+Quest is a general purpose electronic structure code based on density
+functional theory.  It uses pseudpotentials and a high quality local
+orbital basis of contracted Gaussian functions in a linear combination
+of atomic orbitals (LCAO) approach to solve the Kohn-Sham equations
+fully self-consistently.
+
+
+<hr>
+<a name="features"></a>
+<h2>Feature summary (Version 2.66)</h2>
+
+<ul>
+<li> Basic functionality
+  <ul>
+    <li> General purpose electronic structure code:<br>
+         finite molecular, 1D chain, 2D slab, or 3D bulk
+    <li> Density functional, pseudopotential, contracted Gaussian LCAO basis
+    <li> Self-consistent total energies
+    <li> Analytic forces and stresses, with full Pulay terms<br>
+    <li> Cartesian or lattice/fractional/direct units for atomic positions
+    <li> Cartesian representation of lattice/supercell vectors
+    <li> User-specified general symmetry
+      <ul>
+        <li> Used to constrain geometry and cell updates, reduce BZ sample
+        <li> No automatic detection of symmetry
+        <li> No completion of geometry from symmetry-unique set.
+             I.e., all atoms/cell parameters must be explicitly listed
+        <li> Library of symmetry definitions for many crystal symmetries
+      </ul>
+    <li> Molecular dynamics
+      <ul>
+        <li> Leapfrog Verlet integrators
+        <li> Equilibration and production MD phase
+        <li> Multiple MD methods: NVE; NVT: Berendsen, Hoover, temperature scaling
+      </ul>
+    <li> Automated geometry and cell optimization
+      <ul>
+        <li> Multiple optimization methods:<br>
+             Modified Broyden, accelerated steepest descent, damped dynamics,
+             steepest descent, ...
+        <li> Full symmetry constraints enabled
+        <li> Constrained and transformed geometry relaxations
+             <br> "freeze"/relax selected atoms
+             <br> bond, axis-based, slab relaxation, slic constraints
+             <br> cell shape constraints
+        <li> Uses results from previous step to accelerate SCF convergence
+      </ul>
+    <li> Nudged elastic band (NEB) transition state finder
+      <ul>
+        <li> MPI-parallel over images/beads/replicas, with parallel images
+        <li> Full suite of minimization methods
+        <li> Full symmetry constraints enabled
+      </ul>
+    <li> Gamma-point, or complex k-point sampling
+      <ol>
+        <li> User-specified k-vectors and weights, <i>-or-</i>
+        <li> Automatic grid generation and folding into Irreducible Zone
+        <li> Band structure (2.64)
+      </ol>
+    <li> Metallic or "closed shell" defect sampling methods
+      <ol>
+        <li> Finite temperature (metallic) occupation method (Fermi-function)
+        <li> Closed shell (DDO-Discrete Defect Occupation), both 0K and finite temperature
+      </ol>
+    <li> Limited post-processing tools
+      <ul>
+        <li> Geometry history converter to MOLDEN or JMOL visualization
+        <li> Mulliken populations
+        <li> Density of states, projected density of states
+      </ul>
+    <li> Restartable - automatic checkpoint/status/restart capability
+  </ul>
+
+<li> Density Functional Approximation
+  <ul>
+    <li> LDA: CAPZ - Ceperley/Alder as parameterized by Perdew/Zunger
+    <li> GGA: PBE, PW91, AM05, BLYP
+    <li> All available either with spin polarization, or without
+    <li> Fixed net spin, or automated optimization of spin polarization
+    <li> van der Waals via C6-corrections (Grimme-D2, and Kim/Goddard-ULG)
+    <li> No exact exchange (HSE in progress)
+    <li> No anti-ferromagnetism
+    <li> No time-dependent DFT (planned), GW, meta-GGA etc.
+  </ul>
+
+<li> Supercell Approximation
+  <ul>
+    <li> Proper finite vs. periodic basis
+      <ul>
+        <li> Basis explicitly finite in non-periodic directions
+      </ul>
+    <li> Net charge -- choice of boundary conditions
+      <ol>
+        <li> Jellium neutralization of charged supercells - or -
+        <li> More rigorous Local Moment CounterCharge (LMCC) treatment
+      </ol>
+    <li> Finite Defect Supercall Approximation, rigorous localized charge defects in bulk
+      <ol>
+        <li> LMCC method (mixed boundary conditions Poisson solver) for local charges
+        <li> Chemical potential leveling, common electron reservoir for charge
+        <li> Discrete Defect Occupation (DDO) for defect occupations
+        <li> Jost model bulk polarization for charge bulk defects
+      </ol>
+    <li> Automatic LMCC treatment for molecular charge/dipole
+    <li> Automatic correction of slab dipole potential via LMCC
+    <li> External applied electric field (non-periodic "sawtooth")
+    <li> Double-layer (charged slab) electrostatic boundary conditions (2.63)
+    <li> No solvation fields (planned)
+    <li> No Berry Phase treatment
+  </ul>
+
+<li> <a href="SeqQ_Atom_Library.html">Atomic potentials and basis sets</a>
+  <ul>
+    <li> Deployed in libraries, and invoked in input files
+      <ul>
+        <li> Extensive
+             <!-- OLDLIB     <a href="SeqQ_Atom_Library.html#atoms_lda"> -->
+             <!-- NEWLIB --> <a href="Atom_Library/LDA/Atom_Library_LDA.html">
+             LDA atom library </a> (70+ elements + terminators)
+        <li> Extensive
+             <!-- OLDLIB     <a href="SeqQ_Atom_Library.html#atoms_pbe"> -->
+             <!-- NEWLIB --> <a href="Atom_Library/PBE/Atom_Library_PBE.html">
+             GGA/PBE library </a> (70+ elements + terminators)
+        <li> GGA/PW91: Only Pt, Al (no plans for more)
+        <li> <!-- OLDLIB     <a href="SeqQ_Atom_Library.html#atoms_am05">  -->
+             <!-- NEWLIB --> <a href="Atom_Library/AM05/Atom_Library_AM05.html">
+             AM05 </a>: 23 atoms (as of 17-Jan-2014) and growing
+        <li> <!-- OLDLIB     <a href="SeqQ_Atom_Library.html#atoms_blyp">  -->
+             <!-- NEWLIB --> <a href="Atom_Library/BLYP/Atom_Library_BLYP.html">
+             BLYP </a>: H, and O,N,C, and Al,Si,K (Jun07) (no current plans for more)
+      </ul>
+    <li> Norm-conserving pseudopotentials (optimized)
+      <ul>
+        <li> Hamann/GNCPP for most atoms
+        <li> "Improved" Troullier-Martins for very "hard" atoms
+        <li> "Semi-local", i.e., non-separable form of potential used
+        <li> Highest angular projector used as local potential
+        <li> Non-linear core corrections (Louie,Froyen&Cohen) where needed
+        <li> No spin-polarized pseudopotentials
+        <li> No spin-orbit coupling (soon?)
+        <li> No projector operators, e.g., for hyperfine calculations
+      </ul>
+    <li> Optimized high-quality contracted Gaussian basis sets
+      <ul>
+        <li> Atom-centered and "floating" orbitals
+        <li> Double-zeta plus polarization (DZP) quality
+          <ul>
+            <li> two radial degrees of freedom for strongly occupied shells
+            <li> single degree of freedom for polarization functions
+          </ul>
+        <li> Developed and refined pseudo-variationally
+          <ul>
+            <li> Pseudopotential/functional-specific basis sets
+            <li> Refinement in quantum calculations (e.g. C in diamond)
+            <li> Transferability checked (e.g. Ba in Ba metal and in BaO)
+          </ul>
+        <li> No <i>f</i>-orbitals
+      </ul>
+  </ul>
+
+<li> User-friendly <a href="SeqQ_Input_Manual.html">input files</a>
+  <ul>
+    <li> Self-documenting: user-friendly,-readable,-modifiable
+    <li> Text-driven, with mostly free-format data input
+    <li> Modular by function (setup,relaxation,cell-opt, etc.)
+    <li> Extensive web-based documentation, with Tutorials
+    <li> Intelligent defaults - not necessary to define all inputs
+    <li> GUI completed for basic functionality.
+  </ul>
+
+<li> Efficient, portable, compact implementation
+  <ul>
+    <li> Sequential (serial) workstation version
+    <lI> MPI task-parallel version (multi-processor - faster, but not bigger)
+         <br> Note: data-parallel development in progress, for bigger and faster
+    <lI> MPI parallel-parallel-NEB version (multi-processor per image/bead/replica)
+    <lI> k-parallel memory distribution, and fully k-parallel-parallel code (2.64)
+    <li> Simple makefile, typically few minutes to build executable
+         <br> (usually, just type: "make <i>platform</i>")
+    <li> Vanilla f77 implementation (g77-friendly)
+       <ul>
+         <li> Highly-structured, disciplined
+              <a href="SeqQ_Style_Manual.html">style</a>
+         <li> Very limited (safe and portable) extensions only
+         <li> Static memory (with internal allocation via emulated pointers)
+         <li> Passed arguments, no global data (with some emulated "objects")
+       </ul>
+    <li> Uses BLAS/LAPACK for performance (MPI and SCALAPACK+BLACS for parallel
+         eigensolves), no other external dependencies
+    <li> Portable: Linux, Mac, Compaq alphas, SGI, IBM, PC's (just because
+         we could), ...
+  </ul>
+
+<li> Performance
+  <ul>
+    <li> Compact memory usage, which
+         enables >500 atoms on 2GB, >300 atoms on 1GB,
+         ~160 atoms on 256MB workstation
+    <li> Linear scaling Hamiltonian (beyond second nearest neighbor)
+    <li> Turnover from O(N) Hamiltonian- to O(N^3) eigensolver-dominated
+         computation at ~200 bulk atoms
+    <li> Very fast for systems 50-300 atoms, even with "hard" atoms.
+  </ul>
+
+</ul>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+</font>
+
+
+<hr>
+<a name="future"></a>
+<h2>Future plans</h2>
+The Quest code is under active development at Sandia National Laboratories,
+and amongst our collaborators.
+<!-- at Caltech, AFRL, and Lund University. -->
+The intention is to:
+<ul>
+<li> further improve computational performance (parallel and serial)
+<li> Local exchange (e.g. HSE), in progress
+<li> add new functionality (e.g., time-dependent DFT,
+     anti-ferromagnetism,
+     projectors, f-orbitals) to get better accuracy with improved DFT
+     approximations and to be able to explore new physics
+<li> add and organize post-processing to better analyze the results
+<li> enhance usability through building graphical user interfaces
+<li> integrate with other (semi-)empirical simulation methods (molecular
+     dynamics, force fields, solvation) in a "multiscale" approach
+</ul>
+and better address materials problems of interest to Sandia in particular,
+and the broader computational materials community in general.
+See the <a href="SeqQ_News.html">news page</a> for more details on
+recent progress and future developments.
+A major focus of our efforts in the near future is to implement and tune
+parallelism in the code.
+The current parallel code achieves useful scaling for
+modest numbers (4-16) of processors, depending on problem size,
+and scales well to 64-processors on 1000-atom problems.
+<p>
+SeqQuest is NOT available under GPL, but is only available in a
+limited fashion via no-fee licenses from Sandia National Labs.
+
+<br><br>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Features">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  June 27, 2018  <!-- version 2.68 -->
+</font>
+
+</font>
+</body>
+</html>

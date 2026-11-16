@@ -1,0 +1,275 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest input - Band Structure </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest input: Band structure</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+The band structure capability was developed by Arthur H. Edwards and Andrew C. Pineda (AFRL),
+who should be cited (unpublished) for any use of the band structure capability.
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">            SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">     User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html">    Input<br> Manual</a> </th>
+   <th> <a href="SeqQ_rundata.html">         Run phase<br> Manual</a> </th>
+   <th> <a href="SeqQ_bands_Tutorial.html">  Bands<br> Example</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">   Overview</a>
+<li><a href="#inputs">  Input options</a>
+<li><a href="#trouble"> Troubleshooting</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2> Overview </h2>
+
+<p>
+The band structure feature computes energies along lines connecting
+high symmetry points in the Brillouin zone for the standard Bravais lattices.
+The user must specify <tt>do bands</tt>
+in the <a href="SeqQ_runopt.html"> run options</a>,
+and then specify the desired branches of the band structure
+in the <tt>bandstructure</tt> section.
+<p>
+The code first performs a standard self-consistent calculation,
+with a presumably converged k-point sample, and then uses
+the resulting self-consistent potential to perform a set of
+non-self-consistent calculations at a sequence of k-points, traversing
+along branch lines from one high symmetry point to the next.
+The code uses the lattice settings and symmetry points for the Bravais
+lattices as recommended by
+<ul>
+   <li> <a href="http://dx.doi.org/10.1016/j.commatsci.2010.05.010">
+        W. Setyawan and S. Curtarolo, Comp. Mat. Sci. <b>49</b>, 299 (2010).
+        </a>
+</ul>
+for most calculations. This paper, hereinafter referred to as "WSSC",
+should be cited for use of this facility.  The paper specifies
+recommended paths connecting the high symmetry points through the
+Brillouin zone (BZ) for each Bravais lattice. These paths are the defaults
+in the code when the number of branches is not specified by the user.
+For a couple common Bravais lattices, there are two implementations:
+one based on the WSSC paper and another (referred to as "standard" below)
+retained from an earlier development version of the code.
+Both implementations should yield identical results.
+In the WSSC paper, there are in some cases multiple variants of a Bravais lattice
+depending on the axis lengths and interaxis angles.
+These choices are handled internally by the code.
+See the WSSC paper for details.
+<p>
+Two output files are generated containing the information needed to generate a band structure plot,
+using a visualization tool such as
+<a href="http://plasma-gate.weizmann.ac.il/Grace/">Grace/XMGrace</a>:
+<ul>
+<li> <b>lcao.bands</b> - contains the band energies plotted versus distance
+along a parameterized path or "branch" in k-space.
+The length of each branch is proportional to the length of the branch in k-space.
+<li> <b>lcao.bandlbls</b> - contains the labels of the high symmetry
+points and their positions along this path.
+</ul>
+In the <a href="SeqQ_bands_Tutorial.html"> Bands Tutorial </a>, an example is presented.
+An example Perl script that combines these two files into a usable plot using Grace/XMGrace is
+available upon request.
+<!-- available <a href="Grace_bands.pl">here</a>. -->
+This script includes options for adding labels.
+
+<p>
+Important notes about use of the band structure code (as of version 2.65):
+<ul>
+  <li> <font color="red"> 
+       To get a band structure, the job must be a fixed-geometry/cell single point calculation. </font> <br>
+       The band structure capability is implemented within the SeqQuest code itself,
+       the SeqQuest code acts as its own post-processor, 
+       The code cannot have done any relaxations or anything other than a single-point SCF.
+  <li> The number of points along each symmetry line (branch) is fixed internally.
+  <li> One can only specify the band structure along high symmetry lines, using symbols as defined in WSSC.
+  <li> We follow the conventions of WSSC regarding the ordering of lattice vectors.
+    That is, the lattice vectors are assumed to be ordered according to axis lengths and interaxial angles.
+    This choice was made in order to limit the possible shapes of the Brillouin zone.
+  <li> In specifying symbols, "G"=gamma point.
+</ul>
+
+<hr>
+<a name="inputs"></a>
+<h2> Input options </h2>
+
+<font face="courier"><tt>
+<dl>
+
+<dt><b> bandstructure </b> - the section MUST begin with this keyword
+
+<dt><b> [gamma] </b> - add gamma and only gamma pt to post-scf (and go directly to <tt> end bands </tt>
+
+<dt><b> bravais lattice</b> - specify the type of bravais lattice
+  <dd><i> bravlat </i> - character*3 string to specify lattice, see <a href="#details"> Details </a>
+
+<dt><b> nbranch </b> - number of branches (lines) to generate band structure points along
+  <dd><i>  nbranch </i> - an integer <br>
+     - if nbranch = 0, code automatically choose branches to be computed (skip to <b> end bands </b>)<br>
+     - if nbranch > 0, user specifies branches to sample using <tt>symbols</tt> section: <br>
+
+<dt><b> symbols </b>
+<dt></tt><i> do  ibranch=1,nbranch </i><tt>
+  <dd><i>  branch </i> - character*2 string, specify branch by its endpoints
+                         e.g., "GX" samples from "G" to "X". <br>
+                         - The allowed branches depend on the lattice (see WSSC).. 
+<dt> </tt><i> enddo </i><tt>
+
+<dt><b> end bands </b> - required, to specify end of input of band structure lines
+
+</dl>
+</tt></font>
+
+<hr>
+<a name="details"></a>
+<h2>Details</h2>
+
+<p> The keywords for Bravais lattices available in this module are
+  tabulated below.
+<p>
+<table border="1">
+<tr>
+<td> <b>bravlat</b> </td>
+<td> <center><b>Lattice</b></center> </td>
+<td> <center><b>Description</b></center> </td>
+</tr>
+
+<tr> 
+ <td><center> bcc </center></td> 
+ <td><center> Body centered cubic</center></td>
+ <td> Implements the BCC lattice as described in appendix A.3 of the WSSC paper.<br>
+      Default path through the BZ is illustrated in Fig. 3 of WSSC.</td>
+</tr>
+<tr> 
+  <td><center> cub </center></td>
+  <td><center> Simple cubic</center></td> 
+  <td> Implements the CUB case as described in appendix A.1 of the WSSC paper.<br>
+       Default path through the BZ is illustrated in Fig. 1 of WSSC.</td>
+</tr>
+<tr> 
+  <td><center> fc2 </center></td>
+  <td><center> Face centered cubic</center></td> 
+  <td> Implements the FCC case as described in appendix A.2 of the WSSC paper.<br>
+       Default path through the BZ is illustrated in Fig. 2 of WSSC.</td>
+</tr>
+<tr> 
+  <td><center> fcc </center></td>
+  <td><center> Face centered cubic</center></td> 
+  <td> (Standard) Original version by Edwards. </td>
+</tr>
+<tr>
+  <td><center> hex </center></td>
+  <td><center> Hexagonal</center></td> 
+  <td> Implements the HEX case of appendix A.10 of the WSSC paper.<br>
+       Default path through the BZ is illustrated in Fig.13 of WSSC.</td>
+</tr>
+<tr> 
+  <td><center> mcl </center></td>
+  <td><center> Simple monoclinic</center></td> 
+  <td> Implements the MCL case as described in appendix A.12 of the WSSC paper.<br>
+       The restriction that the alpha angle be less than 90 degrees has been removed.<br>
+       Default path through the Brillouin zone is shown in Fig. 16 WSSC.</td>
+</tr>
+<tr> 
+  <td><center> orc </center></td>
+  <td><center> Orthorhombic</center></td>
+  <td> Implements the ORC lattice as described in appendix A.6 of the WSSC paper.<br>
+       Default path through the BZ is illustrated Fig. 7 of WSSC.</td>
+</tr>
+<tr> 
+  <td><center> rhl </center></td>
+  <td><center> Rhombohedral</center></td> 
+  <td> Implements the RHL case as described in appendix A.11 of the WSSC paper.<br>
+       Both the RHL<sub>1</sub> and RHL<sub>2</sub> sub-cases are included.<br>
+       Default paths through the BZ are shown in Figs. 14 and 15 ov WSSC,
+       for the RHL<sub>1</sub> and RHL<sub>2</sub> sub-cases, respectively.</td>
+</tr>
+<tr> 
+  <td><center> sc </center></td>
+  <td><center> Simple cubic</center></td> 
+  <td> (Standard) Original version by Edwards. No default path is set.</td>
+</tr>
+<tr> 
+  <td><center> stc </center></td>
+  <td><center> Simple triclinic</center></td> 
+  <td> (Standard) Original version by Edwards. No default path is set.</td>
+</tr>
+<tr> 
+  <td><center> tet </center></td>
+  <td><center> Tetragonal</center></td> 
+  <td> Implements the TET case as described in appendix A.4 of the WSSC paper.<br>
+       Default path through the BZ is illustrated in Fig. 4 of WSSC.</td>
+</tr>
+<tr> 
+  <td><center> tri </center></td>
+  <td><center> Triclinic</center></td> 
+  <td> Implements the TRI case as described in appendix A.14 of the WSSC paper.<br>
+       This module handles the variations
+       TRI<sub>1a</sub>, TRI<sub>1b</sub>, TRI<sub>2a</sub>, and TRI<sub>2b</sub>
+       described in WSSC.<br>
+       Default paths through the Brillouin zones are shown in Figs. 22-25 of WSSC,
+       for the variations TRI<sub>1a</sub>, TRI<sub>1b</sub>, TRI<sub>2a</sub>, and TRI<sub>2b</sub>,
+       respectively. </td>
+</tr>
+</table>
+<p>
+
+<hr>
+<a name="trouble"></a>
+<h2>Troubleshooting</h2>
+
+<p>
+This is a relatively new and unsophisticated facility, but functional.
+Currently, the ability to manipulate the desired band structure is somewhat limited.
+In most of the modules, you are constrained to using paths along the high symmetry lines
+connecting the high symmetry points in the Bravias lattice.
+For example, you are not allowed compute energies along a path from the K symmetry point
+to the X symmetry point in the FCC lattice.
+<dl>
+<dt> Having trouble specifying the band structure you really want?
+  <dd> The general case can always be done by asserting a triclinic bravais lattice,
+       and the triclinic symmetry symbols to follow whatever rbanch lines you wish.
+</dl>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_rundata.html"> Run phase manual</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Cell Optimization">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> December 25, 2015  <!-- gamma point, for real -->
+</font>
+
+</font>
+</body>
+</html>

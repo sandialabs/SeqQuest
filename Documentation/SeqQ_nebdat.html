@@ -1,0 +1,300 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest input - NEB transition state finder </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest input - NEB transition state finder</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+  Albuquerque, NM 87185 <br>
+    -->
+
+<hr>
+<h2><font color=green> MPI-capable </font></h2>
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+   <th> <a href="SeqQ_NEB_Tutorial.html"> NEB<br> Tutorial</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Overview</a>
+<li><a href="#inputs">   Input options</a>
+<li><a href="#details">  Details</a>
+<li><a href="#trouble">  Troubleshooting</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+This page gives a description of the input section that controls
+the "Nudged Elastic Band" (NEB) transition state finder.
+This is a complicated calculation that requires very careful input.
+It involves multiple images in a "chain-of-states" calculation, and
+the generation of the intermediate states between the reactant and
+product geometries can be very tricky, and lead to poorly behaved
+geometries, possibly even leading to atoms being placed on top of
+one another.  Hence, use of this feature requires very careful
+construction on the part of the user.  To trigger an NEB calculation,
+enter a "<tt>do neb</tt>" instruction in the
+<a href="SeqQ_runopt.html">command options</a>.
+There is a <a href="SeqQ_NEB_Tutorial.html">  NEB Tutorial</a>
+available that provides additional guidance in the use of NEB
+to find transition states.
+<p>
+The code implements a method based on that described in: <br>
+"Nudged elastic band method for finding minimum energy paths of transitions",
+<br>H. Jonsson, G.Mills, and K.W. Jacobsen,
+in "Classical and Quantum Dynamics in Condensed Phase Simulations"
+ediited by B.J. Berne, G. Ciccoti, and D.F. Coker (World Scientific,
+Singapore, 1998), p385.
+<br> and <br>
+"A climbing image nudged elastic band method for finding saddle points
+and minimum energy paths" <br>
+G. Henkelman, B.P. Uberuaga, and Hannes Jonsson, J. Chem. Phys.
+<b>113</b>, 9901 (2000).
+
+<p>
+<b>Important:</b> experience indicates that relaxation of a NEB
+chain of geometries is very challenging.  The Broyden method that
+is the Quest default for geometry relaxation will usually fail.
+Hence, when doing a NEB calculation, it is recommended that the
+user invoke a dynamical method (e.g., ASD) for relaxing geometries
+in the <a href="SeqQ_geomdat.html"> geometry relaxation section</a>.
+
+<hr>
+
+<a name="inputs"></a>
+<h2>Input options</h2>
+
+There are two parts to the input section.  A beginning part, which
+is highly structured, keyword-driven, with both required and optional
+data that must be in a particular order (such as for the
+<a href=SeqQ_setdata.html> setup structure data</a></i>), and a
+following section of data that is optional, also keyword-driven.
+<p>
+The keywords must be left-justified, but all data input is free-format.
+
+<font face="courier"><tt>
+<dl>
+<dt><b> neb data </b> - begin NEB input data section
+<dt><b> images </b> - the number of (intermediate) NEB images
+  <dd><i>   images </i> (int)
+
+<dt><b> einitial </b> - total energy (Ry) of starting point of band
+  <dd><i>   energy_start </i> (real)
+<dt><b> [coordinates] </b> - list of atomic coordinates, start of band
+  <dt>      do i_atom = 1, n_atom
+    <dd><i>   x_atom y_atom z_atom </i> (3*real)
+  <dt>      enddo
+    <dd>  <b> - OR - </b>
+<dt><b> [atom, types, and positions?]</b> - list of atoms as in setup:
+  <dt>      do i_atom = 1, n_atom
+    <dd><i>   label_atom type_atom x_atom y_atom z_atom </i> (2*char,3*real)
+  <dt>      enddo
+
+<dt><b> efinal </b> - total energy (Ry) of end point of band
+  <dd><i>   energy_end </i> (real)
+<dt><b> coordinates </b> - list of atomic coordinates, end of band
+  <dt>      do i_atom = 1, n_atom
+    <dd><i>   x_atom y_atom z_atom </i> (3*real)
+  <dt>      enddo
+    <dd>  <b> - OR - </b>
+<dt><b> atom, types, and positions?</b> - list of atoms as in setup:
+  <dt>      do i_atom = 1, n_atom
+    <dd><i>   label_atom type_atom x_atom y_atom z_atom </i> (2*char,3*real)
+  <dt>      enddo
+
+<dt> <br>End of structured required section, begin optional (any order) input:
+  <dd>       ...
+
+<dt> <br> Note: invocation of following three options is changing.
+
+<dt><b> antikink | no_antikink </b> - tangent = to uphill image, or
+                                      from downhill to uphill image
+  <dd>    ...
+
+<dt><b> climb </b> - invoke climbing image (highest image only)
+  <dd>    ...
+
+<dt><b> extreme | no_extreme </b> - push nearest images to min/max, or not
+  <dd>    ...
+
+<dt><b> restart | no_restart</b> - restart NEB (very iffy, code untested),
+                                   or prevent restart
+  <dd>    ...
+         <br>
+
+<dt><b> nebspring </b> - spring constant connecting NEB images
+  <dd><i>   spring_neb </i> (real) <br>
+             ...
+
+<dt><b> image </b> - intermediate image for input of coords
+  <dd><i>  image </i> (int)
+<dt><b> coordinates </b> - list of atomic coordinates for this image
+  <dt>      do i_atom = 1, n_atom
+    <dd><i>   x_atom y_atom z_atom </i> (3*real)
+  <dt>      enddo
+    <dd>  <b> - OR - </b>
+<dt><b> atom, types, and positions?</b> - list of atoms as in setup:
+  <dt>      do i_atom = 1, n_atom
+    <dd><i>   label_atom type_atom x_atom y_atom z_atom </i> (2*char,3*real)
+  <dt>      enddo
+<dd>        ...
+
+<dt><b> end neb data </b>
+
+</dl>
+</tt></font>
+
+<font size=-2><a href="#top">Return to Top</a></font>
+
+<hr>
+<a name="details"></a>
+<h2>Details</h2>
+
+The NEB method is intended to find the minimum energy path (MEP) between
+two points - which can be thought of reactant and product of a reaction
+- to find a path that traverses a transition barrier.  The two points are
+usually local equilibria, but there is no requirement this be so.
+The requirement is solely that the end-points be on a MEP.  For example,
+one could use the NEB to find the path between a saddle point (i.e.
+highest point on a MEP, the transition state) and one of the end-point
+equilibrium configurations.
+<p>
+The atomic configuration entered in the setup phase is, by default, taken
+to be the initial (reactant) state, and the atom types (elements)
+of the atom list are taken from the setup phase input.
+NB: make sure that the endpoint and any images entered in the NEB input
+have the same order of atom types as in the setup.
+The NEB code does <i>not</i> check for consistency of atom types.
+The user must take care not to transmute elements in the NEB input!
+While input of atomic positions in the NEB section is possible
+through either the <b>coordinate - OR - atom, types, and position</b> form
+(the latter as in the setup phase), during the NEB input, all atom type
+information is <i>ignored</i>.
+<p>
+Even though the <b>initial state</b> default is the geometry given in the
+setup, it can be overridden in the NEB input section.
+Even if the user does not override the initial state coordinates, the
+input must provide a total energy <b>einitial</b> for the initial state.
+The final state endpoint total energy <b>efinal</b> and <b>coordinates</b>
+are both required in the NEB input.  The energies are used in
+defining the uphill/downhill directions for the <b>antikink</b> (highly
+recommended) prescription and the <b>extreme</b> option.
+<p>
+The <b>restart</b> option is not entirely validated.  The safest procedure
+is to transfer the last recorded band image geometries into the NEB input
+file, and begin the MEP minimization anew (dropping the history).
+<p>
+The NEB code fills in missing images in the NEB using linear interpolation.
+Occasionally, this may result in a pathological configuration (e.g., atoms
+being at the same point in space) that needs to be avoided.
+Or there might be an earlier, partially
+converged NEB calculation that the user would like to start from.
+The NEB input file has the facility to input each of the individual
+NEB image configurations using the <b>image</b>/<b>coordinate</b> keywords
+in the optional section of the NEB input file.  The user can input any or
+all of the images.  The code will fill in any missing (empty) images with
+linear interpolation between the nearest image configurations for which
+it has coordinates.  Note that the code outputs, both in the standard
+listing file, and in the NEB restart file, image coordinates that can
+be directly transferred into the NEB input data section.
+<p>
+<b>Important</b>: all the NEB images share the system information
+(cell, k-sample, symmetry, atom types, geometry constraints) described in
+the setup phase section of the input file.
+Note that the intermediate images in the NEB may have
+less symmetry than the two end points (reactant and product),
+and the input file will need to be modified to reflect this.
+The same atoms will be "frozen" in all images, the same supercell
+will be used, and the atom types as listed in the setup phase data
+will be used across all images (make sure that the atoms in the
+two endpoints of the NEB are in the same order).
+
+<br><br><font size=-2><a href="#top">Return to Top</a></font>
+
+<hr>
+<a name="trouble"></a>
+<h2>Troubleshooting</h2>
+Experience in NEB calculations is limited.  The below is a description
+of possible approaches to deal with certain problems.
+<dl>
+<dt> The NEB is taking a large number of steps to converge
+     (also check <a href="SeqQ_geomdat.html#trouble"> geometry
+     troubleshooting</a>).
+  <dd> Rumor is this problem is characteristic of NEB calculations.
+       Please forward summaries of successful approaches here. <br>
+       Possible suggestions:
+       Add or reduce number of images, increase or decrease the NEB
+       spring constant, try alternate relaxation methods, turn the
+       "extreme" option off, incrementally add more images to the NEB,
+       apply constraints to geometry minimization (esp. <tt>frame</tt>
+       constraints to molecular NEB calculations), ...
+
+<dt> One of the NEB images crashes in the setup phase in the first NEB step.
+  <dd> Perhaps the linear interpolation between the NEB endpoints created
+       a geometry where two atoms have the same position in space? <br>
+       Check the endpoints.  Make sure the atoms are in the same order
+       in both the reactant and product geometries.  If indeed two atoms
+       cross in space, create an explicit geometry for that image in the NEB
+       such that the atoms do not coincide in position, and insert it into
+       the NEB input section (using the <tt>image</tt> keyword above).
+
+<dt> One or more of the geometries "blows up" during the NEB.
+  <dd> Perhaps the geometry relaxation method was Broyden (the default)?<br>
+       Change the minimization method to a dynamical method (ASD, etc.).
+       Take the last "good" set of images in the calculation, and transfer
+       into the NEB input file, and begin the calculation again.
+       Also check <a href="SeqQ_geomdat.html#trouble"> geometry
+       troubleshooting</a>.
+
+<dt> In a parallel NEB calculation, all images are identical.
+  <dd> Two possibilities: <br>
+       <ul>
+       <li> Check that the initial and final state in your input
+            are correct
+       <li> Check that you are using the MPI rather than serial executable.
+            <br> If you use the serial executable in an MPI run, each
+            processor will run the same <i>serial</i> NEB sequence.
+       </ul>
+</dl>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_NEB_Tutorial.html">  NEB Tutorial</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest NEB input">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> January 30, 2006  <!-- update line -->
+</font>
+
+</font>
+</body>
+</html>

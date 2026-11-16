@@ -1,0 +1,446 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> DFT codes documentation </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<font face="Arial, Helvetica, Sans Serif">
+
+<a name="top"></a>
+<h1>DFT codes and web sites </h1>
+
+<!-- 
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov?Subject=DFT Codes and Websites">
+       paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+
+<h2>Table of Contents</h2>
+ -->
+
+<ol>
+<li><a href="#intro">    Introduction</a>
+<li>List of quantum chemistry code sites
+    <ul>
+    <li> <a href="#pbc-codes">  Periodic </a>
+    <li> <a href="#mol-codes">  Molecular </a>
+    <li> <a href="#ppot-codes"> Pseudopotentials/ECP/PAW </a>
+    <li> <a href="#fcnl-codes"> Functionals </a>
+    </ul>
+<li><a href="#other"> Other DFT electronic structure sites </a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Introduction</h2>
+
+<p>
+The following is a list of sites that document
+various density-functional theory based electronic structure codes,
+both periodic and molecular, and atomic pseudopotential codes.
+This list is no way comprehensive,
+nor makes any representation of what the codes do, beyond the most
+superficial observations (being predominantly a molecular code
+vs. being predominantly a periodic code, local orbital vs. plane wave).
+The principal distinction of items on this list is that I ran
+across the web site when looking for other things on the
+web, I had heard of them at some point in the literature, and, at the
+time I discovered them, the web site appeared to be functioning.
+We welcome suggestions of additions and corrections.
+</p>
+
+<h2>DFT production codes</h2>
+<a name="pbc-codes">
+<ul>
+<li>
+<h3> Periodic codes (principally) </h3></li>
+
+<ul>
+<li> Local orbital basis codes
+<ul>
+
+<li><A HREF="http://dft.sandia.gov/Quest/">QUEST</A>:
+    <A HREF="http://www.cs.sandia.gov/~paschul/Quest/">
+     SeqQuest</A> - gaussian basis pseudopotential code
+
+<li><A HREF="http://www.icmab.es/siesta/">
+     SIESTA</A> - numerical atom-centered basis pseudopotential code
+
+<li><A HREF="https://quantumwise.com/products/atk">
+     ATK-DFT</A> - numerical atom-centered basis pseudopotential code (recently acquired by Synopsys-URL will change)
+
+<!-- This site is dead ...
+<li><A HREF="http://www.hec.utah.edu/fireball/">
+     Fireball</A> - fireballs
+ -->
+
+<li><A HREF="http://www.crystal.unito.it/">
+     CRYSTAL</A> - gaussian basis all-electron code
+
+<li><A HREF="http://aimpro.ncl.ac.uk/">
+     AIMPRO</A>
+
+<li><A HREF="https://aimsclub.fhi-berlin.mpg.de/">
+     FHI-AIMS</A> - (commerical license) full potential, all-electron, numerical orbitals
+
+<!-- at Carsten Neise 12Feb09 request, updated to new site ...
+<li><A HREF="http://www.ifw-dresden.de/agtheo/FPLO/">
+ -->
+<li><A HREF="http://www.fplo.de/">
+     FPLO</A>
+
+<!--
+<li><A HREF="http://staff.aist.go.jp/t-ozaki/">
+ -->
+<li><A HREF="http://www.openmx-square.org/">
+     OpenMX</A> - GPL - numerical atom-centered basis PP code (Ozaki group)
+
+<!-- Still vaporware:
+<li><A HREF="http://hamlin.phys.ucl.ac.uk/NewCQWeb/bin/view"> Conquest </A>
+ -->
+<!-- Need to look up, a new but not established code (siesta-like?)
+<li><A HREF="http://homepages.lboro.ac.uk/~masdk/plato.html"> PLATO </A> - local orbital code
+ -->
+
+</ul>
+
+<li> All-electron (augmented methods) codes
+<ul>
+<li><A HREF="http://elk.sourceforge.net/">
+     ELK</A> - GPL - FP-LAPW <br>
+     (one branch from the <A HREF="http://exciting.sourceforge.net/index_old.html">old EXCITING code</A>)
+
+<li><A HREF="http://exciting-code.org/">
+     EXCITING</A> - FP-LAPW, focus on excited state properties (TDDFT, MBPT) <br>
+     [license not apparent on website, probably open source] <br>
+     (another branch from the <A HREF="http://exciting.sourceforge.net/index_old.html">old EXCITING code</A>)
+
+<li><A HREF="http://www.flapw.de/">
+     FLEUR</A> - "freely available" - FLAPW code
+<!--  ... removed/updated with new location (27Jul10-PAS)
+<li><A HREF="http://iffwww.iff.kfa-juelich.de/~bluegel/flapw/flapw_home.html">
+     FLAPW</A>
+  -->
+
+<!-- <li><A HREF="http://www.rspt.net/">  replaced 21Jan14 with -->
+<li><A HREF="http://www.fplmto-rspt.org/">
+     RSPt</A> - "Open Source" - FP-LMTO
+
+<li><A HREF="http://www.wien2k.at/">
+     WIEN2k</A> - modest fee - full potential LAPW
+
+</ul>
+
+<li> Plane wave and related (real space, wavelet, etc.)  methods
+<ul>
+<li><A HREF="http://www.vasp.at"> VASP</A>
+
+<li><A HREF="http://www.castep.org/">
+     CASTEP</A>
+
+<li><A HREF="http://www.cpmd.org/">
+     CPMD</A>
+
+<li><A HREF="http://www.abinit.org/">
+     ABINIT</A> - GPL
+
+<li><A HREF="http://inac.cea.fr/L_Sim/BigDFT/">
+     BigDFT</A> - GPL - wavelets
+
+<!-- <li><A HREF="http://www.pwscf.org/">
+ -->
+<li><A HREF="http://www.quantum-espresso.org/">
+     Quantum-Espresso (formerly PWscf)</A> - GPL
+
+<!-- <li><A HREF="http://www.nersc.gov/~linwang/PEtot/PEtot.html"> replaced 21Jan14 with -->
+<li><A HREF=" http://cmsn.lbl.gov/html/PEtot/PEtot.html">
+     PEtot</A> - GPL
+
+<!-- old link is secured ...
+<li><A HREF="http://dcwww.camp.dtu.dk/campos/Dacapo/">
+ -->
+<li><A HREF="https://wiki.fysik.dtu.dk/dacapo">
+     DACAPO</A> - GPL
+
+<li><A HREF="http://dft.sandia.gov/Socorro/mainpage.html">
+     Socorro</A> - GPL
+
+<li> <A HREF="http://jdftx.sourceforge.net/"> JDFTx </A>
+     formerly known as
+     <A HREF="http://dft.physics.cornell.edu/"> DFT++</A> - GPL
+
+<!-- <li><A HREF="http://www.nersc.gov/projects/paratec/"> replaced 21Jan14 with -->
+<li><A HREF="http://www.nersc.gov/users/software/applications/materials-science/paratec/">
+     Paratec</A>
+
+<!--
+<li><A HREF="https://quantumwise.com/products/atk">   COMING 2018 (per Vaida)
+     ATK-DFT</A> - plane wave pseudopotential code (recently launched by Synopsys)
+-->
+
+<!-- this site is dead, as is apparently all of science on NRL site - 22Jan14-PAS
+<li><A HREF="http://cst-www.nrl.navy.mil/people/singh/planewave/v3.0/">
+     DoD Planewave</A>
+ -->
+
+<!-- this site is dead, ACRES is homeless? - 27Jul10-PAS
+<li><A HREF="http://cst-www.nrl.navy.mil/~singh/acres/info.html">
+     ACRES</A>
+ -->
+
+<!-- <li><A HREF="http://www.ices.utexas.edu/parsec/"> replaced 22Jan14 -->
+<li><A HREF="http://parsec.ices.utexas.edu">
+     PARSEC</A> - GPL - real space, pseudopotential
+
+<li><A HREF="http://www.cp2k.org">
+     CP2K</A> - GPL (mixed basis DFT)
+
+<li><A HREF="https://wiki.fysik.dtu.dk/gpaw/">
+     GPAW</A> - GPL - real-space multigrid PAW code
+
+<li><A HREF="http://www.sphinxlib.de/">
+     SPHINX</A>
+
+<li><A HREF="http://eslab.ucdavis.edu/software/qbox/">
+     QBOX</A> - GPL - plane wave pseudopotential, large parallel
+
+</ul> <!-- end periodic code list-->
+
+</ul>
+
+<p>
+<font size=-2>
+<a href="#top">Return to Top</a>
+</font>
+</p>
+
+<a name="mol-codes">
+<li>
+<h3>Molecular codes (principally)</h3></li>
+
+<ul>
+<li><A HREF="http://www.gaussian.com/">
+     Gaussian.com</A>
+     (unless, of course, you have been
+     <a href="http://www.bannedbygaussian.org">"banned"</a>)
+
+<li><A HREF="http://www.emsl.pnl.gov/docs/nwchem/nwchem.html">
+     NWChem</A>
+
+<li><A HREF="http://www.tddft.org/programs/octopus/">
+     Octopus</A> - GPL - real space TDDFT code
+
+<li><A HREF="http://people.web.psi.ch/delley/dmol3.html">
+     DMol<sup>3</sup></A> -
+    <A HREF="http://accelrys.com/products/pipeline-pilot/component-collections/materials.html">
+     Accelrys Materials Studio </a>
+
+<!-- <li><A HREF="http://www.schrodinger.com/Products/jaguar.html"> move 22Jan14-PAS to -->
+<li><A HREF="http://www.schrodinger.com/productpage/14/7/">
+     Jaguar</A> - Schrodinger, Inc.
+
+<!-- The old link.
+<li><A HREF="http://www.msg.ameslab.gov/GAMESS/GAMESS.html">
+ -->
+<li><A HREF="http://www.msg.chem.iastate.edu/gamess">
+     GAMESS</A> or 
+    <A HREF="http://www.cfs.dl.ac.uk/">
+     GAMESS-UK</A>
+
+<li><A HREF="http://www.q-chem.com/">
+     QCHEM</A>
+
+<!-- this site was dead, discovered new site 28Jul10-PAS
+<li><A HREF="http://cst-www.nrl.navy.mil/~nrlmol/">
+ -->
+<li><A HREF="http://quantum.utep.edu/nrlmol/nrlmol.html">
+     NRLMOL</A>
+
+<!-- <li><A HREF="http://www.t12.lanl.gov/home/mchalla/"> moved, 22Jan14-PAS, to -->
+<li><A HREF="http://physics.tsu.edu/MondoSCF/MondoSCF.php">
+     MondoSCF</A>  (no license info, but appears "free")
+
+<li><A HREF="http://www.scm.com/">
+     ADF - SCM</A>
+
+<li><A HREF="http://www.demon-software.com/">
+     deMon</A>
+
+<li><A HREF="http://www-theor.ch.cam.ac.uk/software/caddoc.html">
+     CADPAC - The Cambridge Analytic Derivatives Package</A>
+
+<li><A HREF="http://pyquante.sourceforge.net/">
+     PYQUANTE</A> - GPL - python-based development toolset for DFT/HF
+
+<li><A HREF="http://www.cosmologic.de/QuantumChemistry/main_qChemistry.html">
+     TURBOMOLE</A> - DFT and HF for large molecular systems
+
+</ul> <!-- end molecular code list-->
+
+<p>
+<font size=-2>
+<a href="#top">Return to Top</a>
+</font>
+</p>
+
+<a name="ppot-codes">
+<li>
+<h3>DFT atomic pseudopotential codes</h3></li>
+
+<ul>
+<li><A HREF="http://www.fhi-berlin.mpg.de/th/fhi98md/fhi98PP/">
+     fhi98PP pseudopotential program </A> <br>
+     This is a well engineered, freely available package to generate
+     pseudopotentials of either the Hamann form or the Troullier/Martins form.
+     It is the code we use for generating new pseudopotentials for Quest.
+
+<!--
+<li><A HREF="http://homepage.sns.it/giannozzi/Atom/doc.pdf">
+ -->
+<li><A HREF="http://www.fisica.uniud.it/~giannozz/Atom/doc.pdf">
+     Paolo Giannozzi's Notes on pseudopotential generation </A> <br>
+     A wide-ranging discussion of practical issues that go into
+     constructing pseudopotentials.
+
+<li><A HREF="http://metodos.fam.cie.uva.es/~doctorado/carlos/10-Fuchs.pdf">
+     Martin Fuch's Notes on using fhi98pp to generate PP for plane wave codes </A><br>
+     This contains a particularly good (i.e. useful) discussion of
+     detecting/avoiding ghost states with separable (Kleinman-Bylander) PP.
+
+<li><A HREF="http://opium.sourceforge.net">
+     OPIUM</A> <br>
+     <!-- Andy Rappe's optimized pseudopotentials. -->
+     Open Source/GPL package which can write norm-conserving
+     pseudopotentials for a number of DFT programs including ABINIT, PWSCF
+     and CASTEP. Potentials can be constructed using the Troullier-Martins
+     or RRKJ/Optimized approach.
+     <!-- The code can easily generate plots of wavefunctions, potentials,
+     densities and much more using the Xmgrace plotting program.-->
+
+<li><A HREF="http://www.tddft.org/programs/APE/">
+     <!-- TDDFT PP generator, discovered 24Sep07 -->
+     APE - Atomic Pseudopotential Engine </A> <br>
+     A recently released GPL pseudopotential generator,
+     generating PP in Hamann and Troullier-Martins forms,
+     for SIESTA, Octopus, ABINIT, and PWscf codes.
+
+<li><A HREF="http://www.physics.rutgers.edu/~dhv/uspp/">
+     David Vanderbilt USPP</A> <br>
+
+<!-- this link is dead - 27Jul10-PAS
+<li> <A HREF="http://bohr.inesc-mn.pt/~jlm/pseudo.html">
+     J.L. Martins programs</A>
+ -->
+
+<!-- moved (page update 24Sep07-pas)
+<li><A HREF="http://staff.aist.go.jp/t-ozaki/">
+ and this new page is now stale, too - 22Jan14-PAS
+<li><A HREF="http://www.openmx-square.org/adpack/adpack.html">
+     ADPACK</A> - GPL - Troullier-Martins and Bachelet-Hamann-Schluter PP
+      for use with OpenMX (Ozaki group)
+ -->
+
+<li> <A HREF="http://www.wfu.edu/~natalie/papers/pwpaw/man.html">
+     ATOMPAW</A> - PAW pseudopotential generation code (Natalie Holzwarth)
+
+<li><A HREF="http://www.nnin.org/nnin_comp_psp_vault.html">
+     Virtual Vault for PP</A> <br>
+     NNIN reference page for pseudopotentials
+
+</ul> <!-- end atomic/pseudopotential code list-->
+
+<p>
+<font size=-2>
+<a href="#top">Return to Top</a>
+</font>
+</p>
+
+<a name="fcnl-codes">
+<li>
+<h3>DFT functionals</h3></li>
+
+<ul>
+<li> Ann Mattsson source for
+     <A HREF="http://dft.sandia.gov/functionals/AM05.html"> AM05</A>
+<li> Kieron Burke listings of
+<!--
+     <A HREF="http://crab.rutgers.edu/~dft/pubs/PBE.asc">
+ -->
+     <A HREF="http://dft.uci.edu/pubs/PBE.asc"> PBE</A>
+     and
+     <A HREF="http://dft.uci.edu/pubs/PBEsol.html"> PBEsol</A>
+     functionals
+<li> Truhlar group page with information and some source code for
+     <A HREF="http://comp.chem.umn.edu/info/dft.htm"> 
+     Truhlar functionals </A>
+
+<li> The <A HREF="http://www.tddft.org/programs/octopus/wiki/index.php/Libxc"> Libxc</A>
+     is a library of exchange functionals (LGPL license).
+     Goal is library of xc functionals that can be directly implemented into codes
+
+<li> Source code listings various dft functionals
+     (CCLRC Daresbury Laboratory):<br>
+    <A HREF="http://www.cse.clrc.ac.uk/qcg/dft/">
+     Density functional repository </A>
+</ul>
+
+<p>
+<font size=-2>
+<a href="#top">Return to Top</a>
+</font>
+</p>
+
+</ul> <!-- end code type: periodic;molecular;atomic;fcnal etc-->
+
+
+<a name="other">
+
+<h2>Other useful sites</h2>
+<ul>
+
+<li> Sandia DFT site:<br>
+     <A HREF="http://dft.sandia.gov">dft.sandia.gov</A>
+
+<li> A valuable resource for <font color="red"> crystal lattice structures</font>, at a
+     <A HREF="http://web.archive.org/web/20101115184851/http://cst-www.nrl.navy.mil/lattice/">
+     temporary home </A> while the navy/NRL gets its web presence reestablished.
+
+<li> Richard Martin's (nascent) site for electronic structure methods<br>
+     <A HREF="http://ElectronicStructure.org">electronicstructure.org</A>
+
+<li> Lists of useful references:<br>
+    <A HREF="http://www.geocities.co.jp/Technopolis/4765/INTRO/biboe.html">
+    Memorandum of electronic structure calculations and related studies
+    (English edition)</A>
+
+<!-- discovered to be dead, 28Jul10-PAS
+<li> Catalog of CCM software:<br>
+    <A HREF="http://www.arl.hpc.mil/RIB/repositories/CCM/catalog/">
+     CCM Software Catalog</A>
+ -->
+
+</ul>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=DFT Codes and Websites">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  December 18, 2017  <!-- fixed ATK-DFT -->
+
+</font>
+
+</font>
+</body>
+</html>

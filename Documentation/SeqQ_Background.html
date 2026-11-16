@@ -1,0 +1,160 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Background </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<font face="Arial, Helvetica, Sans Serif">
+
+<a name="top"></a>
+<h1 align="center">SeqQuest Background </h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov?Subject=SeqQuest">
+       paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html"> SeqQuest<br> Home</a> </th>
+</tr>
+</table>
+
+<hr>
+<a name="intro"></a>
+<h2>Introduction</h2>
+
+Quest is a general purpose electronic structure code based on density
+functional theory.  It uses pseudpotentials and a high quality local
+orbital basis of contracted Gaussian functions in a linear combination
+of atomic orbitals (LCAO) approach to solve the Kohn-Sham equations
+fully self-consistently.  This page gives a (very) brief description
+of the formulation of the method.
+
+
+<a name="backgrd"></a>
+<h2>Background</h2>
+
+<p>
+The basic algorithm that gives Quest its computational efficiency
+is the decomposition of the density and associated potentials into
+a sum of reference atoms plus a residual on a regular (FFT) grid.
+This fundamental algorithm is based in the work of Peter Feibelman
+in the 1980's, who never published the comprehensive description of
+his technique.   Feibelman wrote a number of papers that obliquely
+described the method, including:
+<ul>
+<li> "Efficient Solution of Poisson's Equation in Linear Combination of
+      Atomic Orbitals (LCAO) Electronic Structure Calculations"
+      <br> P.J. Feibelman,  J. Chem. Phys. <b>81</b>, 5864 (1984)
+<li> "Efficient Solution of Poisson's Equation in Linear Combination of
+      Atomic Orbitals (LCAO) Calculations of Crystal Electronic Structure"
+      <br> P.J. Feibelman, Phys. Rev. B <b>33</b>, 719 (1986).
+<li> "Force and Total Energy Calculations for a Spatially Compact Adsorbate
+      on an Extended, Metallic Crystal Surface"
+      <br> P.J. Feibelman, Phys. Rev. B <b>35</b>, 2626 (1987).
+<li> "Pulay-type Formula for Surface Stress in a Local Density Functional,
+      Linear Combination of Atomic Orbital Electronic Structure Calculation"
+      <br> P.J. Feibelman, Phys. Rev. B <b>44</b>, 3916 (1991).
+</ul>
+This decomposition leads to a solution of the Coulomb problem in O(N) time,
+where N is a characteristic size of the problem (e.g., number of atoms).
+This eliminates the computation of the Hamiltonian as the limiting factor
+in the electronic structure calculations, and reduces the scaling
+of the Hamiltonian construction to O(N).
+<p>
+The SeqQuest code is highly efficient and enables very large scale
+calculations using very modest resources.  100-300 atom problems are
+routinely performed with desktop machines and 1000-atom are possible
+on (large-memory) single-processor workstations.  The asymptotic O(N)
+scaling is not only theoretically possible, but actually achieved in
+practice after a surprisingly small number of atoms.
+Until the definitive paper for Quest is written, the code is cited using
+the following:
+
+<ul><li> P.A. Schultz (unpublished), for a description of the method see:
+P.J. Feibelman, PRB <b>35</b>, 2626 (1987).
+</ul>
+
+Continuing the tradition of describing embellishments of the method,
+a discussion of how to rigorously solve the Coulomb problem in
+supercell calculations is described in:
+<ul>
+<li> "Local electrostatic moments and periodic boundary conditions" <br>
+      P.A. Schultz, Phys. Rev. B <b>60</b>, 1551 (1999).
+<li> "Charged local defects in extended systems" <br>
+      P.A. Schultz, Phys. Rev. Lett. <b>84</b>, 1942 (2000).
+<li> "Theory of defect levels and the 'band gap problem' in silicon" <br>
+      P.A. Schultz, Phys. Rev. Lett. <b>96</b>, 246401 (2006).
+</ul>
+We explored replacing the standard dense eigensolver in Quest with
+a linear solver, and the following paper discusses the result:
+<ul><li>
+   "Unconstrained and constrained minimization, localization, and the
+   Grassmann manifold: Theory and application to electronic structure" <br>
+   D. Raczkowski, C.Y. Fong, P.A. Schultz, R.A. Lippert, and E.B. Stechel,
+   Phys. Rev. <b>B64</b>, 155203 (2001).
+</ul>
+This linear solver is not currently in the production version of the code.
+In practice, it did not improve over standard dense solvers until huge
+systems beyond what is reasonable on single-processing workstations,
+and the implementation required demolishing large parts of the code.
+We are in the process of parallelizing the code, and we are exploring
+alternate linear solver methods that become viable with the new capability.
+
+<p>
+A couple of recent applications highlight some of the special capabilities
+of the code:
+<ul>
+<li>
+   "First-principles approach for the charge-transport characteristics of
+      monolayer molecular electronic devices:
+      Application to hexanedithiolate devices" <br>
+    Y.-H. Kim, J. Tahir-Kheli, P.A. Schultz,
+      and W.A. Goddard III,
+    Phys. Rev. B <b>73</b>, 235419 (2006).
+<li> 
+   "Theory of defect levels and the 'band gap problem' in silicon" <br>
+    P.A. Schultz,
+    Phys. Rev. Lett. <b>96</b>, 246401 (2006).
+<li>
+   "First principles site occupation and migration of hydrogen, helium, and
+      oxygen in beta-phase erbium hydride" <br>
+    R.R. Wixom, J.F. Browning, C.S. Snow, P.A. Schultz, and D.R. Jennison
+    J. Appl. Phys. <b>103</b>, 123708 (2008).
+<li>
+   "Simple intrinsic defects in gallium arsenide" <br>
+    P.A. Schultz and O.A. von Lilienfeld,
+    Modelling Simul. Mater. Sci. Eng. <b>17</b>, 084007 (2009).
+</ul>
+
+<p>
+A comprehensive list of papers using (and describing) the method can
+be found on the <a href="SeqQ_Publications.html">Quest bibliography page</a>.
+
+<br><br>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Background">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  July 28, 2010 <!-- touch-up references -->
+</font>
+
+</font>
+</body>
+</html>

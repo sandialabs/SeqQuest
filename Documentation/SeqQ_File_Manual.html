@@ -1,0 +1,326 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest File Reference Manual </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest: File Reference Manual</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">      Overview</a>
+<li><a href="#outfiles">   Quest files</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+Quest generates many files in the course of a calculation.
+The purpose of this page is to summarize the more important of these.
+The convention Quest adopts is to use a common prefix (currently chosen
+to be "lcao", but can be trivially changed), and alter the
+suffix for each file, with the suffix being suggestive of the contents.
+A few files are immediately interesting to the user (such as the output
+listing file, or the file with a relaxed geometry), some become useful
+for post-processing purposes, and some are big binary files that the
+code spits out to reduce the memory footprint of the code.
+<p>
+
+<hr>
+<a name="outfiles"></a>
+<h2>Quest files (by suffix)</h2>
+
+Notes:
+<ul>
+<li>All files are binary format, unless otherwise noted.
+<li>All arrays, both grid fields and orbital matrices, are real*8.
+<li>Grid fields are written as a full array <br>
+    <tt>grid_array( ngrid_A , ngrid_B , ngrid_C )</tt>, <br>
+    where <i>ngrid_X</i> is the dimension of the grid along a lattice
+    vector <i>X</i>.
+<li>Orbitals matrices are dimensioned as <br>
+     <tt>orbital_matrix( n_basis , n_basis , n_kpoints )</tt> <br>
+    and are written as either the full array on a line,
+    or one k-point (n_basis^2 matrix), at a time,
+    as indicated in the description below.
+<li>All big binary I/O (both grid fields and orbital matrices) is length-limited.
+    If a record is longer than a specified length (set at compile time in the "utl" file,
+    defined by the parameter "<tt>maxlen</tt>"), the read/write of an array is
+    automatically broken up into multiple lines of "<tt>maxlen</tt>"
+    length until entire array is done.
+    The length-segmented write can be disabled at run-time with a "-1" input to maxlen.
+<li><b>Important</b>:  Contents and formats of files are subject
+    to change.
+</ul>
+<font size=-2><a href="#top">Return to Top</a></font>
+<br><br>
+
+<p>
+
+<h3>Primary input files:</h3>
+
+  <dl>
+  <dt> <b>in</b> (ASCII)
+    <dd> Quest main input file.
+
+  <dt> <b>atm</b> (ASCII)
+    <dd> Presumptive suffix for atom files used as input.  Quest will
+         accept atom files as any name and any suffix, but uses the
+         <b>atm</b> suffix to construct default type (element) names
+         used in aliasing atom types in the input.
+
+  <dt> <b>geom_in</b> (ASCII)
+    <dd> Geometry input file (if invoked in setup phase) (2.66)
+
+  </dl>
+
+<h3>Primary output files:</h3>
+
+  <dl>
+  <dt> <b>out</b> (ASCII)
+    <dd> Main user output file.  Usually the code is configured so that
+         this output is written to standard out (to a file given by a
+         "redirect"), but if it is to a named file, it has this suffix.
+         It is user readable.  Almost all the interesting data has a
+         unique identifier that can be easily selected using a "grep".
+         For example, do a "grep seconds" to find all timing diagnostics
+         (e.g. to see how far the calculation has gone and how long each
+         step of the calculation takes).
+         A "grep TOTAL" will elicit the SCF convergence of the energy,
+         a "grep fermi" will give the fermi energies,
+         and "grep FINAL" will reveal the final converged SCF energies.
+
+  <dt> <b>neb_out</b> (ASCII)
+    <dd> If a NEB calculation, the output listing file of the NEB driver.
+  </dl>
+
+<h3>Output files, also potentially useful for new input:</h3>
+
+  <dl>
+  <dt> <b>geom</b> (ASCII)
+    <dd> From a geometry relaxation calculation, the current geometry
+         updated at every geometry step.  When the calculation converges,
+         this will be the converged geometry.
+         It is the exact format of the input geometry (scaling, units),
+         so that it could be directly inserted into the input file.
+
+  <dt> <b>neb_geom</b> (ASCII)
+    <dd> If a NEB calculation, the full NEB atomic configuration.
+         It contains the atomic position for every image in the NEB.
+         This file is in the exact format of the neb input section, so
+         that it could be inserted directly into the Quest input file
+         (e.g., to continue a NEB calculation further).  Note: this
+         file does not contain the flags (antikink, etc.) of the
+         original input file, so these would need to be added by hand.
+  </dl>
+
+<h3>Output files to feed post-processing:</h3>
+
+  <dl>
+  <dt> <b>hist</b> (ASCII)
+    <dd> Keyword-driven history of the structural energetics
+         obtained by the code (total energies, geometries).
+         This file feeds a post-processing code (tentatively
+         called <i>outpost</i>) to generate the input to a
+         molecular visualizer (e.g. MOLDEN).
+
+  <dt> <b>post</b> (ASCII)
+    <dd> Generated if "<tt>do post</tt>" selected.
+         Keyword-driven listing of additional output need to drive
+         post-processing code for electronic properties (e.g. pDOS).
+         It contains the eigenvalues spectrum, for example.
+
+  <dt> <b>neb_post</b> (ASCII)
+    <dd> Generated if NEB calculation selected.
+         NEB path information for post-analysis.
+
+  <dt> <b>lcao.bands</b> (ASCII) - for plotting band structure (if <tt>do bands</tt>)
+    <dd> Contains band energies along paths (branches) in k-space
+  <dt> <b>lcao.bandlbls</b> (ASCII) - for plotting band structure (if <tt>do bands</tt>)
+    <dd> Contains labels of high symmetry points and their positions along this path.
+
+  </dl>
+
+<font size=-2><a href="#top">Return to Top</a></font>
+<br><br>
+
+<h3>Other files:</h3>
+
+  <dl>
+  <dt> <b>broy*_elec</b>
+    <dd> Files used for the Broyden blending scheme for the SCF calculation.
+         Complicated contents of no value to anything except to the Broyden.
+
+  <dt> <b>broy*_geom</b>
+    <dd> Files used for the Broyden blending scheme for the geometry relax.
+         Complicated contents of no value to anything except to the Broyden.
+
+  <dt> <b>dh</b>
+    <dd> Orbital matrices: the difference between the current full
+         Hamiltonian matrix and the reference Hamiltonian matrix.<br>
+         <tt> ( dH( 1:n_basis , 1:n_basis , k ) ; k=1,n_kpoints ) </tt>
+
+  <dt> <b>dmat</b>
+    <dd> Orbital matrices: the density matrix<br>
+         <tt> ( dmat( 1:n_basis , 1:n_basis , k ) ; k=1,n_kpoints ) </tt>
+
+  <dt> <b>drh0</b>
+    <dd> Grid fields: if GGA calculation (and hence need density derivatives),
+         derivatives of the total reference density.<br>
+         <tt> ( d_rho0 ; for derivatives=x,y,z,xx,yy,zz,xy,yz,zx ) </tt>
+
+  <dt> <b>drho</b>
+    <dd> Grid fields: if GGA calculation (and hence need density derivatives),
+         derivatives of the "delta" density (rhotot-rho0).<br>
+         <tt> ( d_rho ; for derivatives=x,y,z,xx,yy,zz,xy,yz,zx ) </tt>
+
+  <dt> <b>drhs</b>
+    <dd> Grid fields: if spin-polarized GGA calculation,
+         derivatives of the spin-polarized delta up-spin density.<br>
+         <tt> ( d_rho[spin-up] ; for derivatives=x,y,z,xx,yy,zz,xy,yz,zx ) </tt>
+
+  <dt> <b>emat</b>
+    <dd> Orbital matrix: Energy-weighted density matrix for use in forces <br>
+         <tt> ( emat( 1:n_basis , 1:n_basis , k ) ; k=1,n_kpoints ) </tt>
+
+  <dt> <b>ges</b>
+    <dd> Orbital matrix: Used to construct guess Hamiltonian for SCF <br>
+         <tt> ges_H( 1:n_basis , 1:n_basis , 1:n_kpoint ) </tt>
+
+  <dt> <b>grd</b>
+    <dd> Grid Fields: SCF grid quantities - delta densities,
+         electrostatic potential, total (es+xc) delta potentials.
+         saved as <i>difference</i> from reference quantity (in <b>grd0</b>).
+         Possibly used in subsequent defect-LMCC calculation <br>
+         No spin: <tt> delta_rho ;  delta_Ves ; delta_pot </tt> <br>
+         With spin: <tt> delta_rho[up] ; delta_rho[dn] ; delta_Ves;
+                         delta_pot[up] ; delta_pot[dn] </tt>
+       <!--
+       <table bgcolor="#FFCC66" border=1>
+       <tr> <th> NO SPIN </th> <th> WITH SPIN  </th> </tr>
+       <tt>
+       <tr><td>delta_rho</td> <td>delta_rho[up]</td> <td>density</td>
+       <tr><td>         </td> <td>delta_rho[dn]</td>
+       <tr><td>delta_Ves</td> <td>delta_Ves    </td> <td>electrostatic potl</td>
+       <tr><td>delta_pot</td> <td>delta_pot[up]</td> <td>full potential</td>
+       <tr><td>         </td> <td>delta_pot[dn]</td> <td> (es+xc) </td>
+       </tt>
+       </table>
+       -->
+
+  <dt> <b>grdref</b> (input)
+    <dd> Grid Fields: if defect-LMCC calculation, input crystal reference
+         density and potential (copy of crystal output <b>grd</b> file) <br>
+         (see <b>grd</b> for contents)
+
+  <dt> <b>grd0</b>
+    <dd> Grid fields: Reference grid quantities, e.g. density, potentials <br>
+         <tt> rho_ref ; rho_core ; Vxc_ref ; Exc_ref </tt> <br>
+
+  <dt> <b>grho</b>
+    <dd> Grid fields: If GGA, total density gradients ("grho", "g2rho", "gpggp" ) for xc-potentials:<br>
+            <tt> &nabla;&rho; ; &nabla;<sup>2</sup>&rho; ; &nabla;&rho;&sdot;&nabla;|&nabla;&rho;| </tt>
+                <br>
+   <!--    <tt> &#8711&#961 ; &#8711<sup>2</sup>&#961 ; &#8711&#961&#8901&#8711|&#8711&#961| </tt> 
+                <br>
+           <tt> g_rho ; g2_rho ; g_rho.grad|g_rho| </tt> ("gpggp")<br> -->
+         If spin-polarized GGA, then append additional spin-resolved fields: <br>
+           <tt> &nabla;&rho;<sup>&uarr;</sup> ;
+                &nabla;&rho;<sup>&darr;</sup> ;
+                &nabla;<sup>2</sup>&rho;<sup>&uarr;</sup> ;
+                &nabla;&rho;<sup>&uarr;</sup>&sdot;&nabla;|&nabla;&rho;<sup>&uarr;</sup>| ;
+                &nabla;&rho;<sup>&darr;</sup> ;
+                &nabla;<sup>2</sup>&rho;<sup>&darr;</sup> ;
+                &nabla;&rho;<sup>&darr;</sup>&sdot;&nabla;|&nabla;&rho;<sup>&darr;</sup>| </tt> <br>
+  <!--   <tt> g_rho[up] ; g_rho[dn] ; g2_rho[up] ; gpggp[up] ;
+              g_rho[dn] ;             g2_rho[dn] ; gpggp[dn] </tt> <br> 
+         Note: that <tt>grad_rho[dn]</tt> is written twice to this file is intentional. -->
+         Note: that <tt>&#8711&#961<sup>&#8595</sup></tt> is written twice to this file is intentional.
+
+  <dt> <b>h0</b>
+    <dd> Orbital matrices: reference total Hamiltonian <br>
+         <tt> ( H_ref( 1:n_basis , 1:n_basis , k ) ; k=1,n_kpoints ) </tt>
+
+  <dt> <b>h0t</b>
+    <dd> Orbital matrices: KE (kinetic energy) reference Hamiltonian <br>
+         <tt> ( kinetic( 1:n_basis , 1:n_basis , k ) ; k=1,n_kpoints ) </tt>
+
+  <dt> <b>h0nl</b>
+    <dd> Orbital matrices: non-local ps-potl reference Hamiltonian <br>
+         <tt> ( ps_potl( 1:n_basis , 1:n_basis , k ) ; k=1,n_kpoints ) </tt>
+
+  <dt> <b>h0exc</b>
+    <dd> Orbital matrices: Exc (xc energy density) part  of reference Hamiltonian <br>
+         <tt> ( Exc_ref( 1:n_basis , 1:n_basis , k ) ; k=1,n_kpoints ) </tt>
+
+  <dt> <b>h0vxc</b>
+    <dd> Orbital matrices: Vxc (xc potential) part of reference Hamiltonian <br>
+         <tt> ( Vxc_ref( 1:n_basis , 1:n_basis , k ) ; k=1,n_kpoints ) </tt>
+
+  <dt> <b>neb_efrc</b> (ASCII)
+    <dd> Keyword driven file that maintains running status of NEB calculation
+
+  <dt> <b>s</b>
+    <dd> Orbital matrix: overlap matrix <br>
+         <tt> ( overlap( 1:n_basis , 1:n_basis , k ) ; k=1,n_kpoints ) </tt>
+
+  <dt> <b>set0</b>
+    <dd> Complicated contents from setup phase that is used only
+         in the event of a restart
+
+  <dt> <b>stat</b> (ASCII)
+    <dd> Keyword-driven file that maintains current status of calculation
+         for restart
+
+  <dt> <b>vec</b>
+    <dd> Orbital matrices: eigenvectors <br>
+         <tt> ( eigvec( 1:n_basis , 1:n_state , k ) ; k=1,n_kpoints ) </tt> <br>
+         Note: this is real*8 for a single k-point gamma point calculation,
+         otherwise double complex.
+
+  <dt> <b>vxyz</b> (ASCII)
+    <dd> Maintains restart data for molecular dynamics
+         - velocities, positions, thermostat info, ...
+
+  </dl>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest File Manual">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  April, 21, 2015  <!-- lcao.geom_in -->
+</font>
+
+</font>
+</body>
+</html>

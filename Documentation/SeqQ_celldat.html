@@ -1,0 +1,203 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest input - Cell optimization </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest input: Cell optimization</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">   Overview</a>
+<li><a href="#inputs">  Input options</a>
+<li><a href="#trouble"> Troubleshooting</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2> Overview </h2>
+
+This page gives a description of input section that controls and
+modifies how a cell relaxation is done.
+The code does a fully general cell relaxation via stress-elimination,
+enforcing all user-specified symmetry, for 1D, 2D, and bulk 3D systems.
+The cell relaxation input section is optional; all the user need do
+is add a "<tt>do cell</tt>" instruction in the
+<a href="SeqQ_runopt.html">command options</a> and the code will
+automatically attempt to relax the cell shape to give a cell with a
+zero stress tensor.
+
+<p>
+The default unit for the cell relaxation section is GPa for bulk 3D,
+10<sup>-7</sup> N/m for 1D, 10<sup>+2</sup> N/m<sup>2</sup> for 2D.
+
+<p>
+Current requirements for use of cell optimization (as of version 2.65):
+<ul>
+  <li> atomic coordinates must be in LATTICE units
+  <li> no scaling functions are allowed in the input
+</ul>
+
+<hr>
+<a name="inputs"></a>
+<h2> Input options </h2>
+
+The cell parameter input section can appear anywhere in the "run phase"
+section of the input file, begins with a "<tt>cell parameter</tt>" keyword
+and ends with a "<tt>end cell relaxation</tt>" keyword.
+<p>
+The following are the common input keywords in this section.
+All the keywords are optional, and can appear in any order within this section.
+The keywords must be left-justified, but all data input is free-format.
+
+<font face="courier"><tt>
+<dl>
+
+<dt><b> cell optimization data </b> - begin cell opt input section
+  <dt>  ...
+
+<dt><b> ucsteps </b>- number of cell steps
+  <dd><i>   n_step_uc </i>
+
+<dt><b> uchistory </b>- max cell steps to include in blending history
+  <dd><i>   n_hist_uc </i>
+
+<dt><b> uc_convergence </b> - max stress (GPa) convergence criterion
+  <dd><i>   stress_conv </i>
+
+<!-- Still in code, but made redundant by "constraint
+<dt><b> isotropic </b> - scaled isotropic volume optimization only (new to 2.62)
+ -->
+
+<dt><b> constraint </b> - specify <i><a href="#const">type of constraint</a></i>
+                          on cell relaxation (2.65)
+    <i> ucconstraint </i>
+    where uconstraint=[isotropic|vfixed|xrelax|xfixed|yrelax|yfixed|zrelax|zfixed]
+
+<dt><b> pressure </b> - external pressure (GPa)
+  <dd><i>   P </i>
+
+<dt><b> uniaxial_pressure </b> - external <i>x,y,z</i> axial pressures
+  <dd><i>   P_x P_y P_z </i>
+
+<dt><b> stress </b> - external stress (ndim X ndim symmetric tensor)
+  <dd><i>   s(1,1) s(2,1) s(3,1) <br>
+            s(1,2) s(2,2) s(3,2) <br>
+            s(1,3) s(2,3) s(3,3)      </i>
+
+<dt><b> ucmethod </b> - method for stress elimination
+  <dd><i>   method_uc </i> (BROYDEN or STEEPEST)
+
+<dt><b> str_broyden </b> - cutoff for switch to broyden (GPa)
+  <dd><i>   stress_broy  </i>
+
+<dt><b> bulk_modulus </b> - (in GPa; can improve initial cell update)
+  <dd><i>   B  </i>
+
+<dt>         ...
+
+<dt><b> end cell optimization </b> - end of cell opt input section
+
+</dl>
+</tt></font>
+
+<hr>
+<a name="details"></a>
+<h2>Details</h2>
+<ul>
+<li><b>Important</b>: The external stress is input as a 2x2 matrix for a
+2D (slab) problem and 1x1 in a 1D-chain problem.
+<li> The default method for cell relaxation is a combination method:
+starts with STEEPEST (descent) and switches to BROYDEN
+when the maximum stress goes below <i>stress_broy</i>.
+<li> Choose, at most, one of (pressure, uniaxial, stress) - all modify the same
+external stress tensor, and, used in combination, will do so unpredictably.
+</ul>
+
+<a name="consts"></a>
+<h2>Types of cell relaxation constraints</h2>
+The code has some simple optimizations available.
+The isotropic constraint is the most immediate useful---one can do a c/a study for hcp, for example.
+The volume-fixed shape optimization is a little crude, and therefore might not be perfectly clean.
+The axial constraints are straightforward for orthorrhambic cells,
+but will be less useful otherwise.
+<ol>
+<li><tt>isotropic</tt> - does a shape conserving volume optimization of the cell.
+<li><tt>vfixed</tt>    - does a volume-conserving cell-shape optimization.
+<li><tt>Ufixed</tt>    - for U=(x,y, or z), does a cell optimization conserving the U axial dimension
+<li><tt>Urelax</tt>    - for U=(x,y, or z), does a cell optimization relaxing the U axial dimension,
+                         but keeps the other axial dimensions fixed
+</ol>
+
+<hr>
+<a name="trouble"></a>
+<h2>Troubleshooting</h2>
+
+<dl>
+<dt> The cell shape and stress are converging very slowly.
+  <dd> The calculation may be making small steepest descent steps.
+       The best option depends on the situation.  Giving a smaller
+       <b>bulk_modulus</b> (default ~100) will expand the first cell
+       update step size (and subsequent step sizes).  If the stress is
+       <i>decreasing,</i> then the calculation is likely in a basin
+       (and converging) and stuck doing small steepest descent steps.
+       If the stress is monotonically decreasing from the beginning,
+       select BROYDEN as the <b>ucmethod</b>, or modify the stress
+       (using <b>str_broyden</b>) at which the default combination
+       method switches from steepest descent to Broyden. <br>
+       Note: with new cell optimizer (2.65), the cell relaxation should be better behaved.
+<dt> The cell "blew up" on the first cell update step.
+  <dd> Increase the <b>bulk_modulus</b> input (default ~100)
+       to reduce the step size on the first cell update.
+<dt> Later (after the first step) the cell "blew up".
+  <dd> If you are not in a potential well, the second derivative matrix might
+       be ill-behaved and Broyden will fail. Try using STEEPEST as the
+       minimization method (starting with the last "good" cell shape).
+<dt> The minimization stalls and the cell will not converge further.
+  <dd> Numerical noise - the convergence criterion might be smaller than the
+       inaccuracy in the computed stress.  Tighten force convergence
+       criterion, and/or use a denser grid (to get more accurate stress).
+</dl>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Cell Optimization">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> January 17, 2014  <!-- cell constraints  -->
+</font>
+
+</font>
+</body>
+</html>

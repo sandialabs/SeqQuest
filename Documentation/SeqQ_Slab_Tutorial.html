@@ -1,0 +1,1636 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Slab Surface Tutorial </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>Slab surface tutorial for SeqQuest: CO/Ru(0001)</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">             SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html">     Input<br> Manual</a> </th>
+   <th> <a href="SeqQ_Cluster_Tutorial.html"> Cluster<br> Tutorial</a> </th>
+   <th> <a href="SeqQ_Bulk_Tutorial.html">    Bulk<br> Tutorial</a> </th>
+   <th> <a href="SeqQ_NEB_Tutorial.html">     NEB<br> Tutorial</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#intro">Introduction</a>
+<li><a href="#eg_basic"> Examples</a>
+<ol>
+<li><a href="#eg_basic"> Example: A basic input file</a>
+<li><a href="#eg_khex" > Hexagonal symmetries and BZ sampling</a>
+<li><a href="#eg_fcnal"> Picking a density functional (and spin)</a>
+<li><a href="#eg_sym"  > Symmetry: Point groups</a>
+<li><a href="#eg_scalu"> Scaling functions I: periodic scaling</a>
+<li><a href="#eg_scalz"> Scaling functions II: direction-specific</a>
+<li><a href="#eg_scf"  > SCF parameters</a>
+<li><a href="#eg_relax"> Atomic relaxation</a>
+<li><a href="#eg_geom" > Relaxation parameters</a>
+<li><a href="#eg_latt" > Lattice coordinates</a>
+<li><a href="#eg_cell" > Cell optimization</a>
+<li><a href="#eg_clean"> Clean relaxed slab</a>
+<li><a href="#eg_adatm"> Adsorbed atoms</a>
+<li><a href="#eg_alias"> Aliasing atom types</a>
+<li><a href="#eg_relax"> Relaxing the geometry</a>
+<li><a href="#eg_field"> External electric field</a>
+</ol>
+</ul>
+
+<hr>
+<a name="intro"></a>
+<h2>Introduction</h2>
+The purpose of this tutorial is to introduce the user to the effective use
+of the code for two-dimensional slab calculations for the study of surface
+properties of materials.
+This tutorial uses a series of examples used in setting up a calculation
+culminating in the adsorption CO on the Ru(0001) surface.
+<p>
+It will be helpful (but not necessary) in the following that the user
+already be somewhat familiar with use of the code for 3D bulk calculations
+(see the <a href="SeqQ_Bulk_Tutorial.html"> Bulk Tutorial</a>).
+The appropriate lattice parameters to use in the surface plane are dictated
+by the corresponding bulk lattice parameters theoretically computed in the
+bulk material using the same level of approximation, so that 3D bulk
+calculations are a natural prerequisite to any 2D slab calculation to study
+chemistry at the surface of a material.
+<p>
+Two-dimensional slab calculations have special issues to consider in
+comparison to calculations for bulk materials, because the slab is periodic
+in two dimensions and is finite in one.  The code must treat the boundary
+conditions differently in the periodic vs. the non-periodic directions.
+In addition, the code runs a formally a supercell calculation, treating a slab
+calculation as an infinite series of slabs separated by vacuum, and needs
+to be told where the "vacuum boundary" is in order to set up the boundary
+conditions correctly.  These needs impose special requirements on a slab
+calculation that are reflected in the input conventions described below.
+First, note that the periodic directions of the slab unit cell must be in the
+<i>x-y</i> plane (the first two primitive lattice vectors), and that the
+third lattice vector (which must be specified) must be normal to the slab
+(i.e. along the <i>z</i>-axis).
+Second, while the code is formally a supercell code, and therefore subject
+to supercell effects such as the interaction between the planar dipoles of
+different slab images, Quest <i>automatically</i> and <i>exactly</i>
+eliminates the dipole interaction using the Local Moment CounterCharge (LMCC)
+method:<br>
+<tt> "Local electrostatic moments and periodic boundary conditions",<br>
+     P.A. Schultz,  Phys. Rev. B 60, 1551 (1999)</tt><br>
+resulting in slabs that are Coulombically isolated from one another.
+With a localized basis set, that does not cross supercell boundaries,
+this means that the calculation does indeed represent an isolated slab.
+
+<h4>Units</h4>
+
+The default units for energy are Rydberg
+(1 Rydberg = 0.5 Hartree = 13.605 eV),
+and for distances are bohr (1 bohr = 0.52918 Ang = 0.052918 nm).
+All input coordinates will be in these units, though one can use
+the scaling functions in the code to aid in the conversions.
+
+<h4>Input files</h4>
+
+The code uses one main input file that the user must construct.
+Atom (potential+basis) files, which will need to be listed
+in the input file, can be obtained from the atom libraries.
+The input file is a text-rich keyword-driven document that, once
+constructed, is self-documenting.  The input is a sequence of
+keyword lines with the indicated data on following lines.
+Only the first few (6 or 8) characters of the keyword line are significant.
+The remainder of a keyword line can be used for additional documentation.
+The data itself, in general, is free-format.
+The input in the <a href="SeqQ_setdata.html"> setup data</a>
+section is highly structured, and requires its input in a very
+specific order.  Other sections take their data in any order.
+If you miss putting something in the right place in the input,
+not to worry.  The code will very happily process the input file,
+and stop when it cannot find required input in the right place.
+It echoes the input file as it reads it, and will politely tell
+you what it was looking for when it runs into a problem.
+Interspersed among the required inputs, are a variety of
+usually invisible optional input sections.  The code uses a
+variety of defaults that can be overridden in the input file.
+The use of many optional inputs will be illustrated in the tutorial.
+
+
+<hr>
+<a name="eg_basic"></a>
+<h2>Example: A basic input file</h2>
+
+Illustrated in this first example is a very basic file for doing a
+7-layer Ru(0001) slab calculation (i.e. the hexagonal surface of
+obtained by cleaving along the basal plane of bulk hcp Ru).
+In preparation to setting up this calculation, we had done a 3D bulk
+calculation for hcp Ru to determine the bulk lattice parameters
+(using the cell optimization capability of the code) using the same
+flavor of density functional theory we will be using for the slab
+calculations, the Perdew/Zunger parameterization of the Ceperley/Alder
+electron gas results (CAPZ) within LDA.  Using a double-zeta-d basis
+for the Ru atom (ru2.atm in the current library), and a k-point
+sample of 12x12x8 in the bulk Brillouin Zone, the theoretical lattice
+parameters are a=5.025 bohr and c=7.94 bohr, and we use these values
+to construct our initial slab as seven unrelaxed layers cleaved from the
+bulk material.
+<p>
+<b>Important:</b> While a calculation with this input file will run to
+completion, this input file is flawed and would not be a viable production
+calculation because of an incorrect use of the Brillouin Zone sampling,
+which will be discussed in the next example.
+
+<h4><a href="SeqQ_runopt.html">Command options</a></h4>
+
+The input file begins with a sequence of instructions to the code about
+the sort of calculation it will be doing.  In this example, we will
+"<tt>do</tt>" a "<tt>setup</tt>" (the iteration independent integrals),
+and "<tt>do iters</tt>" (self-consistency), but "<tt>no force</tt>"
+and <tt>no relaxation</tt>.  The "<tt>setup data</tt>" is the instruction
+to the code to read the data that describes the system.  Please do
+not try to "<tt>do iters</tt>" with "<tt>no setup</tt>"!
+
+<h4><a href="SeqQ_setdata.html">Setup phase data</a></h4>
+
+This section begins with a title line(s).
+The keyword "<tt>notes</tt>" signals that the next line is a text line
+that describes the nature of the problem.
+The keyword "<tt>end_notes</tt>" signals the end of the title section.
+The <tt>notes</tt> keyword and notes section are optional, but highly encouraged.
+Since the entire input file will be echoed into the output listing file,
+this provides a useful record of the nature of the calculation.
+<p>
+The "<tt>dimension</tt>" statement is the first required data in the input.
+We are doing a 2-dimensional slab problem.
+If we were doing a molecular system, we would enter a "0",
+or when we did the bulk hcp Ru problem before this slab calculation,
+we would have entered a "3" here.
+<p>
+The next required input is "<tt>primitive lattice</tt>" - supercell vectors.
+The periodic directions <i>must</i> be in the <i>x-y</i> plane, and the first
+two lattice vectors define the (1x1) cell for the (0001) surface of Ru.
+This surface is hexagonal, and we use the bulk theoretical lattice
+parameter a=5.025, and we start with the bulk interlayer spacing of
+7.94 bohr.
+<p>
+In a 2-D slab calculation, the third lattice vector is the non-periodic
+direction and <i>must</i> be along the <i>z</i>-axis, normal to the slab plane.
+This lattice vector must be large enough so that the densities from the
+different periodic images of the slab do not interact.
+The effective range of the density about any atom is typically between
+9-12 bohr (smaller for "hard" atoms like O, larger for metals), so that
+our lattice vector should be at least our slab thickness (3x7.94=~24 bohr)
+plus the range of the density on either side (2 x 11.0 used here = ~22) for
+a total of 46.0 bohr.  I'll choose 48.0 to have a nice "round" number for
+the grid interval ...
+<p>
+The next required input is "<tt>grid dimensions</tt>".
+The code evaluates many of its integrals on a regular space (fft) grid.
+This regular grid is defined by taking the primitive lattice vectors,
+and dividing them into grid intervals.
+Here we use 15x15 in the plane, for a grid spacing of 0.335/point, and
+150 grid intervals along the third lattice vector, a spacing of 0.320/point.
+The more grid intervals, the more accurately the integrals are evaluated,
+but, also, the more expensive the calculation.  A general rule of thumb:
+you want spacing between points of 0.30-0.40 bohr for most systems,
+and 0.20-0.30 for finer accuracy in systems containing "hard" atoms.
+Hard atoms include late first row atoms like N, O, F,  or late 3d atoms.
+Here we have a Ru slab, relatively soft, but later we will be adsorbing CO
+on the surface, which will require a denser mesh for the same accuracy.
+For a hexagonal slab, it is a good idea to use a grid dimension
+in the plane that is divisible by three, so that the various high-symmetry
+points in the surface (i.e., atop, hcp and fcc hollows) are at the same
+position with respect to the grid.
+<p>
+The next required input is the number of "<tt>atom types</tt>".
+For the clean slab there is only one type, the Ru.  Later in this tutorial,
+we will add carbon and oxygen for a total of three atom types.
+The code then requires input to specify the <tt>atom file</tt> to be used
+to describe each atom type, and here we are reading the atom potential/basis
+information from the file "<tt>ru.atm</tt>".
+<p>
+Next, the input requires the <tt>number</tt> of atoms in the unit cell (7),
+and then a list of each "<tt>atom, type, and position</tt>".
+The arguments for an atom input are the atom index (the order of the atom in
+the list, #1-#7 here), which type (in the order in which the types were listed
+above), and the positions of the atoms in Cartesian coordinates (in bohr).
+Note that the slab is centered about Z=0.  The
+code internally places the Z=0 position at the center of the supercell, so
+that the outer edges of the supercell is defined as vacuum.  The code detects
+if the atoms and their density impinge on the cell boundary - giving a warning,
+or even stopping with an error message if the atoms are much to close to
+a vacuum boundary.
+<p>
+The final required input in the setup section (for a periodic
+calculation) is definition of the Brillouin Zone sampling.
+For molecular calculations this is unnecessary - one has only real
+integrals, or the "gamma-point", to worry about.
+In a (periodic) slab calculation, the Schroedinger equation generally
+needs to be solved for a sampling of points in reciprocal space.
+It is possible to input the k-point sampling as an explicit list of k-vectors
+and their weights (using a different keyword/data sequence than shown here),
+but this example takes advantage of an optional feature to automatically
+generates a simple k-point sample.
+The "<tt>kgrid </tt>" keyword tells the code to generate a regular mesh
+in reciprocal space, and here we specify an 6x6 grid in the
+<i>x-y</i> plane and <i>must</i> use a "0" for the non-periodic direction.
+A sample with just the gamma-point would be defined by 0x0x0.
+The <tt>kgrid</tt> command generates this grid, and offsets this grid from
+the reciprocal space origin (i.e., the gamma point) by (1/2,1/2,0) in
+the reciprocal space mesh, i.e., the body-centered position.
+<p>
+The final, required statement in the setup phase section is
+the "<tt>end setup phase</tt>" line.
+
+<h4><a href="SeqQ_rundata.html">Run phase data</a></h4>
+
+The next section begins with the line "<tt>run phase</tt>" and ends
+with the line "<tt>end run phase</tt>", and
+allows you to modify parameters that affect the run (SCF)
+phase of the calculation.  In this example, we modify the
+convergence criterion to be 0.0005.  This criterion does NOT
+refer to the convergence of the energy in the SCF cycle, but
+rather refers to the maximum change in an Hamiltonian matrix
+element (integrals between basis functions over potentials).
+The value specified here will converge the total energy to
+roughly 1.d-6 Ry for this problem, but this will vary between
+different systems (e.g., a covalent system with a big energy
+gap will converge differently than a metallic system).  Note
+that the convergence criterion is an optional parameter, and
+that the code will provide a default if you do not override
+it with this input.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+primitive lattice vectors
+  5.0250     0.000000000    0.00
+  2.5125     4.351777654    0.00
+  0.0000     0.000000000   48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector (cleaved bulk positions)
+   1    1    2.5125     1.450592551   -11.91
+   2    1    0.0000     0.000000000    -7.94
+   3    1    2.5125     1.450592551    -3.97
+   4    1    0.0000     0.000000000     0.00
+   5    1    2.5125     1.450592551     3.97
+   6    1    0.0000     0.000000000     7.94
+   7    1    2.5125     1.450592551    11.91
+kgrid
+ 12 12 0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_khex"></a>
+<h2>Hexagonal symmetries and BZ sampling</h2>
+
+In the previous we mentioned that there was a problem with input file.
+The problem, of course, lies in the Brillouin Zone sampling generated by the
+"<tt>kgrid </tt>" command and the fact that we have a hexagonal system.
+"Of course" because this is the same issue you would have dealt with
+in setting up the hcp bulk Ru calculation in preparation for the surface
+slab calculation.
+This command, by construction, offsets the grid of k-points to a have the
+gamma-point at the body-centered position, which, for a hexagonal system,
+is a reciprocal space grid that is not symmetric about the gamma point.
+For cubic and many other systems, a k-sample offset from gamma is more
+efficient.  However, for hexagonal systems, the resulting BZ mesh is not
+symmetric about the gamma point.
+To preserve the symmetry, we must not offset the k-space grid from the
+gamma-point in the <i>x-y</i> plane, and changing the "<tt>kgrid</tt>" command
+to "<tt>kgrid2</tt>" accomplishes this.
+<p>
+In addition, note that we have expanded our input notes on this system
+and we have added two line of notes.
+This method can be used to have up to 20 lines of notes.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Bulk LDA hcp Ru: a0=5.025 bohr=2.659 A, c/a=1.580 (k=12x12x8)
+ Example: hex cell needs special hex Brillouin Zone sample: "kgrid2"
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+primitive lattice vectors
+  5.0250     0.000000000    0.00
+  2.5125     4.351777654    0.00
+  0.0000     0.000000000   48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1    2.5125     1.450592551  -11.91
+   2    1    0.0000     0.000000000   -7.94
+   3    1    2.5125     1.450592551   -3.97
+   4    1    0.0000     0.000000000    0.00
+   5    1    2.5125     1.450592551    3.97
+   6    1    0.0000     0.000000000    7.94
+   7    1    2.5125     1.450592551   11.91               <b>
+kgrid2                                                    </b>
+ 12 12  0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_fcnal"></a>
+<h2>Picking a density functional (and spin)</h2>
+
+By default, the code runs a spin-restricted LDA calculation, using the
+Perdew-Zunger parameterization of the Ceperley-Alder electron gas results
+(CAPZ).  However, the code is capable of spin-polarized and GGA
+calculations, too.  Add the "<tt>functional</tt>" keyword between
+the <tt>notes</tt> section and <tt>dimension</tt> statement, and select the
+desired functional.  The <a href="SeqQ_setdata#dftflavor"> available
+functionals </a> include: CAPZ, LDA (which defaults to CAPZ),
+PBE, PW91, BLYP and GGA (which defaults to PBE).
+Note that atom files are functional-specific.  However, the code does
+not check that atom files and calculations be the same flavor of DFT.
+It is possible to use PBE atoms in PW91 calculations, for example, and
+get good results. However, mixing functionals (atoms and calculations)
+is not advised, and mixing GGA and LDA is dangerous.
+Note also that if you change functionals in the slab calculations,
+you should also change the surface lattice parameters to conform with
+the theoretical bulk lattice parameter appropriate to that new functional.
+Since this example simply made explicit the default LDA here, we kept the
+same lattice parameter.
+<p>
+We did not select spin polarization in this slab example,
+but in the general case, to invoke spin, one specifies a spin-polarized
+functional.  All current DFT functionals are spin-capable.
+The <a href="SeqQ_setdata.html#dftflavor"> valid choices </a> include:
+LDA-SP, CAPZSP, PBE-SP, PW91SP, etc.
+If one specifies a spin polarized functional, additional input is *required*
+immediately following the functional. The keyword "<tt>spin polarization</tt>"
+with the net spin polarization must be given.  The spin polarization is in
+units of excess electrons of majority spin, must be non-negative (it can
+be zero), but need not be an integer.
+For example, an LDA hydrogen atom (or a molecule with a single dangling bond)
+<pre>
+functional
+ LDA-SP
+spin polarization
+ 1.0000
+</pre>
+will have a polarization of exactly one, i.e., one more electron of majority
+spin than minority spin.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Example: specify fcnal as Perdew/Zunger param of Ceperley/Alder (=LDA)
+end_notes                                                               <b>
+functional
+ CAPZ                                                                   </b>
+dimension of system (0=cluster ... 3=bulk)
+ 2
+primitive lattice vectors
+  5.0250     0.000000000     0.00
+  2.5125     4.351777654     0.00
+  0.0000     0.000000000    48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1    2.5125     1.450592551   -11.91
+   2    1    0.0000     0.000000000    -7.94
+   3    1    2.5125     1.450592551    -3.97
+   4    1    0.0000     0.000000000     0.00
+   5    1    2.5125     1.450592551     3.97
+   6    1    0.0000     0.000000000     7.94
+   7    1    2.5125     1.450592551    11.91
+kgrid2
+ 12 12  0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_sym"></a>
+<h2>Symmetry</h2>
+
+Our slab has symmetries, and our calculation should take advantage of it.
+Around the origin defined in the atomic coordinates, we have a three-fold
+rotation (about the <i>z</i>-axis), and a number of reflection planes.
+The code does not (yet) find the symmetries automatically from the input
+coordinates, nor can you tell it the space group and have it automatically
+generate a crystal.  You must tell it explicitly what symmetries to use.
+We build symmetry into our calculation using the "<tt>symops</tt>" keyword.
+This is the number of symmetries which we use to define the symmetry group.
+Then we provide the "<tt>definitions</tt>" of these symmetry elements.
+Symmetries are defined by seven parameters: an integer and two three-vectors.
+The integer defines the nature of the symmetry, the first three-vector the
+axis of that symmetry, and the final three-vector is a translation vector
+which we will ignore - and set to (0,0,0) - for now.
+The integer describes the order of a rotation, an inversion,
+or a reflection, and can take the following valid values:
+<pre>
+  2, 3, 4, 6 = an N-fold rotation
+ -2,-3,-4,-6 = an N-fold rotation followed by inversion
+ -1 = an inversion
+</pre>
+Note that a reflection is equivalent to "-2", or a two-fold
+rotation plus inversion.  The definitions in our example:
+<pre>
+   3  0.0  0.0  1.0    0.0  0.0  0.0
+  -2  1.0  0.0  0.0    0.0  0.0  0.0
+</pre>
+specify a three-fold rotation around (0,0,1), i.e., the <i>z</i>-axis,
+and a rotation around the <i>x</i>-axis plus inversion,
+which is equivalent to a reflection through the <i>y-z</i> plane.
+The code will internally take these symmetry elements and generate a
+full symmetry group.
+<p>
+The code takes advantage of symmetry in two ways.  First, it eliminates
+redundant symmetry-equivalent k-points in the Brillouin Zone sample, and
+reduces the sample to be in the irreducible BZ.  This makes the size of
+the calculation smaller, and therefore faster.  Second, if the calculation
+does forces and a relaxation, it will symmetrize the force calculation
+(in a grid-based calculation, numerical noise may cause the calculation
+to artificially break symmetry) and conserves symmetry in geometry
+updates during an energy minimization calculation/relaxation.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Example: take advantage of hexagonal symmetry about 001 axis (symops).
+end_notes
+functional
+ CAPZ
+dimension of system (0=cluster ... 3=bulk)
+ 2
+primitive lattice vectors
+  5.0250     0.000000000     0.00
+  2.5125     4.351777654     0.00
+  0.0000     0.000000000    48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1    2.5125     1.450592551   -11.91
+   2    1    0.0000     0.000000000    -7.94
+   3    1    2.5125     1.450592551    -3.97
+   4    1    0.0000     0.000000000     0.00
+   5    1    2.5125     1.450592551     3.97
+   6    1    0.0000     0.000000000     7.94
+   7    1    2.5125     1.450592551    11.91
+kgrid2
+ 12 12  0                                                               <b>
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0                                     </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_scalu"></a>
+<h2>Scaling functions I: periodic scaling</h2>
+
+If we wish to modify the surface cell parameters (e.g., because of a changed
+bulk lattice parameter from using a different functional),
+changing all the lattice vectors and all the atomic positions that are
+given in Cartesian coordinates and units of bohr is not convenient.
+You would need to modify every coordinate vector in the input file, a tedious
+process very prone to human error.
+The code provides some simple tools to make this kind of manipulation easier.
+A useful one for slab calculations is the "<tt>scaleu</tt>" command.
+This command (like all the other scaling commands) must appear after
+<tt>dimension</tt> and before <tt>primitive lattice vectors</tt>.
+The "<tt>scaleu</tt>" scales every coordinate in periodic directions by the
+specified value.  Here, we use the <tt>scaleu</tt> command to abstract the
+surface lattice parameter 5.025 from every <i>x-y</i> coordinate, leaving
+the <i>z</i>-coordinate (i.e. the non-periodic direction) unchanged.
+Now, to modify the surface lattice parameter, we need only modify the
+scaling value, and need not touch the various coordinate vectors in the input.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Example: insert periodic scaling factor (a=5.025), and scale coordinates
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2           <b>
+scaleu
+ 5.025       </b>
+primitive lattice vectors
+ <b> 1.0000   0.00000000000 </b>   0.00
+ <b> 0.5000   0.86602540378 </b>   0.00
+ <b> 0.0000   0.00000000000 </b>  48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1  <b>  0.5000     0.28867513459 </b>  -11.91
+   2    1  <b>  0.0000     0.00000000000 </b>   -7.94
+   3    1  <b>  0.5000     0.28867513459 </b>   -4.97
+   4    1  <b>  0.0000     0.00000000000 </b>    0.00
+   5    1  <b>  0.5000     0.28867513459 </b>    3.97
+   6    1  <b>  0.0000     0.00000000000 </b>    7.94
+   7    1  <b>  0.5000     0.28867513459 </b>   11.91
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_scalz"></a>
+<h2>Scaling functions II: direction-specific</h2>
+
+The scaling function "<tt>scaleu</tt>" of the previous example simplified
+the description of the coordinates within the plane.
+However, on occasion it might be useful/convenient to rescale the
+coordinates normal to the slab, e.g., to simplify the interlayer spacings.
+The code has a direction-specific scaling function "<tt>scalez</tt>"
+through which all <i>z</i>-coordinates can be scaled by a specified value.
+It comes immediately after the "<tt>scaleu</tt>" input.  Here, we use this
+scaling to have the interlayer spacing of the bulk slab rescaled to 1.0.
+<p>
+<b>Important:</b> Note that the scaling modifies the atomic coordinates,
+but does NOT modify the non-periodic lattice vector length!
+This is intentional.  The units of the cell vectors in non-periodic
+directions cannot be modified by the scaling functions.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Example: insert z-scaling factor (c/a), and scale z-coordinates
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+scaleu
+ 5.025      <b>
+scalez
+ 3.97       </b>
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00
+  0.0000   0.00000000000  48.00   <b>(NB: not scaled)</b>
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1    0.5000     0.28867513459 <b> -3.0000 </b>
+   2    1    0.0000     0.00000000000 <b> -2.0000 </b>
+   3    1    0.5000     0.28867513459 <b> -1.0000 </b>
+   4    1    0.0000     0.00000000000 <b>  0.0000 </b>
+   5    1    0.5000     0.28867513459 <b>  1.0000 </b>
+   6    1    0.0000     0.00000000000 <b>  2.0000 </b>
+   7    1    0.5000     0.28867513459 <b>  3.0000 </b>
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_scf"></a>
+<h2>SCF parameters</h2>
+
+In this example we show how to modify parameters that are important in the
+self-consistency calculations.  These parameters are modified in the
+<a href="SeqQ_rundata.html"> <tt>run phase</tt> section</a> of the input file.
+The input can be in any order within this section (contrast this with the
+strict order of the input in the setup section).  In the first example,
+the convergence criterion had already been specified.
+Here we also specify the maximum number of iterations for the
+self-consistency step, a "<tt>temperature</tt>" (in Ry) for level occupations
+(fermi-broadened, this is only really important for metallic systems,
+not systems with a significant gap.  It aids in convergence in systems
+with many levels near the fermi level, i.e., metals),
+and an initial "<tt>blend ratio</tt>".  The blend parameter can occasionally
+aid convergence.  It sets the proportion of output potential to mix into
+the input potential after the first step of the self-consistency cycle
+(after the first cycle, a modified Broyden blending scheme updates
+the potential).  It must take values between zero and one.
+There are other parameters which are also accessible from
+the input file, but these are the most commonly needed.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Example: add various interesting scf options
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+scaleu
+ 5.025
+scalez
+ 3.97
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00
+  0.0000   0.00000000000  48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1    0.5000     0.28867513459  -3.0000
+   2    1    0.0000     0.00000000000  -2.0000
+   3    1    0.5000     0.28867513459  -1.0000
+   4    1    0.0000     0.00000000000   0.0000
+   5    1    0.5000     0.28867513459   1.0000
+   6    1    0.0000     0.00000000000   2.0000
+   7    1    0.5000     0.28867513459   3.0000
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data                                           <b>
+iterations - maximum number of scf iterations allowed
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio - initial blend of input/output potential in scf
+ 0.30                                                          </b>
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_relax"></a>
+<h2>Atomic relaxation</h2>
+
+In our example of the slab, the atoms will certainly wish to move
+from their bulk-terminated positions at the surface.
+Simple enough, to perform a geometry relaxation: turn on a force
+calculation with "<tt>do force</tt>" and use
+"<tt>do relax</tt>" to tell the code to do an energy minimization.
+The calculation will eliminate forces to find equilibrium positions of
+the atoms.
+
+<pre>
+do setup
+do iters     <b>
+do force
+do relax     </b>
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Example: set commands to do atomic relaxation
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+scaleu
+ 5.025
+scalez
+ 3.97
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00
+  0.0000   0.00000000000  48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1    0.5000     0.28867513459  -3.0000
+   2    1    0.0000     0.00000000000  -2.0000
+   3    1    0.5000     0.28867513459  -1.0000
+   4    1    0.0000     0.00000000000   0.0000
+   5    1    0.5000     0.28867513459   1.0000
+   6    1    0.0000     0.00000000000   2.0000
+   7    1    0.5000     0.28867513459   3.0000
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_geom"></a>
+<h2>Relaxation parameters</h2>
+
+The code, by default, will relax all atoms in the problem until the maximum
+force is less than an internally specified force threshold (0.003 Ry/bohr).
+The user can modify how the relaxation is performed in the optional
+<a href="SeqQ_geomdat.html"> geometry section</a> of the input.
+The "<tt>geometry relaxation</tt>" statement begins, and the
+"<tt>end geometry</tt>" statement ends, the section that allows access to a
+variety of parameters that control the relaxation phase of the calculation.
+These inputs can be in any order in the geometry section.
+Here, "<tt>gsteps</tt>" limits the number of geometry steps to 10,
+"<tt>gconv</tt>" sets the force convergence criterion to 0.001 Ry/bohr,
+and we fix the atom in the center of the slab (#4) with "<tt>gfixed</tt>".
+This keyword "freezes" all the atoms in the specified sequence, while
+allowing the others to relaxed.  This keyword can be entered more than
+once to select multiple sequences to be fixed.
+Alternatively, two separate "grelax" commands
+<pre>
+grelax (sets atoms 1,2,3 to be relaxed)
+ 1 3
+grelax (adds atoms 5,6,7 to set to be relaxed)
+ 5 7
+</pre>
+would accomplish the same thing, relaxing
+atoms #1-3 and #5-7 while fixing all others (i.e.#4).
+While either can be used multiple times, they are mutually exclusive,
+and cannot both be used in the same input file.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Example: modify atomic relaxation optimization parameters
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+scaleu
+ 5.025
+scalez
+ 3.97
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00
+  0.0000   0.00000000000  48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1    0.5000     0.28867513459  -3.0000
+   2    1    0.0000     0.00000000000  -2.0000
+   3    1    0.5000     0.28867513459  -1.0000
+   4    1    0.0000     0.00000000000   0.0000
+   5    1    0.5000     0.28867513459   1.0000
+   6    1    0.0000     0.00000000000   2.0000
+   7    1    0.5000     0.28867513459   3.0000
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500                                               <b>
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 10
+gconv  - max force convergence criterion
+ 0.0010
+gfixed - fix atom 4 in place while relaxing everything else
+  4 4
+end geometry relaxation                                 </b>
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_latt"></a>
+<h2>Lattice coordinates</h2>
+
+For some problems, it may be convenient to specify positions of the atoms
+in lattice units rather than Cartesian coordinates.
+The "<tt>coordinates</tt>" keyword, immediately after the <tt>dimension</tt>
+input, and before any scaling input, allows the user to
+switch the coordinate system used for the input of atoms.
+The choice of "<tt>LATTICE</tt>" specifies lattice
+units (as opposed to the default "<tt>CARTESIAN</tt>").
+The atom <i>x-y</i> positions are constructed from the input vector
+(<i>x,y,z</i>)
+by: <i>x</i><b>A</b> + <i>y</i><b>B</b>
+where <b>A</b>, <b>B</b>, and <b>C</b> are the primitive lattice vectors.
+<b> Important note</b>: for a slab (ndim=2) calculation, only the periodic
+<i>x-y</i> coordinates of the atoms are converted to lattice coordinates.
+The <i>z</i>-lattice vector is totally unaffected (since this is not a
+periodic direction).
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Example: transform coordinates into lattice units
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2            <b>
+coordinates
+ LATTICE      </b>
+scaleu
+ 5.025
+scalez
+ 3.97
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00
+  0.0000   0.00000000000  48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector - converted to lattice units
+   1    1  <b>  0.333333333333   0.333333333333 </b> -3.0000
+   2    1  <b>  0.000000000000   0.000000000000 </b> -2.0000
+   3    1  <b>  0.333333333333   0.333333333333 </b> -1.0000
+   4    1  <b>  0.000000000000   0.000000000000 </b>  0.0000
+   5    1  <b>  0.333333333333   0.333333333333 </b>  1.0000
+   6    1  <b>  0.000000000000   0.000000000000 </b>  2.0000
+   7    1  <b>  0.333333333333   0.333333333333 </b>  3.0000
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 10
+gconv  - max force convergence criterion
+ 0.0010
+gfixed - fix atom 4 in place while relaxing everything else
+  4 4
+end geometry relaxation
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_cell"></a>
+<h2>Cell optimization</h2>
+
+The code as able to do cell shape optimization automatically for all
+LDA and GGA (and spin-polarized GGA stress is completed as of v2.57)
+calculations, for any dimension of periodicity.
+In fact, one can equilibrate at zero pressure, to a fixed non-zero pressure,
+to a uniaxial stress, or even a fully general stress tensor!
+<p>
+For this Ru slab example, you would not want to do such a cell optimization
+as the cell parameters are <i>determined</i> by the bulk lattice parameter.
+This example is for illustration purposes only, to show how one would do a
+2D cell optimization for a system where such an optimization might be desired,
+e.g., a single graphite sheet.
+<p>
+To invoke cell optimization, add "<tt>do cell</tt>" to the instructions at
+the beginning of the input.  The optional <a href="SeqQ_celldat.html">
+cell section </a>, beginning with "<tt>cell optimization</tt>" and
+ending with "<tt>end cell</tt>", allows some control over cell optimization.
+This is illustrated here by setting the unit cell convergence threshold
+(uc_conv) to a maximum stress of 0.01 x 10^2 N/m^2.
+<p>
+<b> Important: </b> Cell optimization requires:
+<ul>
+  <li> Coordinates be in LATTICE units
+  <li> no scaling functions be used (i.e. all scaling is 1.0) <br>
+       (remember to install scaling directly into lattice vectors (bohr).
+  <li> Units in 2D are 10^2 N/M^2, vs. GPa for bulk 3D.
+</ul>
+
+<pre>
+do setup
+do iters
+do force
+do relax   <b>
+do cell    </b>
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, unrelaxed cleaved bulk positions
+ Example: turn on cell optimization (2D)
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2                                   <b>
+coordinates
+ LATTICE
+primitive lattice vectors
+  5.0250     0.000000000    0.00
+  2.5125     4.351777654    0.00
+  0.0000     0.000000000   48.00     </b>
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1    0.333333333333   0.333333333333  -3.0000
+   2    1    0.000000000000   0.000000000000  -2.0000
+   3    1    0.333333333333   0.333333333333  -1.0000
+   4    1    0.000000000000   0.000000000000   0.0000
+   5    1    0.333333333333   0.333333333333   1.0000
+   6    1    0.000000000000   0.000000000000   2.0000
+   7    1    0.333333333333   0.333333333333   3.0000
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 10
+gconv  - max force convergence criterion
+ 0.0010
+gfixed - fix atom 4 in place while relaxing everything else
+  4 4
+end geometry relaxation                        <b>
+cell optimization
+uc_conv - stress convergence (in 10^2 N/m^2)
+ 0.01
+end cell                                       </b>
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_clean"></a>
+<h2>Clean relaxed surface</h2>
+
+When we do the clean 7-layer slab relaxation with a double-zeta-d
+basis set for Ru, the code converges to the following relaxed geometry
+after eight steps:
+<pre>
+      1            1            0.5000000000    0.2886751346   -2.9726158569
+      2            1            0.0000000000    0.0000000000   -2.0034384252
+      3            1            0.5000000000    0.2886751346   -1.0077494704
+      4            1            0.0000000000    0.0000000000    0.0000000000
+      5            1            0.5000000000    0.2886751346    1.0077319639
+      6            1            0.0000000000    0.0000000000    2.0033998706
+      7            1            0.5000000000    0.2886751346    2.9725643844
+</pre>
+and gave a total energy for the relaxed cell of <br>
+<tt> FINAL RELAXED ENERGY =     -232.0082242149</tt> <br>
+The small amount of asymmetry in the relaxation on the two sides of the
+slab is negligible, and due to numerical noise.  We could have eliminated this
+asymmetry by adding to the input symmetry the <i>x-y</i> reflection plane,
+but we will not be using that symmetry in the adsorption calculations, and
+omitting that symmetry also gives a useful measure of the numerical noise in
+the calculation (if the asymmetry were more pronounced, we would know that
+something was flawed in the design of the calculation).  For setting up
+the clean relaxed slab which will be our substrate for the adsorption
+studies, we will remove the noise (approximately averaging over the two
+sides of the slab) and put the layers at +/-1.00774, 2.00342, and 2.97259.
+From this we can see that the top layer spacing (d12) reduced by 3.2% and
+d23 decreased by 0.4%, and d34 increased by 0.8% from the bulk values.
+For the purposes of the adsorption calculation, it is useful to remove the
+scaling in the <i>z</i>-direction, so that the relaxed clean slab is given
+by the following input file.  This will be our substrate for adsorption.
+
+<pre>
+do setup
+do iters
+do force
+no relax
+setup data
+notes 
+ Ru(0001) surface: 7-layer slab, fully relaxed clean surface
+ Example: set up a clean substrate system
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+scaleu
+ 5.025
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00
+  0.0000   0.00000000000  48.00
+grid dimensions
+  15 15  150
+atom types
+   1
+atom file
+ ru.atm
+number of atoms in unit cell
+   7
+atom, type, position vector
+   1    1    0.5000     0.28867513459 -11.80118
+   2    1    0.0000     0.00000000000  -7.95358
+   3    1    0.5000     0.28867513459  -4.00073
+   4    1    0.0000     0.00000000000   0.00000
+   5    1    0.5000     0.28867513459   4.00073
+   6    1    0.0000     0.00000000000   7.95358
+   7    1    0.5000     0.28867513459  11.80118
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_adatm"></a>
+<h2>Adsorbed atoms: (1x1) CO/Ru(0001)</h2>
+
+Finally, in this example, we are adsorbing CO onto the clean surface.
+To begin, we are constructing a very dense 1.0 monolayer coverage of
+CO on Ru, with the CO, carbon end down, sitting vertically in an atop site.
+In this configuration, the symmetry of the underlying surface is preserved,
+and we would like to keep this if possible (contrast this with the lowered
+symmetry that one would have if CO were to be placed in a bridge site
+between two surface atoms).
+<p>
+A number of practical issues arise in constructing the calculation
+associated with this physical picture.  First, we must consider the
+effect of the supercell approximation.  If one puts adsorbates on
+one surface of the slab, the total system, adsorbate plus substrate, will,
+in general, have a net dipole.  In a conventional supercell calculation,
+the Coulomb potential at the surface is corrupted by dipole potentials
+from the artificial periodic images of the slab.  To avoid this problem,
+practitioners will frequently cover both surfaces with adsorbates so that
+the slab will have no net dipole, at the cost of a larger calculation.
+In this code, this is NOT necessary as the code automatically and exactly
+removes the artificial dipole arising from the supercell approximation
+using the LMCC (Local Moment CounterCharge) method: <br>
+<tt> "Local electrostatic moments and periodic boundary conditions",<br>
+     P.A. Schultz,  Phys. Rev. B 60, 1551 (1999)</tt> <br>
+(which should be cited in any calculation for a polar surface).
+Hence, we need only place adsorbates on one side of the slab.
+<p>
+We need an initial configuration for the CO on the surface.  We assume for
+setting up this adsorption calculation that we have no helpful information
+(such as experimental data, or other theoretical results) for the various
+bond distances at the surface (Ru-CO RuC-O).  For the initial C-O distance
+at the surface, we use the equilibrium bond distance computed for molecular
+CO within LDA: 2.15 bohr (=1.14 Angstrom).  For the initial Ru-CO
+distance, we will use half the Ru-Ru distance (5.025/2=2.5 bohr) and half
+the C-O distance (2.15/2=1.1 bohr) for a total Ru-C distance of 3.6 bohr.
+The top Ru atom at the surface sits at z=11.80118, so that we will place
+the C at 11.80118+3.6=15.40 and our O at z=15.40+2.15=17.55 for the initial
+guess.  We add two atom types, carbon and oxygen, for a total of three types,
+and the appropriate atom files, and add the C and O to our list of atoms
+(for a total of nine atoms) and their initial coordinates.
+<p>
+The final issue is adjustment of the supercell.  After adding the CO in
+the above guess, the oxygen sits at <i>z</i>=+17.55 bohr but our supercell
+spans <i>z</i>=-24.0 to <i>z</i>=+24.0 (48.0/2 around z=0) so that the oxygen
+atom is only 6.45 bohr away from a boundary.  This might pass the internal
+check in the code, but we would really like to have at least 9 bohr to
+a boundary and probably more, as the atoms might move toward vacuum in
+the course of a relaxation.  Hence, we would like to have the supercell
+boundary at least at <i>z</i>=+28.0-30.0 to ensure that the density around the
+oxygen will decay before the supercell (vacuum) boundary.  For this example
+we will choose to set the boundary at +29.12 bohr.  Why such a "strange"
+number?  Because this is an increase of 5.12 bohr which simply extends
+the grid used for the bare slab by an integral number of points (5.12/.32=16
+grid points).
+<p>
+We could increase the cell size by 5.12 bohr on both sides of the slab
+to give to give a total repeat vector of 5.12+48.00+5.12=58.24,
+with the corresponding total grid of 16+150+16=182.
+However, this would be wasteful, as we do not need the extra space on
+the clean side of the slab, just on the adsorbed side.  By default, the code
+puts the coordinate origin (<i>z</i>=0) in the center of the supercell,
+but the code allows the user to shift the default origin through the
+use of the "<tt>origin</tt>" keyword as illustrated below, which
+instructs the code to shift the supercell center to the indicated location.
+The shift we use has the net effect of adding all the increased repeat
+vector on the adsorbed side, keeping fixed the vacuum region on the clean
+side of the slab.  The slab repeat is now 48.00+5.12=53.12, with a new
+grid dimension of 150+16=166.  The offset also happens to be an integral
+number of grid intervals, so that the grids used in the clean slab and
+the adsorbed surface are in registry, i.e., the Ru atoms in the substrate
+have the identical orientation with respect to the regular
+grid they had in the smaller clean slab cell.
+
+<pre>
+do setup
+do iters
+do force
+no relax
+setup data
+notes 
+ Ru(0001) relaxed 7-layer slab surface + (1x1) CO
+ Example: adding CO onto a relaxed Ru surface
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+scaleu
+ 5.025
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00  <b>
+  0.0000   0.00000000000  53.12
+grid dimensions
+  15 15  166
+atom types
+   3                           </b>
+atom file
+ ru.atm                        <b>
+atom file
+ c.atm
+atom file
+ o.atm
+number of atoms in unit cell
+   9                           </b>
+atom, type, position vector
+   1    1    0.5000     0.28867513459 -11.80118
+   2    1    0.0000     0.00000000000  -7.95358
+   3    1    0.5000     0.28867513459  -4.00073
+   4    1    0.0000     0.00000000000   0.00000
+   5    1    0.5000     0.28867513459   4.00073
+   6    1    0.0000     0.00000000000   7.95358
+   7    1    0.5000     0.28867513459  11.80118   <b>
+    8    2   0.5000     0.28867513459  15.40
+    9    3   0.5000     0.28867513459  17.55
+origin
+ 0.0000 0.0000 2.56000                            </b>
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_alias"></a>
+<h2>Aliasing atom types</h2>
+
+Sometimes keeping track of atoms and which atom is which type can be confusing,
+particularly in larger input files with involved configurations.
+The code offers the ability to use named atoms and atom types in the input of
+the configurations, and to alias atom files to those atom types.
+There are two methods to alias the input atom files.  One is explicit,
+as with the the Ru atom below.  You provide the alias name and set it
+equal to the atom file: <tt>Ru = ru.atm</tt>.  Alternatively, the
+code constructs a default from the atom file name, by using the file
+name prefix.
+From <tt>C.atm</tt> it abstracts the alias "<tt>C</tt>".
+From <tt>/library/lda/O.atm</tt> it abstracts the alias "<tt>O</tt>".
+Note that the code ignores the directory specification.
+
+Atom name aliases can be any character strings.
+To use the aliases in the input, simply replace the type <i>numbers</i>
+with the atom/type <i>alias</i>.  Note: this is all or nothing.  Use type
+names only, or use type numbers only.
+
+<pre>
+do setup
+do iters
+do force
+no relax
+setup data
+notes 
+ Ru(0001) relaxed 7-layer slab surface + (1x1) CO
+ Example: aliasing atom types
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+scaleu
+ 5.025
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00
+  0.0000   0.00000000000  53.12
+grid dimensions
+  15 15  166
+atom types
+   3
+atom file      <b>
+ Ru = ru.atm   </b>
+atom file      <b>
+ C.atm         </b>
+atom file      <b>
+ /library/lda/O.atm         </b>
+number of atoms in unit cell
+   9
+atom, type, position vector
+   <b>bot_ru     Ru</b>    0.5000     0.28867513459 -11.80118
+   <b>at2        Ru</b>    0.0000     0.00000000000  -7.95358
+   <b>at3        Ru</b>    0.5000     0.28867513459  -4.00073
+   <b>at4        Ru</b>    0.0000     0.00000000000   0.00000
+   <b>at5        Ru</b>    0.5000     0.28867513459   4.00073
+   <b>sub_ru     Ru</b>    0.0000     0.00000000000   7.95358
+   <b>top_ru     Ru</b>    0.5000     0.28867513459  11.80118
+   <b>ad_carbon  C </b>    0.5000     0.28867513459  15.40
+   <b>ad_h       O </b>    0.5000     0.28867513459  17.55
+origin
+ 0.0000 0.0000 2.56000
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_relax"></a>
+<h2>Relaxing atoms</h2>
+
+To do a geometry relaxation, add a <tt>do relax</tt> in the setup section.
+You can also add a <tt>geometry relaxation<tt> section to modify the state
+of the relaxation, e.g., to
+<ul>
+<li> Change the limit of number of steps using the <tt>gsteps</tt> keyword
+<li> Change the converge criterion (Rydberg/bohr) using the <tt>gconv</tt> keyword.
+<li> Select the method of relaxation (e.g. "ASD" or "BROYDEN") using <tt>gmethod</tt>
+<li> Apply various constraints, here using the <tt>grelax</tt> keyword to choose
+     to relax a sequence of atoms (leaving all other fixed ...
+<li>  ... and as of 2.67, use the atom labels (rather than index to select those atoms
+</ul>
+
+particularly in larger input files with involved configurations.
+The code offers the ability to use named atoms and atom types in the input of
+the configurations, and to alias atom files to those atom types.
+There are two methods to alias the input atom files.  One is explicit,
+as with the the Ru atom below.  You provide the alias name and set it
+equal to the atom file: <tt>Ru = ru.atm</tt>.  Alternatively, the
+code constructs a default from the atom file name, by using the file
+name prefix.
+From <tt>C.atm</tt> it abstracts the alias "<tt>C</tt>".
+From <tt>/library/lda/O.atm</tt> it abstracts the alias "<tt>O</tt>".
+Note that the code ignores the directory specification.
+
+Atom name aliases can be any character strings.
+To use the aliases in the input, simply replace the type <i>numbers</i>
+with the atom/type <i>alias</i>.  Note: this is all or nothing.  Use type
+names only, or use type numbers only.
+
+<pre>
+do setup
+do iters
+do force
+no relax
+setup data
+notes 
+ Ru(0001) relaxed 7-layer slab surface + (1x1) CO
+ Example: aliasing atom types
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+scaleu
+ 5.025
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00
+  0.0000   0.00000000000  53.12
+grid dimensions
+  15 15  166
+atom types
+   3
+atom file      <b>
+ Ru = ru.atm   </b>
+atom file      <b>
+ C.atm         </b>
+atom file      <b>
+ /library/lda/O.atm         </b>
+number of atoms in unit cell
+   9
+atom, type, position vector
+   bot_ru     Ru    0.5000     0.28867513459 -11.80118
+   at2        Ru    0.0000     0.00000000000  -7.95358
+   at3        Ru    0.5000     0.28867513459  -4.00073
+   at4        Ru    0.0000     0.00000000000   0.00000
+   at5        Ru    0.5000     0.28867513459   4.00073
+   sub_ru     Ru    0.0000     0.00000000000   7.95358
+   top_ru     Ru    0.5000     0.28867513459  11.80118
+   ad_carbon  C     0.5000     0.28867513459  15.40
+   ad_h       O     0.5000     0.28867513459  17.55
+origin
+ 0.0000 0.0000 2.56000
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500                      <b>
+geometry relaxation
+gsteps  - limit number of steps to 10
+  10
+gconv   - set the convergence criterion (max force/atom) to 0.001 Ry/bohr
+ 0.001
+gmethod - specify the accelerated steepest descent method to relax
+ ASD
+grelax  - relax the top two layers of Ru and the adsorbed CO
+  sub_ru   ad_h
+end geomtry                    </b>
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_field"></a>
+<h2>External electric field</h2>
+
+As of Version 2.57, the code allows applying an external electric field.
+This is invoked by adding the keyword "<tt>efield</tt>" and the electric
+field vector, after the functional and before the scaling.
+Note that the field cannot have a non-zero component in a periodic
+direction, so that in the 2D slab case, the field must be along
+the <i>z</i>-direction.  The units are Ry/bohr, and the field strength
+here, 0.038893 Ry/au, corresponds to applying a field of 100 MV/cm normal
+to the surface.  The computed forces and stresses computed are fully
+consistent with field, hence, geometry relaxation and cell optimization
+will work properly in the presence of the field.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ Ru(0001) relaxed 7-layer slab surface + (1x1) CO
+ Example: applying an external electric field
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 2
+functional
+ LDA                   <b>
+efield   (Ry/bohr)
+  0.0  0.0  0.038893   </b>
+scaleu
+ 5.025
+primitive lattice vectors
+  1.0000   0.00000000000   0.00
+  0.5000   0.86602540378   0.00
+  0.0000   0.00000000000  53.12
+grid dimensions
+  15 15  166
+atom types
+   3
+atom file
+ Ru = ru.atm
+atom file
+ C.atm
+atom file
+ /library/lda/O.atm
+number of atoms in unit cell
+   9
+atom, type, position vector
+   bot_ru     Ru    0.5000     0.28867513459 -11.80118
+   at2        Ru    0.0000     0.00000000000  -7.95358
+   at3        Ru    0.5000     0.28867513459  -4.00073
+   at4        Ru    0.0000     0.00000000000   0.00000
+   at5        Ru    0.5000     0.28867513459   4.00073
+   sub_ru     Ru    0.0000     0.00000000000   7.95358
+   top_ru     Ru    0.5000     0.28867513459  11.80118
+   ad_carbon  C     0.5000     0.28867513459  15.40
+   ad_h       O     0.5000     0.28867513459  17.55
+origin
+ 0.0000 0.0000 2.56000
+kgrid2
+ 12 12  0
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 100)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  1.0  0.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+<hr>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Slab Tutorial">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> June 12, 2015  <!-- notes/end_notes, alias, relax -->
+</font>
+
+</font>
+</body>
+</html>

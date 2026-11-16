@@ -1,0 +1,1490 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Bulk Tutorial </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>Bulk systems tutorial for SeqQuest: Hexagonal GaN</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">             SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html">     Input<br> Manual</a> </th>
+   <th> <a href="SeqQ_Cluster_Tutorial.html"> Cluster<br> Tutorial</a> </th>
+   <th> <a href="SeqQ_Slab_Tutorial.html">    Slab<br> Tutorial</a> </th>
+   <th> <a href="SeqQ_NEB_Tutorial.html">     NEB<br> Tutorial</a> </th>
+</Tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#intro">Introduction</a>
+<li><a href="#eg_basic"> Examples:</a>
+<ol>
+<li><a href="#eg_basic"> Example: A basic input file</a>
+<li><a href="#eg_khex" > Hexagonal symmetries and BZ sampling</a>
+<li><a href="#eg_fcnal"> Picking a density functional (and spin)</a>
+<li><a href="#eg_sym"  > Symmetry I: Point groups</a>
+<li><a href="#eg_scale"> Scaling functions I: global scaling</a>
+<li><a href="#eg_scalz"> Scaling functions II: direction-specific</a>
+<li><a href="#eg_shift"> Shift coordinates</a>
+<li><a href="#eg_sym2" > Symmetry II: non-symmorphic groups</a>
+<li><a href="#eg_scf"  > SCF parameters</a>
+<li><a href="#eg_relax"> Atomic relaxation</a>
+<li><a href="#eg_geom" > Relaxation parameters</a>
+<li><a href="#eg_latt" > Lattice coordinates</a>
+<li><a href="#eg_strn" > Calculations with strain</a>
+<li><a href="#eg_cell" > Cell optimization</a>
+<li><a href="#eg_alias"> Aliasing atom types</a>
+<li><a href="#eg_label"> labeling atoms</a>
+</ol>
+</ul>
+
+<hr>
+<a name="intro"></a>
+<h2>Introduction</h2>
+The purpose of this tutorial is to introduce the user to the effective use
+of the code for three-dimensional bulk problems.
+This tutorial uses the example of hexagonal gallium nitride to illustrate
+the use of the code for bulk problems.
+The input is rather flexible, and can use a very basic input file,
+but has options that lead to easier manipulation of the calculation in
+increasingly more sophisticated input files.
+This tutorial is presented in the form of a sequence of input files that
+illustrate the use of various features available in the code:
+how to take advantage of symmetries in the system to reduce the size
+of the calculation, how to create Brillouin Zone sampling
+appropriate to the symmetry of the system, how to use
+scaling functions in the input to simplify the description
+of the atom coordinates, etc.
+
+<h4>Units</h4>
+
+The default units for energy are Rydberg
+(1 Rydberg = 0.5 Hartree = 13.605 eV),
+and for distances are bohr (1 bohr = 0.52918 Ang = 0.052918 nm).
+All input coordinates will be in these units, though one can use
+the scaling functions in the code to aid in the conversions.
+
+<h4>Input files</h4>
+
+The code uses one main input file that the user must construct.
+Atom files (potential+basis), which will need to be listed
+in the input file, can be obtained from the atom libraries.
+The input file is a text-rich keyword-driven document that, once
+constructed, is self-documenting.  The input is a sequence of
+keyword lines with the indicated data on following lines.
+Only the first few (6 or 8) characters of the keyword line are significant.
+The remainder of a keyword line can be used for additional documentation.
+The data itself, in general, is free-format.
+The input in the <a href="SeqQ_setdata.html"> setup data</a>
+section is highly structured, and requires its input in a very
+specific order.  Other sections take their data in any order.
+If you miss putting something in the right place in the input,
+not to worry.  The code will very happily process the input file,
+and stop when it cannot find required input in the right place.
+It echoes the input file as it reads it, and will politely tell
+you what it was looking for when it runs into a problem.
+Interspersed among the required inputs, are a variety of
+usually invisible optional input sections.  The code uses a
+variety of defaults that can be overridden in the input file.
+The use of many optional inputs will be illustrated in the tutorial.
+
+
+<hr>
+<a name="eg_basic"></a>
+<h2>Example: A basic input file</h2>
+
+Illustrated in this first example is a very basic file for
+doing a bulk hexagonal GaN calculation.
+<p>
+<b>Important:</b> While a calculation with this input file will run to
+completion, this input file is flawed and would not be a viable production
+calculation because of an incorrect use of the Brillouin Zone sampling,
+which will be discussed in the next example.
+
+<h4><a href="SeqQ_runopt.html">Command options</a></h4>
+
+The input file begins with a sequence of instructions to the code about
+the sort of calculation it will be doing.  In this example, we will
+"<tt>do</tt>" a "<tt>setup</tt>" (the iteration independent integrals),
+and "<tt>do iters</tt>" (self-consistency), but "<tt>no force</tt>"
+and <tt>no relaxation</tt>.  The "<tt>setup data</tt>" is the instruction
+to the code to read the data that describes the system.  Please do
+not try to "<tt>do iters</tt>" with "<tt>no setup</tt>"!
+
+<h4><a href="SeqQ_setdata.html">Setup phase data</a></h4>
+
+This section begins with a title line(s).
+The keyword "<tt>notes</tt>" signals the beginning of the title/notes section
+that describes the nature of the problem.
+The keyword "<tt>end_notes</tt>" marks the end of the title/notes section
+The <tt>notes</tt> keyword and title lines are optional, but highly encouraged.
+Since the entire input file will be echoed into the output listing file,
+this provides a useful output record of the nature of the calculation.
+In this case, we are setting up a bulk hexagonal GaN problem,
+with a=6.13, and a c/a ratio of 1.630714474.
+<p>
+The "<tt>dimension</tt>" statement is the first required data in the input.
+We are doing a 3-dimensional bulk problem.
+If we were doing a molecular problem, we would enter a "0",
+or if we were doing a surface problem using a 2-dimensional slab,
+we would have entered a "2" here.
+<p>
+The next required input is "<tt>primitive lattice</tt>" - supercell vectors.
+Here, we define a unit cell that is hexagonal in the <i>x-y</i> plane
+with a lattice parameter a=6.13 bohr (=3.24 A), and an
+orthogonal repeat vector in the <i>z</i>-direction with c=6.13*c/a.
+<p>
+The next required input is "<tt>grid dimensions</tt>".
+The code evaluates many of its integrals on a regular space (fft) grid.
+This regular grid is defined by taking the primitive lattice vectors,
+and dividing them into grid intervals.
+Here we use a 24x24 grid in the hexagonal plane, and put 36 grid intervals
+along the z-direction.
+The more grid intervals, the more accurately the integrals are evaluated,
+but, also, the more expensive the calculation.  A general rule of thumb:
+you want spacing between points of 0.30-0.40 bohr for most systems,
+and 0.20-0.30 for finer accuracy in systems containing "hard" atoms.
+Hard atoms include late first row atoms like N, O, F,  or late 3d atoms.
+We have nitrogen in our system, and this example has a spacing of
+slightly less than 0.3 bohr.  This can be tuned to the problem.
+If I wanted to compute an energy, a coarser grid might suffice.
+If I wished to evaluate a force or stress, a finer grid might be required.
+For a hexagonal system, it is a good idea to use a grid dimension
+in the plane that is divisible by three, so that the various high-symmetry
+points in the surface (i.e.), atop, hcp and fcc hollows) are at the same
+position with respect to the grid.
+<p>
+The next required input is number of "<tt>atom types</tt>".
+Here, we have only two (Ga and N), and the code requires input to specify the
+"<tt>atom file</tt>" to be used to obtain the atomic potential and basis
+information for each atom type.
+Here, we will read from files "<tt>n.atm</tt>" and "<tt>ga.atm</tt>" for
+nitrogen and gallium, respectively.
+<p>
+Next, the input requires the <tt>number</tt> of atoms in the unit cell (4),
+and then a list of each "<tt>atom, type, and position</tt>".
+The arguments for an atom input are the atom index (the order of the atom in
+the list, #1-#4 here), which type (in the order in which the types were listed
+above), and the positions of the atoms in Cartesian coordinates (in bohr).
+Atom 1 is of the first atom type (i.e., from
+<tt>"n.atm"</tt>), and is at (3.539,0.0,0.0257), and then next atom is
+the second atom type (i.e., from "<tt>ga.atm</tt>"), etc.
+<p>
+The final required input in the setup section (for a periodic
+calculation) is definition of the Brillouin Zone sampling.
+For molecular calculations this is unnecessary - one has only real
+integrals, or the "gamma-point", to worry about.
+In a (periodic) bulk calculation, the Schroedinger equation generally
+needs to be solved for a sampling of points in reciprocal space.
+It is possible to input the k-point sampling as an explicit list of k-vectors
+and their weights (using a different keyword/data sequence than shown here),
+but this example takes advantage of an optional feature to automatically
+generate a simple k-point sample.
+The "<tt>kgrid </tt>" keyword tells the code to generate a regular mesh
+in reciprocal space, and here we specify a 4x4x2 grid in the BZ.
+A k-sample with just the gamma-point would be specified as 0x0x0.
+The <tt>kgrid</tt> command generates this grid, and offsets this grid from
+the reciprocal space origin (i.e., the gamma point) by (1/2,1/2,1/2) in
+the reciprocal space mesh, i.e., the body-centered position.
+<p>
+The final, required statement in the setup phase section is
+the "<tt>end setup phase</tt>" line.
+
+<h4><a href="SeqQ_rundata.html">Run phase data</a></h4>
+
+The next section begins with the line "<tt>run phase</tt>" and ends
+with the line "<tt>end run phase</tt>", and
+allows you to modify parameters that affect the run (SCF)
+phase of the calculation.  In this example, we modify the
+convergence criterion to be 0.0005.  This criterion does NOT
+refer to the convergence of the energy in the SCF cycle, but
+rather refers to the maximum change in an Hamiltonian matrix
+element (integrals between basis functions over potentials).
+The value specified here will converge the total energy to
+roughly 1.d-6 Ry for this problem, but this will vary between
+different systems (e.g., a covalent system with a big energy
+gap will converge differently than a metallic system).  Note
+that the convergence criterion is an optional parameter, and
+that the code will provide a default if you do not override
+it with this input.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+primitive lattice vectors
+  5.308735725    -3.0650     0.000000000
+  0.000000000     6.1300     0.000000000
+  0.000000000     0.0000     9.996279726
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    3.539157150     0.0000     0.025788046
+   2    2    1.769578575     3.0650     1.268818179
+   3    1    1.769578575     3.0650     5.023927909
+   4    2    3.539157150     0.0000     6.266958042
+kgrid
+ 4 4 2
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_khex" ></a>
+<h2>Hexagonal symmetries and BZ sampling</h2>
+
+In the previous we mentioned that there was a problem with the input file.
+The problem lies in the Brillouin Zone sampling generated by the
+"<tt>kgrid </tt>" command and the fact that we have a hexagonal system.
+This command, by construction, offsets the grid of k-points to a have the
+gamma-point at the body-centered position, which, for a hexagonal system,
+is a reciprocal space grid that is not symmetric about the gamma point.
+For cubic and many other systems, a k-sample offset from gamma is more
+efficient.  However, for hexagonal systems, the resulting BZ mesh is not
+symmetric about the gamma point.
+To preserve the symmetry, we must not offset the k-space grid from the
+gamma-point in the <i>x-y</i> plane, and changing the "<tt>kgrid</tt>" command
+to "<tt>kgrid2</tt>" accomplishes this.
+<p>
+In addition, note that we have expanded our input notes on this system
+and we have added a second line of notes.
+This method can be used to have up to 20 lines of notes.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: hex cell needs special hex Brillouin Zone sample: "kgrid2"
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+primitive lattice vectors
+  5.308735725    -3.0650     0.000000000
+  0.000000000     6.1300     0.000000000
+  0.000000000     0.0000     9.996279726
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    3.539157150     0.0000     0.025788046
+   2    2    1.769578575     3.0650     1.268818179
+   3    1    1.769578575     3.0650     5.023927909
+   4    2    3.539157150     0.0000     6.266958042       <b>
+kgrid2                                                    </b>
+ 4 4 2
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_fcnal"></a>
+<h2>Picking a density functional (and spin)</h2>
+
+By default, the code runs a spin-restricted LDA calculation, using the
+Perdew-Zunger parameterization of the Ceperley-Alder electron gas results
+(CAPZ).  However, the code is capable of spin-polarized and GGA
+calculations, too.  Add the "<tt>functional</tt>" keyword between
+the <tt>notes</tt> section and <tt>dimension</tt> statement, and select the
+desired functional.  The <a href="SeqQ_setdata.html#dftflavor"> available
+functionals </a> include: CAPZ, LDA (which defaults to CAPZ),
+PBE, PW91, BLYP and GGA (which defaults to PBE).
+Note that atom files are functional-specific.  However, the code does
+not check that atom files and calculations be the same flavor of DFT.
+It is possible to use PBE atoms in PW91 calculations, for example, and
+get good results. However, mixing functionals (atoms and calculations)
+is not advised, and mixing GGA and LDA is dangerous.
+<p>
+Spin polarization is not appropriate for this GaN example,
+but in the general case, to invoke spin, one specifies a spin-polarized
+functional.  All current DFT functionals are spin-capable.
+The <a href="SeqQ_setdata.html#dftflavor"> valid choices </a> include:
+LDA-SP, CAPZSP, PBE-SP, PW91SP, etc.
+If one specifies a spin polarized functional, additional input is *required*
+immediately following the functional. The keyword "<tt>spin polarization</tt>"
+with the net spin polarization must be given.  The spin polarization is in
+units of excess electrons of majority spin, must be non-negative (it can
+be zero), but need not be an integer.
+For example, an LDA hydrogen atom (or a molecule with a single dangling bond)
+<pre>
+functional
+ LDA-SP
+spin polarization
+ 1.0000
+</pre>
+will have a polarization of exactly one, i.e., one more electron of majority
+spin than minority spin.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: change functional to PBE flavor of GGA
+end_notes                                                               <b>
+functional
+ PBE                                                                    </b>
+dimension of system (0=cluster ... 3=bulk)
+ 3
+primitive lattice vectors
+  5.308735725    -3.0650     0.000000000
+  0.000000000     6.1300     0.000000000
+  0.000000000     0.0000     9.996279726
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    3.539157150     0.0000     0.025788046
+   2    2    1.769578575     3.0650     1.268818179
+   3    1    1.769578575     3.0650     5.023927909
+   4    2    3.539157150     0.0000     6.266958042
+kgrid2
+ 4 4 2
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_sym"  ></a>
+<h2>Symmetry I: Point groups</h2>
+
+Our crystal has symmetries, and our calculation should take advantage of it.
+Around the origin defined in the atomic coordinates, we have a three-fold
+rotation (about the <i>z</i>-axis), and a number of reflection planes.
+The code does not (yet) find the symmetries automatically from the input
+coordinates, nor can you tell it the space group and have it automatically
+generate a crystal.  You must tell it explicitly what symmetries to use.
+We build symmetry into our calculation using the "<tt>symops</tt>" keyword.
+This is the number of symmetries which we use to define the symmetry group.
+Then we provide the "<tt>definitions</tt>" of these symmetry elements.
+Symmetries are defined by seven parameters: an integer and two three-vectors.
+The integer defines the nature of the symmetry, the first three-vector the
+axis of that symmetry, and the final three-vector is a translation vector
+which we will ignore - and set to (0,0,0) - for now.
+The integer describes the order of a rotation, an inversion,
+or a reflection, and can take the following valid values:
+<pre>
+  2, 3, 4, 6 = an N-fold rotation
+ -2,-3,-4,-6 = an N-fold rotation followed by inversion
+ -1 = an inversion
+</pre>
+Note that a reflection is equivalent to "-2", or a two-fold
+rotation plus inversion.  The definitions in our example:
+<pre>
+   3  0.0  0.0  1.0    0.0  0.0  0.0
+  -2  0.0  1.0  0.0    0.0  0.0  0.0
+</pre>
+specify a three-fold rotation around (0,0,1), i.e., the <i>z</i>-axis,
+and a rotation around the <i>y</i>-axis plus inversion,
+which is equivalent to a reflection through the <i>x-z</i> plane.
+The code will internally take these symmetry elements and generate a
+full symmetry group.
+Further <a href="SeqQ_syms.html">examples of symmetry</a>
+construction can be found on another page.
+
+<p>
+The code takes advantage of symmetry in two ways.  First, it eliminates
+redundant symmetry-equivalent k-points in the Brillouin Zone sample, and
+reduces the sample to be in the irreducible BZ.  This makes the size of
+the calculation smaller, and therefore faster.  Second, if the calculation
+does forces and a relaxation, it will symmetrize the force calculation
+(in a grid-based calculation, numerical noise may cause the calculation
+to artificially break symmetry) and conserves symmetry in geometry
+updates during an energy minimization calculation/relaxation.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: take advantage of trigonal symmetry about 001 axis (symops).
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+primitive lattice vectors
+  5.308735725    -3.0650     0.000000000
+  0.000000000     6.1300     0.000000000
+  0.000000000     0.0000     9.996279726
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    3.539157150     0.0000     0.025788046
+   2    2    1.769578575     3.0650     1.268818179
+   3    1    1.769578575     3.0650     5.023927909
+   4    2    3.539157150     0.0000     6.266958042
+kgrid2
+ 4 4 2                                                                  <b>
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 010)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  0.0  1.0  0.0    0.0  0.0  0.0                                     </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_scale"></a>
+<h2>Scaling functions I: global scaling</h2>
+
+If we wish to modify cell parameters (e.g., to vary the lattice parameter),
+changing all the lattice vectors and all the atomic positions that are
+given in Cartesian coordinates and units of bohr is not convenient.
+You would need to modify every coordinate vector in the input file, a tedious
+process very prone to error.
+The code provides some simple tools to make this kind of manipulation easier.
+A useful one is the "<tt>scale </tt>" or "<tt>scalep</tt>" command.
+This command (like all the other scaling commands) must appear before
+<tt>dimension</tt> and after <tt>primitive lattice vectors</tt>.
+This command causes every coordinate in the input file to be scaled by the
+specified value.  Here, we use the <tt>scale </tt>command to abstract the
+bulk lattice parameter of 6.13 from the primitive lattice vectors and all
+the atomic coordinates.
+Now, to modify the bulk lattice parameter, we need only modify the
+scaling value, and need not touch the various coordinate vectors in the input.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: insert global scaling factor (a=6.13), and scale coordinates
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3                                       <b>
+scale
+ 6.13                                    </b>
+primitive lattice vectors                <b>
+  0.86602540378  -0.5000     0.000000000
+  0.00000000000   1.0000     0.000000000
+  0.00000000000   0.0000     1.630714474 </b>
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1  <b>  0.57735026918   0.0000     0.004206859 </b>
+   2    2  <b>  0.28867513459   0.5000     0.206985021 </b>
+   3    1  <b>  0.28867513459   0.5000     0.819564096 </b>
+   4    2  <b>  0.57735026918   0.0000     1.022342258 </b>
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 010)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_scalz"></a>
+<h2>Scaling functions II: direction-specific</h2>
+
+GaN is a hexagonal system, and the unit cell is defined by two parameters:
+the lattice parameter "a", and the c/a ratio. Using "<tt>scale </tt>"
+in the previous example, the lattice parameter can be modified easily.
+The code has a direction-specific scaling function "<tt>scalez</tt>"
+through which all <i>z</i>-coordinates can be scaled by a specified value.
+It comes immediately after the "<tt>scale </tt>" input, and acts in addition
+to (rather than exclusive of) the global scaling, i.e.,  <i>z</i>-coordinates
+are scaled by both the global scaling and the <i>z</i>-scaling factors.
+In this example, we abstract the c/a ratio, 1.630714474, from every
+<i>z</i>-coordinate.  Now we can easily modify both the lattice parameter and
+c/a ratio by modifying the two scaling values.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: insert global z-scaling factor (c/a), and scale z-coordinates
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+scale
+ 6.13                                                                   <b>
+scalez
+ 1.630714474                                                            </b>
+primitive lattice vectors
+  0.86602540378  -0.5000  <b>   0.0000 </b>
+  0.00000000000   1.0000  <b>   0.0000 </b>
+  0.00000000000   0.0000  <b>   1.0000 </b>
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    0.57735026918   0.0000   <b>  0.002579764 </b>
+   2    2    0.28867513459   0.5000   <b>  0.126929039 </b>
+   3    1    0.28867513459   0.5000   <b>  0.502579764 </b>
+   4    2    0.57735026918   0.0000   <b>  0.626929039 </b>
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 010)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_shift"></a>
+<h2>Shift coordinates</h2>
+
+The specification of a bulk system is invariant to an overall translation.
+Here we shift all the atomic <i>z</i>-coordinates to put the first nitrogen
+at <i>z</i>=0.  Further, we reorder the atoms to put the two nitrogen atoms
+to the front of the list and the galliums to the end of the list.
+Our system does not change with these modifications, but this reordering
+makes more apparent that there is more symmetry in this system than we
+have used, and this order will allow us to take better advantage of it
+in a later example.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: translate atoms to make additional symmetry more apparent
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+scale
+ 6.13
+scalez
+ 1.630714474
+primitive lattice vectors
+  0.86602540378  -0.5000     0.0000
+  0.00000000000   1.0000     0.0000
+  0.00000000000   0.0000     1.0000
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector                                        <b>
+   1    1    0.57735026918   0.0000     0.000000000
+   2    1    0.28867513459   0.5000     0.500000000
+   3    2    0.28867513459   0.5000     0.124349275
+   4    2    0.57735026918   0.0000     0.624349275                </b>
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (3-fold rotate around 001, reflection plane normal 010)
+  3  0.0  0.0  1.0    0.0  0.0  0.0
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_sym2" ></a>
+<h2>Symmetry II: non-symmorphic groups</h2>
+
+We had already incorporated a three-fold axis and reflection planes in
+the calculation.  However, this four-atom unit cell has yet more symmetry.
+The two nitrogen atoms are equivalent to each other as are the two gallium
+atoms.  This is not a point group symmetry, but involves a point group
+symmetry operation and a translation in space. To build this symmetry into
+the input requires use of the second three-vector in the symmetry definition.
+This second vector, zero for point group operations, describes the
+translation necessary for symmetry specification in non-symmorphic groups.
+The crystal is preserved in a 60-degree rotation (i.e., a 6-fold axis)
+plus a translation of half the third lattice vector (<i>z</i>-direction).
+This maps the one nitrogen(gallium) atom onto the other nitrogen(gallium).
+Note that how the atoms were positioned in the cell in the <i>x-y</i> plane
+(remember that our bulk system is invariant to global translations)
+was critical to be able to specify this symmetry.
+The symmetry center is assumed to be at the coordinate origin.
+A different, translated coordinate system would have required a different
+symmetry specification.  Further note that the original previous symmetry
+group is a subset of this new expanded non-symmorphic group.
+A 60-degree (6-fold) rotation with translation by half a <i>z</i>-lattice
+vector, applied twice, equals a 120-degree (3-fold) rotation with a full
+lattice vector translation, equivalent to a simple 3-fold rotation.
+Hence, we can simple replace the 3-fold rotation definition with the
+6-fold plus translation definition, leaving only two symmetry element
+definitions.
+This doubles the size of
+the resulting symmetry group, reduces the size the irreducible Brillouin
+Zone, and enforces the equivalence of the atoms within the unit cell.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: incorporate non-symmorphic (translation) symmetry: N1->2 Ga3->4
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+scale
+ 6.13
+scalez
+ 1.630714474
+primitive lattice vectors
+  0.86602540378  -0.5000     0.0000
+  0.00000000000   1.0000     0.0000
+  0.00000000000   0.0000     1.0000
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    0.57735026918   0.0000     0.000000000
+   2    1    0.28867513459   0.5000     0.500000000
+   3    2    0.28867513459   0.5000     0.124349275
+   4    2    0.57735026918   0.0000     0.624349275
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (6-fold rotate+1/2Lz shift, reflection plane normal 010) <b>
+  6  0.0  0.0  1.0    0.0  0.0  0.5                                         </b>
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_scf"  ></a>
+<h2>SCF parameters</h2>
+
+In this example we show how to modify parameters that are important in the
+self-consistency calculations.  These parameters are modified in the
+<a href="SeqQ_rundata.html"> <tt>run</tt> phase section</a> of the input file.
+The input can be in any order within this section (contrast this with the
+strict order of the input in the setup section).  In the first example,
+the convergence criterion had already been specified.
+Here we also specify the maximum number of iterations for the
+self-consistency step, a "<tt>temperature</tt>" (in Ry) for level occupations
+(fermi-broadened, this is only really important for metallic systems,
+not systems with a significant gap.  It aids in convergence in systems
+with many levels near the fermi level, i.e., metals),
+and an initial "<tt>blend ratio</tt>".  The blend parameter can occasionally
+aid convergence.  It sets the proportion of output potential to mix into
+the input potential after the first step of the self-consistency cycle
+(after the first cycle, a modified Broyden blending scheme updates
+the potential).  It must take values between zero and one.
+There are other parameters which are also accessible from
+the input file, but these are the most commonly needed.
+
+<pre>
+do setup
+do iters
+no force
+no relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: add various interesting scf options
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+scale
+ 6.13
+scalez
+ 1.630714474
+primitive lattice vectors
+  0.86602540378  -0.5000     0.0000
+  0.00000000000   1.0000     0.0000
+  0.00000000000   0.0000     1.0000
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    0.57735026918   0.0000     0.000000000
+   2    1    0.28867513459   0.5000     0.500000000
+   3    2    0.28867513459   0.5000     0.124349275
+   4    2    0.57735026918   0.0000     0.624349275
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (6-fold rotate+1/2Lz shift,reflection plane normal 010)
+  6  0.0  0.0  1.0    0.0  0.0  0.5
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data                                                    <b>
+iterations - maximum number of scf iterations allowed
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio - initial blend of input/output potential in scf
+ 0.30                                                                   </b>
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_relax"></a>
+<h2>Atomic relaxation</h2>
+
+Simple enough, to perform a geometry relaxation: turn on a force
+calculation with "<tt>do force</tt>" and use
+"<tt>do relax</tt>" to tell the code to do an energy minimization.
+The calculation will eliminate forces to find equilibrium positions of
+the atoms.
+
+<pre>
+do setup
+do iters  <b>
+do force
+do relax  </b>
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: set commands to do a full relaxation
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+scale
+ 6.13
+scalez
+ 1.630714474
+primitive lattice vectors
+  0.86602540378  -0.5000     0.0000
+  0.00000000000   1.0000     0.0000
+  0.00000000000   0.0000     1.0000
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    0.57735026918   0.0000     0.000000000
+   2    1    0.28867513459   0.5000     0.500000000
+   3    2    0.28867513459   0.5000     0.124349275
+   4    2    0.57735026918   0.0000     0.624349275
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (6-fold rotate+1/2Lz shift,reflection plane normal 010)
+  6  0.0  0.0  1.0    0.0  0.0  0.5
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+iterations
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_geom" ></a>
+<h2>Relaxation parameters</h2>
+
+The code, by default, will relax all atoms in the problem until the maximum
+force is less than an internally specified force threshold (0.003 Ry/bohr).
+The user can modify how the relaxation is performed in the optional
+<a href="SeqQ_geomdat.html"> geometry section</a> Of the input.
+The "<tt>geometry relaxation</tt>" statement begins, and the
+"<tt>end geometry</tt>" statement ends, the section that allows access to a
+variety of parameters that control the relaxation phase of the calculation.
+These inputs can be in any order in the geometry section.
+Here, "<tt>gsteps</tt>" limits the number of geometry steps to 5,
+"<tt>gconv</tt>" sets the force convergence criterion to 0.001 Ry/bohr,
+and we "only relax" the last two atoms.
+The code knows to relax the last two atoms in the list because a negative
+number "-2" was given.  It would relax the first <i>N</i> atoms in the list
+if a positive integer <i>N</i> were given.
+There is a <a href=SeqQ_geomdat.html#cons>scheme</a>,
+not shown here, for picking more general sets of
+atoms to relax or freeze in place.  There is not, however, a method for
+for applying more sophisticated constraints on the relaxation (e.g.,
+fixing the <i>z</i>-coordinate of an atom, but allowing other coordinates
+of that atom to relax).  In this gallium nitride example, the only free
+parameter is the Ga-N distance, and, therefore, only the positions of a
+nitrogen atom with respect to a gallium atom is significant.
+Symmetry, and the fact that a bulk system is insensitive to a global
+translation allows us to fix either the positions of the nitrogen
+atoms or the positions of the gallium atoms without loss of generality.
+<p>
+I choose to relax tha galliums atoms rather than the nitrogen atoms for
+numerical reasons.  Nitrogen is the "harder" atom, and therefore the
+numerical evaluations of the forces on the nitrogen atom will be less
+accurate.  The code evaluates integrals on a regular space grid and the
+spatially more rapidly varying orbitals on nitrogen lead to more
+inaccurate grid integrals for the orbitals on the nitrogen atom.
+We therefore choose to fix the nitrogen and allow the
+atoms whose forces are more accurately evaluated to relax.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: modify relaxation optimization parameters
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+scale
+ 6.13
+scalez
+ 1.630714474
+primitive lattice vectors
+  0.86602540378  -0.5000     0.0000
+  0.00000000000   1.0000     0.0000
+  0.00000000000   0.0000     1.0000
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    0.57735026918   0.0000     0.000000000
+   2    1    0.28867513459   0.5000     0.500000000
+   3    2    0.28867513459   0.5000     0.124349275
+   4    2    0.57735026918   0.0000     0.624349275
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (6-fold rotate+1/2Lz shift,reflection plane normal 010)
+  6  0.0  0.0  1.0    0.0  0.0  0.5
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+iterations
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500                                                               <b>
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 5
+gconv  - max force convergence criterion
+ 0.0010
+only relax last - N are fixed by symmetries, move only Ga
+ -2
+end geometry relaxation                                                 </b>
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_latt"></a>
+<h2>Lattice coordinates</h2>
+
+For some problems, it may be convenient to specify positions of the atoms
+in lattice units rather than Cartesian coordinates.
+This is particularly true if one desires to compute elastic constants via
+fitting to stress tensor results from calculations with small strains.
+The "<tt>coordinates</tt>" keyword, immediately after the <tt>dimension</tt>
+input, and before any scaling input, allows the user to
+switch the coordinate system used for the input of atoms.
+The choice of "<tt>LATTICE</tt>" specifies lattice
+units (as opposed to the default "<tt>CARTESIAN</tt>").
+The atoms positions are constructed from the input three-vector (<i>x,y,z</i>)
+by: <i>x</i><b>A</b> + <i>y</i><b>B</b> + <i>z</i><b>C</b>,
+where <b>A</b>, <b>B</b>, and <b>C</b> are the primitive lattice vectors.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: transform coordinates into lattice units
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3                                                                      <b>
+coordinates
+ LATTICE                                                                </b>
+scale
+ 6.13
+scalez
+ 1.630714474
+primitive lattice vectors
+  0.86602540378  -0.5000     0.0000
+  0.00000000000   1.0000     0.0000
+  0.00000000000   0.0000     1.0000
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1  <b>  0.66666666667   0.33333333333   0.000000000 </b>
+   2    1  <b>  0.33333333333   0.66666666667   0.500000000 </b>
+   3    2  <b>  0.33333333333   0.66666666667   0.124349275 </b>
+   4    2  <b>  0.66666666667   0.33333333333   0.624349275 </b>
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (6-fold rotate+1/2Lz shift,reflection plane normal 010)
+  6  0.0  0.0  1.0    0.0  0.0  0.5
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+iterations
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 5
+gconv  - max force convergence criterion
+ 0.0010
+only relax last - N are fixed by symmetries, move only Ga
+ -2
+end geometry relaxation
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_strn"></a></a>
+<h2>Calculations with strain</h2>
+
+For use in calculation of elastic constants (from manipulation of
+stress-strain relations), or to examine other properties due to
+small perturbations for a given cell volume, there is a feature in the
+input that imposes a specified strain on a system.  The keyword is
+"<tt>strain</tt>" with an optional multiplicative factor "<tt>strfac</tt>".
+<p>
+Notes: The "<tt>strain</tt>" keyword can only be invoked if the atomic
+coordinates are specified in LATTICE units.
+The strain matrix must be symmetric (of course), and is specified
+without the identity, i.e., the code interally adds the identity
+matrix to the specified input.  The net result of the example given
+below is a +0.2% strain along the <i>z</i>-direction.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: strain
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+coordinates
+ LATTICE
+scale
+ 6.13
+scalez
+ 1.630714474                                                            <b>
+strain
+  0.00  0.00  0.00
+  0.00  0.00  0.00
+  0.00  0.00  1.00
+strfac
+  0.002                                                                 </b>
+primitive lattice vectors
+  0.86602540378  -0.5000     0.0000
+  0.00000000000   1.0000     0.0000
+  0.00000000000   0.0000     1.0000
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+n.atm
+atom file
+ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    1    0.66666666667   0.33333333333   0.000000000
+   2    1    0.33333333333   0.66666666667   0.500000000
+   3    2    0.33333333333   0.66666666667   0.124349275
+   4    2    0.66666666667   0.33333333333   0.624349275
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (6-fold rotate+1/2Lz shift,reflection plane normal 010)
+  6  0.0  0.0  1.0    0.0  0.0  0.5
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+iterations
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 5
+gconv  - max force convergence criterion
+ 0.0010
+only relax last - N are fixed by symmetries, move only Ga
+ -2
+end geometry relaxation
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_cell" ></a>
+<h2>Cell optimization</h2>
+
+The code as able to do cell shape optimization automatically for all
+LDA and GGA (and spin-polarized GGA stress is completed as of v2.57)
+calculations, for any dimension of periodicity.
+In fact, one can equilibrate at zero pressure, to a fixed non-zero pressure,
+to a uniaxial stress, or even a fully general stress tensor!
+<p>
+To invoke cell optimization, add "<tt>do cell</tt>" to the instructions at
+the beginning of the input.  The optional <a href="SeqQ_celldat.html">
+cell section </a>, beginning with "<tt>cell optimization</tt>" and
+ending with "<tt>end cell</tt>", allows some control over cell optimization.
+This is illustrated here by setting the unit cell convergence threshold
+(uc_conv) to a maximum stress of 0.01 GPa.
+To apply an external pressure, use the keyword "<tt>pressure</tt>"
+and give the desired pressure in units of GPa.
+<p>
+<b> Important: </b> Cell optimization requires:
+<ul>
+<li> Coordinates be in LATTICE units
+<li> no scaling functions be used (i.e. all scaling is 1.0) <br>
+     (remember to install scaling directly into lattice vectors (bohr).
+</ul>
+
+<pre>
+do setup
+do iters
+do force
+do relax   <b>
+do cell    </b>
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: turn on 3D cell optimization
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3                                                                      <b>
+coordinates
+ LATTICE
+primitive lattice vectors
+  5.308735725    -3.0650     0.000000000
+  0.000000000     6.1300     0.000000000
+  0.000000000     0.0000     9.996279726                                </b>
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ n.atm
+atom file
+ ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector                                             <b>
+   1    1    0.66666666667   0.33333333333   0.000000000
+   2    1    0.33333333333   0.66666666667   0.500000000
+   3    2    0.33333333333   0.66666666667   0.124349275
+   4    2    0.66666666667   0.33333333333   0.624349275                </b>
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (6-fold rotate+1/2Lz shift,reflection plane normal 010)
+  6  0.0  0.0  1.0    0.0  0.0  0.5
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+iterations
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 5
+gconv  - max force convergence criterion
+ 0.0010
+only relax last - N are fixed by symmetries, move only Ga
+ -2
+end geometry relaxation                                          <b>
+cell optimization
+uc_conv - stress convergence (in GPa, default=0.002 )
+ 0.01
+pressure - external pressure (GPa for 3D)
+ 10.0
+end cell                                                         </b>
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_alias"></a>
+<h2>Aliasing atom types</h2>
+
+Sometimes keeping track of which atom is which type can be confusing,
+particularly in larger input files with involved configurations.
+The code offers the ability to use named atom types in the input of
+the configurations, and to alias atom files to those atom types.
+There are two methods to alias the input atom files.  One is explicit,
+as with the the N atom below.  You provide the alias name and set it
+equal to the atom file: <tt>N = n.atm</tt>.  Alternatively, the
+code constructs a default from the atom file name, by using the file
+name prefix.
+From <tt>/library/lda/Ga.atm</tt> it abstracts the alias "<tt>Ga</tt>".
+Note that the code ignores the directory specification.
+To use the alias in the input, simply replace the type <i>numbers</i>
+with the type <i>alias</i>.  Note: this is all or nothing.  Use type
+names only, or use type numbers only.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+do cell
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: aliasing atom types
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+coordinates
+ LATTICE
+primitive lattice vectors
+  5.308735725    -3.0650     0.000000000
+  0.000000000     6.1300     0.000000000
+  0.000000000     0.0000     9.996279726
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file             <b>
+ N = n.atm            </b>
+atom file             <b>
+ /library/lda/Ga.atm  </b>
+number of atoms in unit cell
+   4
+atom, type, position vector
+   1    <b>N </b>   0.66666666667   0.33333333333   0.000000000
+   2    <b>N </b>   0.33333333333   0.66666666667   0.500000000
+   3    <b>Ga</b>   0.33333333333   0.66666666667   0.124349275
+   4    <b>Ga</b>   0.66666666667   0.33333333333   0.624349275
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (6-fold rotate+1/2Lz shift,reflection plane normal 010)
+  6  0.0  0.0  1.0    0.0  0.0  0.5
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+iterations
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 5
+gconv  - max force convergence criterion
+ 0.0010
+only relax last - N are fixed by symmetries, move only Ga
+ -2
+end geometry relaxation
+cell optimization
+uc_conv - stress convergence (in GPa, default=0.002 )
+ 0.01
+pressure - external pressure (GPa for 3D)
+ 10.0
+end cell
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_label"></a>
+<h2>Labeling atom names</h2>
+
+You can also name the atoms themselves.
+There are two methods to label the input atoms.
+You can use a numerical sequence, as above, or you can use character strings
+as with the atom below.
+The atom names can be very useful for identifying which atoms are special,
+to follow the positions of atoms in the course of a relaxation with a simple grep,
+or to use in selecting atom atoms in specifying constraints for geometry updates.
+To use the labels in the input, simply replace the atom <i>numbers</i>
+with the atom <i>labels</i>.
+Note: this is all or nothing.  Use atom names only, or use atom numbers only.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+do cell
+setup data
+notes 
+ GaN bulk wurzite: a=6.13 bohr, c/a=1.630714474, GaN(Z)=3.755109729
+ Example: aliasing atom types
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 3
+coordinates
+ LATTICE
+primitive lattice vectors
+  5.308735725    -3.0650     0.000000000
+  0.000000000     6.1300     0.000000000
+  0.000000000     0.0000     9.996279726
+grid dimensions
+  24  24  36
+atom types
+  2
+atom file
+ N = n.atm
+atom file
+ /library/lda/Ga.atm
+number of atoms in unit cell
+   4
+atom, type, position vector
+   <b>Atom01    </b>N    0.66666666667   0.33333333333   0.000000000
+   <b>Atom02    </b>N    0.33333333333   0.66666666667   0.500000000
+   <b>Atom03    </b>Ga   0.33333333333   0.66666666667   0.124349275
+   <b>Atom04    </b>Ga   0.66666666667   0.33333333333   0.624349275
+kgrid2
+ 4 4 2
+symops
+ 2
+definitions sym ops (6-fold rotate+1/2Lz shift,reflection plane normal 010)
+  6  0.0  0.0  1.0    0.0  0.0  0.5
+ -2  0.0  1.0  0.0    0.0  0.0  0.0
+end setup phase data
+run phase input data
+iterations
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio
+ 0.30
+convergence criterion
+ 0.000500
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 5
+gconv  - max force convergence criterion
+ 0.0010
+only relax last - N are fixed by symmetries, move only Ga
+ -2
+end geometry relaxation
+cell optimization
+uc_conv - stress convergence (in GPa, default=0.002 )
+ 0.01
+pressure - external pressure (GPa for 3D)
+ 10.0
+end cell
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+<hr>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Bulk Tutorial">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> June12, 2015  <!-- notes/labels -->
+</font>
+
+</font>
+</body>
+</html>

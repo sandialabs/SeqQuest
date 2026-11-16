@@ -1,0 +1,107 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Atom Libraries </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest Atom Libraries</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">     SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_atomfile.html"> Atom File<br> Format</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ul>
+   <li><a href="#intro">             Overview</a>
+   <li><a href="Atom_Library/LDA/Atom_Library_LDA.html">         LDA atom Library</a>
+   <li><a href="Atom_Library/PBE/Atom_Library_PBE.html">         PBE atom Library</a>
+   <li><a href="Atom_Library/AM05/Atom_Library_AM05.html">       AM05 atom Library</a>
+   <li><a href="Atom_Library/BLYP/Atom_Library_BLYP.html">       BLYP atom Library</a>
+   <li> For PW91 calculations, use PBE atoms.
+        The functionals are similar enough that these pseudopotentials
+        should be roughly interchangeable.
+</ul>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+SeqQuest requires pseudopotentials and Gaussian basis sets for every atom
+type in a given calculation.
+These pseudopotentials are not generated within Quest itself:
+the Gaussian basis sets are atom- and potential-specific and must be provided.
+Quest accesses the pseudopotentials and associated basis sets it uses from
+atom files that have been previously generated, and collected into libraries.
+This page summarizes the availability of atom files for the various
+functionals available in the code.
+
+<p>
+One should not mix different functionals in the atom pseudopotential
+generation and SeqQuest calculations.
+If necessary, it is probably safe to use PBE atoms in PW91 calculations given
+the close correspondence of these two functionals, but we recommend simply
+keeping to PBE calculations.
+
+<p>
+The code uses non-local ("semi-local" in common physics jargon)
+norm-conserving pseudopotentials (not "ultra-soft" nor "separable" potentials).
+All the pseudopotentials currently in the libraries are either of the
+Hamann type or the Troullier/Martins type.
+The pseudopotentials are generally constructed to be very "hard" to ensure
+maximum transferability.
+Compromising the transferability of the PP for greater softness is unnecessary,
+as the cost of a local orbital calculation is relatively insensitive to the PP,
+
+<p>
+For each available atom of a given pseudopotential and given DFT functional, a
+Gaussian basis set is provided.
+Development of effective basis sets is something of an art.
+The basis sets for Quest are carefully optimized pseudo-variationally, refined
+and tested in chemical environments representative of typical expected Quest use.
+Users should check internal documentation of atom files for basis author.
+These basis sets are intended for periodic calculations.
+The basis design avoids the very diffuse gaussians that can lead to linear
+dependence (but can become linearly dependent under significant compressions).
+Ghost atoms (or "floating orbitals"), basis sets without atomic potentials,
+are also possible, to augment the atom-centered basis
+(e.g. to get more accurate work functions for slab surfaces).
+
+
+<hr>
+  <font size=-2>
+   Return to <a href="#top">Top</a>
+          or <a href="SeqQ_Home.html">Quest Home Page</a>
+  </font>
+
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Atom Libraries">
+       paschul@sandia.gov</a> <br>
+    Pseudopotential library web pages constructed by C.E. Mattsson <br>
+
+<i> Last updated: </i> December 1, 2011 <!-- Z=1/2,3/4, ... -->
+</font>
+
+</font>
+</body>
+</html>

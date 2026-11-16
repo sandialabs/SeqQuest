@@ -1,0 +1,617 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest input - Setup </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest input: Setup phase data</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Overview</a>
+<li><a href="#inputs">   Input options</a>
+<li><a href="#details">  More detailed explanations</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+This page gives a description of the SeqQuest "setup phase" input section.
+It sets up atom positions and types, cell vectors, symmetries, Brillouin
+Zone sampling, etc., that define a QM calculation.
+It attempts to handle the many interdependencies among the various input
+options (e.g., one needs a k-point sample for a bulk calculation, but not
+for molecule), and therefore is highly structured.
+The input is driven by (left-justified) keywords in a very strict order,
+though most of the data associated with those keywords is free-format.
+There are optional keywords/data, but they must appear in specific places
+within the input file.  This section is mandatory for a Quest input file.
+
+<p>
+The default energy unit is Rydberg (Ry), and default distance unit is bohr.
+
+<hr>
+<a name="inputs"></a>
+<h2>Input options</h2>
+
+The setup phase section is <i>mandatory</i> for SeqQuest.
+The setup phase input section appears directly after the command options
+section, begins with the keyword "<tt>setup data</tt>" and ends with the
+keyword "<tt>end setup phase data</tt>".
+<p>
+The following are the common input keywords in this section, and must
+appear in the exact order indicated, if they appear.
+There are many <i>mandatory</i> keyword/data inputs.
+Optional keywords are enclosed in square brackets, e.g.
+<b><tt>[scale ]</tt></b>.
+
+<dl>
+<font face="courier"><tt>
+<dt><b> setup data </b> - begin setup phase data input section
+
+<dt><b> [titleN] </b> - not required, but highly recommended
+  <dd><i>   N title lines </i> (up to 9 lines, as given by "N")
+
+<dt><b> [functional] </b> - <a href="#dftflavor">flavor of DFT functional</a>;
+                            default is LDA
+  <dd><i>   fcnal </i>  (e.g., LDA, LDA-SP, PBE, PBE-SP, PW91, BLYP, AM05 ...)
+<dt><b> [spin polarization] </b> - required iff spin-polarized fcnal chosen
+  <dd><i>   spin_pol </i> (real, units of excess electrons of majority spin)
+
+<dt><b> [vdw_potential] </b> - type of C6-based van der Waals correction (either Grimme D2 or Kim/Goddard ULG)
+  <dd><i>   vdwtype </i> (where vdwtype=[OFF|DFT-D2|D2|ULG12|ULG] )
+
+<dt><b> [efield] </b> - external applied electric field vector (Ry/au)
+  <dd><i>   efield_x efield_y efield_z </i> (Ry/bohr)
+
+<dt><b> [dielectric constant] </b> - bulk material static dielectric constant
+  <dd><i>   dielec_constant </i>
+
+<dt><b> dimension of system (cluster=0, ... ,3=bulk)</b>
+  <dd><i>   ndim </i> (int)
+
+<dt><b> [coordinate units]</b> - units for atomic coordinate vector input
+  <dd><i>   coord_units </i> (LATTICE or CARTESIAN)
+
+<dt><b> [scale ]</b> - global <a href="#scaling">scale factor</a> for system
+  <dd><i>   scalep </i> (real)
+<dt><b> [scaleu]</b> - <a href="#scaling">scale factor</a>, periodic directions
+  <dd><i>   scaleu </i> (real)
+<dt><b> [scalex]</b> - <a href="#scaling">scale factor</a>, x-direction
+  <dd><i>   scalex </i> (real)
+<dt><b> [scaley]</b> - <a href="#scaling">scale factor</a>, y-direction
+  <dd><i>   scaley </i> (real)
+<dt><b> [scalez]</b> - <a href="#scaling">scale factor</a>, z-direction
+                       (e.g. c/a ratio)
+  <dd><i>   scalez </i> (real)
+
+<dt><b> [strain] </b> - 3x3 deformation matrix (no identity) to apply to cell
+  <dd><i>   strain(1,1) strain(2,1) strain(3,1) <br>
+            strain(1,2) strain(2,2) strain(3,2) <br>
+            strain(1,3) strain(2,3) strain(3,3)      </i> (3*real)
+<dt><b> [[strfac]] </b> - optional scale factor for strain (only if have strain)
+  <dd><i>   strfac </i> (real)
+
+<dt><b> primitive lattice vectors </b> - supercell vectors (three)
+  <dd><i>   A_1 A_2 A_3 <br>
+            B_1 B_2 B_3 <br>
+            C_1 C_2 C_3      </i> (3*real)
+<dt><b> grid dimensions</b> - # intervals along lattice vectors
+  <dd><i>   n_grid_A n_grid_B n_grid_C </i> (3*int)
+
+<dt><b> atom types </b> - number of atom types (atom files to be read in)
+  <dd><i>   n_types </i> (int)
+<dt>  do i_type = 1, n_types
+<dt><b> atom file </b> - location of <a href="SeqQ_atomfile.html">atom file</a>
+        (optionally, an alias, too)
+  <dd><i>   atomfile </i> | <i>alias_type=atomfile</i> (file/alias=char strings)
+<dt>  enddo
+
+<dt><b> [vdw_data] </b> - only available if vdw_potential is selected above
+<dd><i> ... <a href="SeqQ_vdwdata.html"> modify/configure C6 vdW parameters </a> </i>
+
+<dt><b> [masses] </b> - atomic masses for each type (atomic units, C=12.0)
+  <dt>      do i_type = 1, n_types
+    <dd><i>   atom_mass </i> (real)
+  <dt>      enddo
+<dt><b> [energies] </b> - reference energy for each atom type (Rydberg), in order of atom files
+  <dt>      do i_type = 1, n_types
+    <dd><i>   energy_ref </i> (real)
+  <dt>      enddo
+
+<dt><b> [ionopt] </b> expert only, see <a href="#charge">charge details</a>
+  <dd><i>   ionopt </i> (0=jellium, 1=iffy LMCC/sphere, 2=full LMCC/guassian, 3=dble-layer b.c.)
+<dt><b> [charge] </b> - net charge on the system (in atomic units)
+  <dd><i>   elchrg </i> (real)
+<dt><b> [location of charge] </b> expert only, see
+                                  <a href="#charge">charge details</a>
+  <dd><i>   x_charge y_charge z_charge </i> (3*real)
+
+<dt><b> number of atoms </b>
+  <dd><i>   n_atom </i>
+<dt><b> [geomfile] </b> - (2.66) read atom/type/coordinates from file "lcao.geom_in"
+<dt><b> atom, types, and positions? </b> three formats currently supported:
+  <dt>      do i_atom = 1, n_atom
+    <dd><i>   i_atom i_type x_atom y_atom z_atom </i> (int,int,3*real)
+  <dt>      enddo
+  <dt>      <b> -- OR -- </b>
+  <dt>      do i_atom = 1, n_atom
+    <dd><i>   i_atom alias_type x_atom y_atom z_atom </i> (int,char,3*real)
+  <dt>      enddo
+  <dt>      <b> -- OR -- </b>
+  <dt>      do i_atom = 1, n_atom
+    <dd><i>   label_atm alias_type x_atom y_atom z_atom </i> (char,char,3*real)
+  <dt>      enddo
+
+<dt><b> [origin offset] </b> expert only - coordinate origin shift wrt supercell
+  <dd><i>   x_shift y_shift z_shift </i> (3*real)
+<dt><b> [wigner seitz origin] </b> expert only
+          - see <a href="#charge">charge details</a>
+  <dd><i>   x_wigner y_wigner z_wigner </i> (3*real)
+<dt><b> [symmetry center] </b> expert only - location of high-symmetry point
+  <dd><i>   x_symctr y_symctr z_symctr </i> (3*real)
+
+<dt> if( ndim &gt 0 )then - periodic system
+<dt><b> [kgrid | kgrid0 | kgrid1 | kgrid2 | kgrid3 | kgridh] </b>
+          - <a href="#ksample"> k-point sampling</a>
+  <dd><i>   n_kgrid_A n_kgrid_B n_kgrid_C </i> (3*int)
+<dt> endif
+
+<dt><b> [symops ]</b> - number of <a href="#symmetry">symmetry</a> definitions
+  <dd><i>   n_symops </i> (int)
+<dt><b> [definitions of symmetry operations]</b> - iff symops invoked
+<dt>     do  i_symop = 1, n_symops
+  <dd><i>  i_symtype x_symaxis y_symaxis z_symaxis
+                     a_off b_off c_off </i> (int, 6*real)
+<dt>     enddo
+
+<dt><b> end setup phase data </b> - end of setup phase input section
+<dt><b> [run phase input data] </b>
+        - begin <a href=SeqQ_rundata.html> run phase data</a> (optional)
+</tt></font>
+</dl>
+
+<br><font size=-2><a href="#top">Return to Top</a></font><p>
+
+<hr>
+<a name="details"></a>
+<h2>Details of the setup data input</h2>
+
+<a name="dftflavor"></a>
+<h3>Density functionals</h3>
+
+<table bgcolor="#FFCC66" border=1 align=right>
+<tr>
+   <th colspab=1>   </th> <th> non-spin    </th> <th> spin-polarized   </th>
+<tr>
+   <th> CAPZ<br>LDA </th> <td> CAPZ<br>LDA </td> <td> CAPZSP<br>LDA-SP </td>
+</tr>
+<tr>
+   <th> PBE<br>GGA </th> <td> PBE<br>GGA   </td> <td> PBE-SP<br>GGA-SP </td>
+</tr>
+<tr>
+   <th> PW91       </th> <td> PW91       </td> <td> PW91SP           </td>
+</tr>
+<tr>
+   <th> BLYP       </th> <td> BLYP       </td> <td> BLYPSP           </td>
+</tr>
+<tr>
+   <th> AM05       </th> <td> AM05       </td> <td> AM05SP           </td>
+</tr>
+</table>
+
+SeqQuest has both LDA and GGA flavors available.  All current flavors
+of DFT are available as both spin-polarized or not, and the spin and
+non-spin flavors of a functional are chosen with different keywords.
+The spin-polarized variant of the functional is triggered by the "SP".
+This then requires input of the net spin polarization immediately
+following the functional specification.
+The units of the spin polarization are net excess electrons
+of majority spin.  Note: the convention for specifying a spin polarized
+calculation may change in a future version.
+
+<p>
+The default (only) LDA functional is the Perder/Zunger parameterization
+  <br><spacer type=horizontal size=40>
+  J. Perdew and A. Zunger, Phys. Rev. B <b>23</b>, 5048 (1981)<br>
+of the Ceperley/Alder electron gas results
+  <br><spacer type=horizontal size=40>
+  D.M. Ceperley and B.J. Alder, Phys. Rev. Lett. <b>45</b>, 566 (1980).<br>
+The default GGA is <a href="http://dft.rutgers.edu/pubs/PBE.asc">PBE</a>
+  <br><spacer type=horizontal size=40>
+  J.P. Perdew, K. Burke, and M. Ernzerhof,
+  Phys. Rev. Lett. <b>77</b>, 3865 (1996); <b>78</b>, 1396(E) (1997)<br>
+Also available are PW91,
+  <br><spacer type=horizontal size=40>
+  J. P. Perdew, in <i>Electronic Structure of Solids '91</i>,
+  <br><spacer type=horizontal size=40>
+  Ed. P. Ziesche and H. Eschrig (Akademie Verlag, Berlin, 1991) 11.
+  <br><spacer type=horizontal size=40>
+  J.P. Perdew, J.A. Chevary, S.H. Vosko, K.A. Jackson, M.R. Pederson and
+   C. Fiolhais,
+  <br><spacer type=horizontal size=40>
+   Phys. Rev. B <b>46</b>, 6671 (1992); <b>48</b>, 4978(E) (1993).
+  <br>
+BLYP, using Becke exchange
+  <br><spacer type=horizontal size=40>
+  A.D. Becke, Phys. Rev. A <b>38</b>, 3098 (1988)<br>
+with Lee/Yang/Parr correlation
+  <br><spacer type=horizontal size=40>
+  C. Lee, W. Yang, R. G. Parr, Phys. Rev. B <b>37</b>, 785 (1988)<br>
+ <!-- without laplacian via integration by parts (not used in Quest):
+ B. Miehlich, A. Savin, H. Stoll, H. Press, Chem. Phys. Lett. 157 (1989) 200.
+ -->
+and <a href="http://dft.sandia.gov/functionals/AM05.html"> AM05</a>:
+  <br><spacer type=horizontal size=40>
+  R. Armiento and A. E. Mattsson, Phys. Rev. B <b>72</b>, 085108 (2005).
+
+<br><font size=-2><a href="#top">Return to Top</a></font><p>
+
+<h3>Dimension of system</h3>
+
+SeqQuest is capable of calculations of finite molecule/cluster (ndim=0),
+as well as periodic 1D chain (ndim=1), 2D slab (ndim=2), and bulk 3D (ndim=3)
+calculations.  Note that a molecule/cluster (ndim=0) calculation of a
+Na-Cl molecule, for example, is formally different than a bulk molecular
+crystal (ndim=3) calculation of Na-Cl, even if one uses the same primitive
+lattice vectors!
+The choice of dimension has implications throughout the input and calculation:
+<ul>
+<li><b>Important:</b> The scaling inputs do not operate on the
+    <i>non-periodic</i> primitive lattice vectors.  E.g., the C lattice vector
+    would be unaffected by scaling functions in a slab (ndim=2) calculation.
+<li>The "scaleu" operates on atomic coordinates only in periodic directions.
+<li>There is no k-point sampling for a molecule (it must be gamma-point),
+    but there is for a periodic calculation.
+<li>Integrals and densities are restricted from crossing non-periodic bounds.
+<li>Electrostatic boundary conditions are applied differently at boundaries
+    depending on dimension: periodic v. non-periodic.
+</ul>
+<b>Important:</b>  The code has very definite ideas about which
+directions are periodic and which go off to vacuum in chain and slab
+calculations (the point is moot in molecular or bulk calculations).
+For a slab (ndim=2) calculation, the periodic directions must be in
+the <i>x-y</i> plane and the third, non-periodic, lattice vector
+must be along the <i>z</i>-axis.
+For 1D chain (ndim=1) calculation, the periodic directions must be along
+the <i>x</i>-axis, and the non-periodic lattice vectors must be
+normal to the <i>x</i>-axis, i.e., must be in the <i>y-z</i> plane.
+
+<br><font size=-2><a href="#top">Return to Top</a></font><p>
+
+<a name="scaling"></a>
+<h3> Scale factors </h3>
+
+The purpose of the scaling factors is to easily modify the length
+dimensions without having to edit every single coordinate (lattice vectors,
+atomic position vectors, k-points) in the input file.  The scaling functions
+act to scale every common coordinate in the problem.  The "scale" keyword
+scales everything, the scalex/scaley/scalez keywords scale the individual
+coordinates (which can aid in such things as altering the c/a ratio for
+a crystal input), and the "scaleu" function scales the periodic directions
+only (e.g. the <i>x-y</i> coordinates for an ndim=2 slab calculation).
+<p>
+<b> Important:</b> the scale functions <b>do not</b> scale lattice vectors in
+    <i>non-periodic</i> directions, only along periodic directions.  The
+    atomic positions may be scaled in the <i>z</i>-direction for a slab
+    calculation using the "scale " or 'scalez" keyword, but the third
+    lattice vector "C", the non-periodic lattice vector along the
+    <i>z</i>-axis is not scaled.
+
+<br><font size=-2><a href="#top">Return to Top</a></font><p>
+
+<a name="latvec"></a>
+<h3> Lattice vectors </h3>
+
+The code is a supercell code, and the primitive lattice vectors define
+the supercell.  Hence, even when doing a ndim=0 molecular calculation,
+all three primitive lattice vectors must be specified.
+<p>
+The lattice vectors along periodic directions will be determined by
+the physics of the problem, but the lattice vectors in <i> non-periodic </i>
+directions are determined by computational considerations.
+First, note discussion above about dimension of system.  For a ndim=2 slab
+calculation, the slab normal must be along the <i>z</i>-axis,
+and so must the third lattice vector "C".
+For a ndim=1 chain, the periodic direction
+(given by the first lattice vector "A") must be the <i>x</i>-direction,
+and the last two lattice vectors, B and C, must be in the <i>y-z</i> plane.
+<p>
+The extent of the non-periodic lattice vectors must be large enough to
+contain the charge density of the system.  A good rule of thumb is
+that charge density extends 10-12 bohr around an atom.  Hence, lattice
+vectors should be set up so that the no atom is closer than 10-12 bohr
+to a non-periodic boundary.
+For example, in a single-layer slab calculation (all atoms at <i>z</i>=0),
+the supercell should extend 10-12 bohr in both +<i>z</i> and -<i>z</i>,
+requiring a supercell of total length 20-24 bohr in the <i>z</i>-direction.
+In a multi-layer slab calculation, with atoms ranging from <i>z</i>=-4 (bohr)
+to <i>z</i>=+4, the supercell needs to stretch from [-14,14] or
+a total of 28 bohr.
+<p>
+<b> Important: </b> the coordinate origin for the atomic input is,
+by default, positioned at the center of the supercell (strictly speaking,
+this is for non-periodic directions only).  For example, in the slab
+calculation mentioned above, if the atom positions ranged from <i>z</i>=0
+to <i>z</i>=+10, one would need a supercell that ranged from <i>z</i>=-10
+to <i>z</i>=+20 to contain the density, a width of 30 bohr.
+However, with <i>z</i>=0 defined as the center of the supercell, one would
+need a supercell to stretch from <i>z</i>=-20 to <i>z</i>=+20,
+a width of 40 bohr.
+The supercell origin would need to be shifted to center the slab in the
+supercell to be able to take advantage of using the smaller supercell.
+
+<br><font size=-2><a href="#top">Return to Top</a></font><p>
+
+<h3> Grid dimensions </h3>
+
+The regular space (fft) grid on which many of integrals in Quest are
+performed is defined by primitive grid vectors: the primitive lattice
+vectors divided by the respective grid dimensions.  Hence the grid
+directions are aligned with the cell directions.
+<p>
+Choice of the dimensions of the grid is guided by a compromise
+of two considerations.  Greater accuracy in the numerical
+quadratures requires larger grid dimensions (more grid points),
+but more grid points means a more expensive (in both memory and cpu)
+calculation.  Experience has indicated that most calculations are
+converged (assuming orthogonal vectors) with a grid interval of
+0.30-0.35 bohr along each of the lattice vectors.  With a cubic
+30.0x30.0x30.0 box, for example, grid dimensions of 100x100x100 would
+normally be well converged.
+<p>
+For faster calculations where cruder accuracy is sufficient, a spacing
+of 0.4-0.5 bohr can work.
+For very fine accuracy, and for problems containing bad actors like
+oxygen, a very "hard" atom, a finer grid might be necessary to improve
+the energy calculation or improve the accuracy of a force calculation
+(for a geometry calculation).
+In that event, grids with spacings as small as 0.25 or even 0.20 can be
+useful.
+
+<br><font size=-2><a href="#top">Return to Top</a></font><p>
+
+<a name="charge"></a>
+<h3>Charge state calculations and multipole moments in supercells</h3>
+
+In a supercell code, special consideration must be given to the
+treatment of supercell effects in systems that have a net charge,
+or have a significant dipole or higher multipole moment.
+SeqQuest corrects the Coulomb potential (not just the energy) for the
+contamination of the local potential by the artificial periodic images
+introduced in the supercell approximation, reconstructing the local
+potential correct for an isolated charge or dipole.
+<p>
+SeqQuest uses the "Local Moment CounterCharge" (LMCC) method for
+correcting the supercell electrostatics.  For systems with a vacuum
+gap (molecules, or slabs), SeqQuest automatically applies a "vacuum LMCC":
+<br>
+<tt> "Local electrostatic moments and periodic boundary conditions",
+     P.A. Schultz,  Phys. Rev. B <b>60</b>, 1551 (1999).</tt>
+<br>
+For treating a defect charge (or dipole) in a periodic system,
+a "defect-LMCC":
+<br>
+<tt>   "Charged local defects in extended systems",
+     P.A. Schultz,  Phys. Rev. Lett. <b>84</b>, 1942 (2000),</tt>
+<br>
+can be used.  For an illustration of an application of this method
+to computing defect levels in silicon, see the following:
+<br>
+<tt>   "Theory of defect levels and the 'band gap problem' in silicon"
+     P.A. Schultz,  Phys. Rev. Lett. <b>96</b>, 246401 (2006).</tt>
+<br>
+<p>
+In a periodic slab (ndim=2) with a planar (normal) dipole,
+or a molecule/cluster (ndim=0) calculation with a net charge or dipole,
+the LMCC is invoked automatically (without any input on the part of the
+user), and supercell effects up to a dipole are treated exactly.
+Supercell errors from quadrupole and higher moments are not removed,
+but those errors scale as L<sup>-5</sup> or smaller, where L is the
+linear dimension of the supercell.
+Use of SeqQuest on molecules with a net charge or dipole, or a polar
+slab calculation (with a planar dipole) should cite the first paper above.
+<p>
+For a charged (local) defect in a <i>periodic</i> system (e.g.,
+a +1 state for the nitrogen substitutional defect in bulk silicon),
+the situation is more complicated because of the need to make
+workable boundary conditions.  The defect-LMCC method is then called
+for, but its use is very involved, and should be done only by those
+who are expert in the use of SeqQuest and only after detailed
+consultations.  This is a very new, and not completely researched
+method for treating boundary conditions for defects.  Anyone attempting
+to use this method for a charged bulk defect should read and understand,
+in detail, the defect-LMCC paper.  The keyword "ionopt" tells the code
+which method to use.  If the defect-LMCC method is invoked (ionopt=-2)
+for a charged defect, then a presumptive location for the charge must
+be specified (using the "rchrg " keyword) so that the code knows where
+to locate its LMCC.  In addition, to extract useful total energies,
+an energy reference (i.e., electron chemical potential) must be
+established.  There are multiple options a user has to try and do
+this, and all are confusing and error-prone.  Any calculation of
+charged defects should be considered highly "researchy".
+<font color="red">
+<p>
+WARNINGS about the LMCC:
+<dl>
+  <dt> (1) In a periodic bulk defect calculation, only use the fixed
+           location (ionopt=-2) version of the LMCC.
+  <dd> Computation of the dipole necessary to dynamically locate the
+       compensation charge is faulty in a bulk calculation.
+  <dt> (2) Restrict the LMCC location to the origin (0,0,0).
+  <dd> The latest version of the code (2.59) contains a bug so that
+       the calculation will fail with a non-origin LMCC location.
+       This will be very obvious - the SCF cycle will fail to converge.
+</dl>
+</font>
+
+<br><font size=-2><a href="#top">Return to Top</a></font><p>
+
+<a name="ksample"></a>
+<h3>Brillouin Zone (k-point) sampling</h3>
+
+Brillouin Zone (BZ), or k-point, sampling is a necessary burden of
+periodic calculations.
+For molecular calculations (ndim=0), BZ sampling is moot, as assumed
+to be the gamma point.
+<p>
+For periodic calculations (ndim=1,2,3),
+a BZ sample is required, and the kgridZ keywords need to be invoked.
+SeqQuest has only a very primitive scheme for building a BZ sample.
+In the following discussion, we assume 3D bulk (ndim=3), but the
+1D and 2D cases are handled analogously.  Taking {<b>A,B,C</b>} as
+the primitive lattice (supercell) vectors, we get the reciprocal
+lattice vectors <b>G</b><sub>A</sub> in the usual way.
+The code then generates a regular grid in the parallelpiped defined by
+the reprical lattice vectors: <b>G</b><sub>A</sub>/<i>n_grid_A</i>, etc.
+SeqQuest, by default, shifts this BZ grid off of the gamma-point
+to the body-centered location (i.e., the "kgrid " keyword).
+This offset is usually a more efficient (convergent) k-sample for a given
+number of points than centering a k-grid at the gamma point.
+For an orthorhombic cell (e.g. cubic) this is true,
+but for a hexagonal cell, the resulting k-grid does not have the needed
+symmetries about the body-center point in the grid.
+The offset k-sample in the hexagonal plane is anisotropic, introducing
+an artificial symmetry-breaking to the system.
+To make the sampling symmetric for a hexagonal system (hexagonal in
+the <i>x-y</i> plane!), we must use either
+"kgrid2" or "kgridh" so that the k-grid is <i>not</i> shifted off
+gamma in the <i>x-y</i> plane, and is shifted only in the <i>z</i>-direction.
+Use of "kgrid3" uses a gamma-centered grid, i.e., without any shift.
+<p>
+SeqQuest automatically uses any symmetry specified in the input
+to reduce the generated BZ sample to k-points in the irreducible BZ.
+<p>
+To get a gamma point sample for a periodic calculation, enter
+"0 0 0" as input to the "<tt>kgrid </tt>" keyword.  The "0" input
+causes a single interval along that reciprocal lattice vector,
+with the k-point coordinate at gamma in that direction.
+<p>
+For a 2D (ndim=2) calculation, <i>n_kgrid_C</i> must be zero (i.e. gamma
+point in the non-periodic <i>z</i>-direction).
+For a 1D calculation, both <i>n_kgrid_C</i> and <i>n_kgrid_B</i>
+must be entered as zero.
+
+For bulk defect calculations (and closed-shell molecular calculations),
+a "discrete defect occupation" (DDO) scheme is available to replace the
+conventional fermi-dirac method for occupying states.  DDO enforces
+closed shell (T=0K) occupancies, and, in bulk, prevents metallic
+occupations.  See PRL 96, 246401 (2006).  The DDO scheme is invoked
+by using the <b>closed</b> option in the
+<a href="SeqQ_rundata.html"> Run phase Section</a> of the input file.
+
+<br><font size=-2><a href="#top">Return to Top</a></font><p>
+
+<a name="symmetry"></a>
+<h3>Symmetry</h3>
+
+Symmetry in Quest is used to:
+<ul>
+<li> reduce the BZ sample to points in the irreducible Brillouin
+     Zone (reducing the cost of the calculation),
+<li> symmetrize the resulting density,
+<li> enforce symmetry constraints on atomic positions during relaxation,
+<li> and enforce symmetry on cell vectors during cell optimizations.
+</ul>
+The code does not deduce the symmetry of the system, nor does it
+know anything about space/point groups; the desired symmetries
+must be specified in the input file by the user.
+The user need not specify all the symmetry operations for a given
+symmetry group in the input file, just those that are sufficient
+to define a group (i.e., a minimum basis that expands to a group).
+The code will automatically expand the entered elements into the full group.
+The symmetry operations have a general input: a type of symmetry
+(expressed as a rotation with a possible inversion) around a
+symmetry axis, with a possible translation (to allow for
+non-symorphic groups):<br>
+<dl>
+<dt> A symmetry operation is defined using the following:
+  <dd> <i>  i_symtype  x_symaxis y_symaxis z_symaxis  a_off b_off c_off </i>
+  <br><br>
+<dt> <i> i_symtype </i> - Defines symmetry type.
+  <dd> Allowed values: 1,2,3,4,6, -1,-2,-3,-4,-6 <br>
+       |<i>i_symtype </i>| = order of rotation (2-fold,3-fold, etc) <br>
+       <i>i_symtype </i> &lt 0 = rotation plus inversion <br>
+       <i>i_symtype </i> = -1 is simple inversion <br>
+       <i>i_symtype </i> = 1 or -2 is a reflection (2-fold+inversion=reflection)
+  <br><br>
+<dt> <i> x_symaxis y_symaxis z_symaxis </i> - Defines rotation axis
+  <dd> NB: Input is Cartesian <i>x,y,z</i> (even if coordinate=LATTICE)<br>
+       Axis need not be normalized, but must be non-zero (except for inversion)
+  <br><br>
+<dt> <i> a_off b_off c_off </i> - Defines translation/offset vector
+  <dd> NB: Input is in Lattice units (even if coordinate=CARTESIAN)
+</dl>
+
+This convention allows for a very natural (and very compact) scheme
+for describing any general point group or space group.  For example,
+the bulk cubic symmetry, a group with 48 total symmetry operations,
+can be described with four input symmetry definitions:
+a 4-fold rotation about the <i>z</i>-axis,
+a 3-fold rotation about the 111-axis,
+a 2-fold rotation about the 110-axis,
+and an inversion:
+<pre>
+symops - for cubic symmetry
+  4
+definitions of symmetry operations
+  4  0.0  0.0  1.0   0.0  0.0  0.0
+  3  1.0  1.0  1.0   0.0  0.0  0.0
+  2  1.0  1.0  0.0   0.0  0.0  0.0
+ -1  0.0  0.0  0.0   0.0  0.0  0.0
+</pre>
+These four symmetry operations are sufficient to define the group; SeqQuest
+will internally expand these four input elements to generate the full group
+of 48 symmetry elements.
+Note that the inversion has a zero length axis.  This is a special case, as
+axes for all other symmetry types must be non-zero.  The cubic group needs
+no translations (note translation vectors are all zero) in its definitions,
+but other (non-symorphic) symmetry groups will have translation.
+To see examples of how to define the symmetries for a variety of different
+crystal symmetries,
+see <a href=SeqQ_syms.html>symmetry input examples</a>.
+
+<br><br>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Setup Data">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  August 22, 2016  <!-- energies order -->
+</font>
+
+</font>
+</body>
+</html>

@@ -1,0 +1,188 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest News </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<font face="Arial, Helvetica, Sans Serif">
+
+<a name="top"></a>
+<h1>SeqQuest News (Latest version: 2.66)</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov">
+       paschul@sandia.gov?Subject=SeqQuest</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2> Recent news </h2>
+<ul>
+   <li> SeqQuest publicly available as computational tool on web portals:
+        <a href="http://nanohub.org"> nanoHUB</a> and
+        <a href="http://memshub.org"> memsHUB</a>.
+<br><br>
+
+   <li> Lanthanides (PBE), complete PBE library from H through Bi <br><br>
+
+   <li> Current production version: SeqQuest-2.68 (June-2018) <br>
+     <ul>
+       <li> Expanded//unified SLICs geometry constraints (+bond,layers,multiple)
+       <li> Fix idle-proc solver bug
+       <li> Transferred to git-repo
+     </ul>
+<br>
+   <li> Previous production version: SeqQuest-2.67 (Aug15-Dec15) <br>
+     <ul>
+       <li> Label-selected atoms in specifying constraints in geometry
+       <li> Graceful NEB exit upon stall (image scf failure)
+       <li> Gamma-point add-on in post-scf
+       <li> Bugfixes (null bands, fft exception, et al.)
+     </ul>
+ <br>
+   <li> Earlier production version: SeqQuest-2.66 (24Apr15) <br>
+     <ul>
+       <li> Primary purpose and effect: reduce disk I/O footprint in parallel runs
+       <li> Option to input geometry from separate file "lcao.geom_in"
+             (see <tt>geomfile</tt> option in <a href="SeqQ_Setdata.html">setup phase</a>)
+       <li> Turn scf-guess default to OFF for complex (to avoid known error in gesser)
+     </ul>
+ <br>
+   <li> Old version: SeqQuest-2.65d (Aug13-Dec14)
+  <font size=-2> <a href="SeqQ_Versions.html">Version history</a> </font>
+     <ul>
+       <li> C6-based van der Waals corrections (Grimme's D2, and Kim/Goddard ULG)
+       <li> Improved cell optimization, and more constraints for cell optimization <br>
+            - more stable (and faster) cell minimizations, more means to constrain cells
+       <li> Default settings recalibrated - with numerical differences <br>
+            <ul>
+               <font color="red">
+             <li> Grid range parameter extend from 2d-7 to 2d-8 <br>
+                - This will lead to slight numerical differences from previous versions <br>
+                - To recover pre-2.65 results, set "cutgrd" to 2.d-7 <br>
+                - Needed to more dependably converge stress/cell-opt and surface energy calculations.
+                - Test suite updated to reflect changes in defaults
+               </font>
+             <li> Other cutoffs (e.g., force convergence, scf convergence) also modified <br>
+            </ul>
+       <li> Bugfixes/patches:
+         <dl>
+           <dt> (a) 24Sep13 - NEB+LMCC fix, and output cell enthalpy
+           <dd> bugfix: lmcc crystal reference file to all image masters (not just NEB master) <br>
+                diagnostic: Output enthalpy (E+PV) in cell optimizations (and when requested)
+           <dt> (b)  5Feb14 -  broken BLAS calls, band labels
+           <dd> bugfix: fixed broken BLAS calls in some new branches of cell opt <br>
+                diagnostic: fix band labeling in band structure output
+           <dt> (c)  9May14 - fix vdw-data input
+           <dd> bugfix: job-stopping bugs in reading vdw parameters from input file
+           <dt> (d) 15May14 - fix band structure calculation
+           <dd> bugfix: intermittent seg-fault/crazy-results from a coding error
+         </dl>
+     </ul>
+<br>
+   <li> Old version: SeqQuest-2.64  (Jul13)
+      <ul>
+       <li>  k-distributed parallelism, including solvers, enabling larger cells with more k-points
+             <br> - 500-atoms with many k-points routine, 1000-atoms practical
+       <li>  Built-in (post-scf) band structure facility (thx to AHE and ACP)
+      </ul>
+<br>
+   <li> Old version: SeqQuest-2.63b (May12-Feb13)
+      <ul>
+       <li> Parallel performance: k-parallel scf, and k-point distributed memory
+            <br> - enablss large number of k-points for large cell sizes in parallel
+       <li> Simple double-layer (charged slab) boundary conditions
+       <li> Bugfixes/patches:
+         <dl>
+          <dt> (a) 16Jan13 - bugfix: parallel solver memory distribution for small 4-proc problems
+          <dt> (b) 26Feb13 - bugfix: harmonized stripe parallel vs. full in different parts of code
+         </dl>
+      </ul>
+
+   <li> Old version: SeqQuest-2.62 (Feb12)
+      <ul>
+       <li> Improved parallelism: stripe-parallel atomic 2-, and 3-center matrix elements
+       <li> Axis-based volume constraints (vgfixX)
+       <li> Fixed-shape (i.e. isotropic) cell-volume optimization
+       <li> spin-AM05 (Rudy Magyar)
+      </ul>
+<br>
+
+   <li> Web pages expanded: <br>
+   <ul>
+     <li> <a href=SeqQ_Atom_Library.html> On-line pseudopotential/basis library</a>
+       <!-- OLDLIB     (pending approvals) -->
+       <!-- NEWLIB -->
+     <li> <a href="SeqQ_AnalysisTools.html">    Analysis Tools</a>
+     <li> <a href="SeqQ_NEB_Tutorial.html">     NEB Tutorial</a>
+     <li> <a href="SeqQ_bandsdat.html">         band structure </a> and
+          <a href="SeqQ_bands_Tutorial.html">   band structure example</a>
+     <li> <a href="SeqQ_Bugs.html">             Bug Reporting</a>
+   </ul>
+
+   <li> <a href="SeqQ_Atom_Library.html">Atom library</a> updates:
+     <ul>
+       <li> New: PBE and LDA: "long-tail" carbon atoms (for long-range, e.g. graphite, vdW calculations)
+       <li> New: Lanthanides for PBE (full library from H through Bi) [Mar2014]
+       <li> Expanded: AM05 (Check library)
+       <li> Replaced: various (what is free comes with no guarantee---check file documentation)
+     </ul> 
+</ul>
+
+<h2> Coming "soon" </h2>
+<ul>
+   <li> Local exact exchange, HSE (coming in 2.69)
+   <li> More parallelism (memory distribution, I/O-reducing)
+</ul>
+
+<h2> Wish list </h2>
+<ul>
+   <li> TD-DFT, linear response, GW
+   <li> Electrochemistry features - coupled DFT-solvation models
+   <li> More parallelism, all levels: Fine-grain scalable, threads
+   <li> Parallel eigensolvers (scalable for QM regime)
+   <li> Spin-orbit coupling
+   <li> Anti-ferromagnetism
+   <li> Expanded AM05 (steadily) and BLYP (not-so-much) atom library
+   <li> Projector operators and atomic hyperfine
+   <li> Linear scaling solver in production code
+   <li> QM/MM coupling
+   <li> <i>f</i>-orbitals
+   <li> Performance enhancements
+   <ul><li> "Dynamic" one-center analytic/grid corrections
+       <li> New non-local integrals
+       <li> New angular integrals for local three-center integrals
+   </ul>
+</ul>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest News">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> June 27, 2018    <!-- 2.68 -->
+</font>
+
+</font>
+</body>
+</html>

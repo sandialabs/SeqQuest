@@ -1,0 +1,256 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest input - van der Walls (vdW) corrections </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest input: van der Waals corrections</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+   <th> <a href="SeqQ_setdata.html">      Setup<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">   Overview</a>
+<li><a href="#inputs">  Input options</a>
+<li><a href="#trouble"> Troubleshooting</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2> Overview </h2>
+
+This page gives a description of how to invoke and manipulate C6-based vdW corrections,
+The vdw_potential is invoked in the <a href="SeqQ_setdata.html"> setup phase</a>
+of the input, and then later in that section can be reconfigured.
+
+The code implements two different C6-based vdW corrections,
+which the user should cite according to which is selected:
+<ul>
+<li> DFT-D2 vdW correction due to: Stefan Grimme, J. Comput. Chem. 27, 1787 (2006).
+<li> ULG vdW correction due to: H. Kim, J.M. Choi, W.A. Goddard III, J. Phys. Chem. Lett. 3, 360 (2012).
+</ul>
+Selection of one of these using the <tt> vdw_potential </tt> in the
+<a href="SeqQ_setdata.html"> setup phase </a>
+automatically invokes the published C6 parameters in the calculation,
+provided that the atom types in the input are properly identified (ie., the code can parse the elements name).
+The code also enables the user to manipulate these parameters,
+to set values for missing elements types (e.g., D2 parameters stop at Xe),
+or to modify the literature-provided C6-correction values to their needs, through the input file.
+
+<p>
+Important notes:
+<ul>
+<li> <font color="red">
+     The default units for the vdW input is RYDBERG ATOMIC UNITS (Rydberg and Bohr). <br>
+     </font>
+     - Apologies, but had to make a choice, and it was simply easier to implement that way. <br>
+     <ul> The conversion factors that are used to convert (Grimme's, Kim, etal's) units in the code are:
+         <li> Angstrom to bohr: 1.8897265
+         <li> Grimme C6 parameters, J/mol to Ry: 0.76176 x 10<sup>-6</sup>
+         <li> ULG, Kim et al. C6 parameters, kcal/mol to Ry: 0.0031864
+     </ul>
+<li> The range cutoff for the C6-interaction is also limited by an interaction distance which
+     determined by the interaction of the atomic basis sets (typically ~10 A).
+     Longer-range C6 interactions than these are discarded, but are presumably neglibible at that point.
+</ul>
+
+<p>
+Current requirements for use of the vdW C6-corrections (as of version 2.65):
+<ul>
+  <li> The <tt>vdw_potential</tt> must be specified in the setup phase
+  <li> The vdW correction can be used with any functional, BUT: <br>
+       NB: the C6-based parameters are specifically tuned for PBE in the literature and in this implementation.
+  <li> Element symbols MUST be used as atom type aliases in the description of the atomic positions. <br>
+       This is needed so that the code can associate the correct element parameters with the correct atom type.
+  <li> Any data must be in RYDBERG ATOMIC UNITS (Rydberg and Bohr).
+</ul>
+
+<hr>
+<a name="inputs"></a>
+<h2> Input options </h2>
+
+<p>
+The input of vdW parameters is in three sections: <br>
+first, a global control section (within which the keywords must come in a strict order); <br>
+second, an atomic parameter input section (with which one modifies 1-atom vdW parameters, in any order); <br>
+third, a pairwise parameter input section (with which one modifies pairwise parameters, in any order). <br>
+One could, in principle, use this input section to reconfigure the entire parameter set for a vdW calculation.
+However, the form is limited to a single C6-correction method (D2, or ULG, but not mixed) in a calculation.
+</p>
+
+<font face="courier"><tt>
+<dl>
+
+<dt><b> vdw_data </b> - the section MUST begin with this keyword
+
+<dt><b> [vdwff] </b> - C6-correction type for this input, to check consistency with QM input
+  <dd><i> vdwtype </i> - vdwtype MUST be "DFT-D2" or "ULG" (contrast to setup phase input)
+
+<dt><b> [sfactor] </b> - override default scaling factor for vdW correction
+  <dd><i>  sfactor </i> - functional-dependent scaling factor, shound be: 0 < sfactor < 1
+
+<dt><b> [dfactor] </b> - override default damping function parameter
+  <dd><i>  dfactor </i> - vdW-method-dependent parameter for damping 1/R6 divergence
+
+<dt><b> [rcutoff] </b> - override default range cutoff for C6-interactions
+  <dd><i>  rcutoff </i> - range (in Bohr) beyond which to ignore vdW corrections
+
+
+<br><br>
+<dt><b> [vdw_coefficients] </b> - keyword required to input atomic C6-parameters
+<dd> - read in sequence of atomic vdW paramaters, any nunber of, in any order ...
+
+<dt><b> [[atomc6|c6atom]] </b> - enter atomic C6 energy parameter
+  <dd>  <i> type_alias  c6_type </i>  - atom type alias, and c6 energy parameter (Ry)
+
+<dt><b> [[atomr0|r0atom]] </b> - enter atomic R0 range parameter
+  <dd>  <i> type_alias  r0_type </i>  - atom type alias, and r0 value (Angstrom)
+
+<dt><b> [[atomff|ffatom]] </b> - enter both atomic vdW parameters, the c6 value and the range
+  <dd>  <i> type_alias  c6_type r0_type </i> - as above
+<dt>  ...
+
+<br><br>
+<dt><b> [vdw_2c] </b> - keyword required to input pair-wise C6-parameters (ends atomic input)
+<dd> - read in sequence of pairwise vdW interations, any number of, and in any order ...
+
+<dt><b> [[pairc6|c6pair]] </b> - enter the pairwise C6 value
+  <dd>  <i> typ1_alias  typ2_alias c6_pair </i> - as above
+
+<dt><b> [[pairff|ffpair]] </b> - enter both atomic vdW parameters, the range and C6 value
+  <dd>  <i> typ1_alias  typ2_alias c6_pair r0_pair </i> - as above
+
+<dt><b> [[zeroff|ffzero]] </b> - turn off vdW interaction between specified atom types
+  <dd>  <i> typ1_alias  typ2_alias </I>
+<dt>  ...
+
+<br><br>
+<dt><b> end_vdw </b> - required, to specify end of input of vdw parameters
+
+</dl>
+</tt></font>
+
+<hr>
+<a name="details"></a>
+<h2>Details</h2>
+
+This section allows to modify/set the atomic parameters (if the literature values are not desired,
+or if the value is not provided in literature), and also to modify interaction parameters.
+The DFT-D2 and ULG methods have specified dfferent means to evaluate atomic pair cross terms,
+and the code uses their published procedure to construct a default vdW specification.
+However, if the user modifies the atomic parameters,
+these input values will be used instead to recompute a new default pair interation.
+This is why all the atomic parameters must be input before any pairwise parameters in this section.
+After the atomic parameters are finalized,
+the user can then modify the pair-interaction parameters (or turn the pair C6-interaction off entirely).
+
+<hr>
+<a name="example"></a>
+<h2>Example</h2>
+
+The following illustrates how to invoke and manipulate the ULG C6-corrections,
+with just the relevant excerpts from a full input file.
+Examine the <a href="SeqQ_setdata.html"> setup phase </a> section to identify where
+in the setup phase these appear.
+
+<pre>
+  ...
+functional
+ PBE
+vdw_potential
+ ULG
+  ...
+atom file
+  Ni = Ni_p0.atm
+atom file
+   C = C_long.atm
+  ...
+vdw_data
+vdwff
+ ULG
+vdw_coefficients
+atomc6
+  Ni  60.0
+vdw_2c
+zeroff - just keeping the Ni-C pair, turning off Ni-Ni
+  Ni  Ni
+end_vdw
+ ...
+</pre>
+
+One component is necessary to invoke the C6-corrections:
+that one selects the PBE functional
+and then uses the <tt>vdw_potential</tt> keyword to specify which form of C6-correction to use.
+In this example, the ULG of Kim and Goddard is specified.
+In the <tt>vdw_data</tt> section that appears later in the setup, one can manipulate the correction,
+and potentially override the default parameters of the specified approach.
+The first part after the <tt>vdw_coefficients</tt> keyword uses the <tt>atomc6</tt> keyword
+to modify the Ni atomic C6 energy parameter,
+setting it to 60.0 Rydberg.
+The second part after the <tt>vdw_2c</tt> keyword modifies the final mixed pair potentials,
+here using the <tt> zeroff </tt> keyword to turn off the correction for Ni-Ni atom pairs.
+Note that the name "Ni" is taken from the aliases used to define the atoms earlier in the setup where
+the atom files are specified, i.e. <tt>Ni = Ni_p0.atm</tt> defines the atom "Ni" as being associated
+with the data in the atom file "Ni_p0.atm".
+This entire <tt> vdw_data </tt> section is optional, if it does not appear,
+the code will use the internal default values.
+
+
+<hr>
+<a name="trouble"></a>
+<h2>Troubleshooting</h2>
+
+Not much can go wrong inexplicably.
+The input parser will tell you if the syntax is wrong, and how.
+Later, the code will echo what it is using for the vdW correction, so you can see what happened.
+The only real challenge is ensuring the units are converted crrectly.
+<dl>
+<dt> Having trouble getting units right?
+  <dd> Before attempting to specify a modified parameter set,
+       attempt a test benchmark with this vdW configuration section
+       to input the literature values, with the conversion factors installed.
+       If correctly input, the manually-configured run should give the same results as a default
+       vdW run (which uses internal tables populated from literature).
+</dl>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Cell Optimization">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> June 15, 2015     <!-- fix type -->
+</font>
+
+</font>
+</body>
+</html>

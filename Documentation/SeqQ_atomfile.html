@@ -1,0 +1,224 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title>SeqQuest Atom file format</title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest Atom file format</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_Atom_Library.html"> Atom<br> Libraries</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Introduction</a>
+<li><a href="#inputs">   Input file structure</a>
+<li><a href="#details">  Details about input data</a>
+<li><a href="#examples"> Examples</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Introduction</h2>
+This page gives a description of the structure of atom files (potentials and
+basis sets) used in the DFT calculations.
+It is possible to construct atom files for atoms with pseudopotentials,
+all-electron atoms with bare-core potentials, and "floating" orbitals without
+any potentials.  Pseudopotentials with non-local projectors up to l=2 are
+allowed (using l=3 as local), and partial core correction (Louie,
+Froyen, and Cohen) is supported.  Currently (v2.53), even though the code
+will do spin-polarized DFT calculations, it cannot handle spin-polarized
+<i>pseudopotentials</i>.
+For each atom "type", the code requires information like the effective nuclear
+charge, radial grids on which to do its integrals (these same grids are used
+for local xc, Coulomb integrals), the pseudopotentials given on those grids,
+and the contracted Gaussian basis sets associated with that atom type.
+
+<p>
+The default units energy units are Rydberg, and the distance unit is bohr.
+In particular, pseudopotentials are given in Ry, and the Gaussian exponents
+in the basis sets are in bohr^-2.
+
+<hr>
+<a name="inputs"></a>
+<h2>Atom file format</h2>
+The atom potential/basis data, while it can be input directly from the
+input file, is intended to be read in from a separate file specified
+in the input file.
+Like other input sections to the code, the atom file input is
+driven by keywords in such a way as to be self-documenting.
+Unlike other input sections, the atom file input (1) has a very strict
+order, and (2) data is usually highly formatted, not free-format.
+There is optional input data, enclosed in square brackets [].
+Because the atom files are collected in libraries, and can last a long time,
+there are legacy pieces that serve no useful current function other than
+backward compatibility.
+
+
+<font face="courier"><tt>
+<dl>
+<dt><b> type number, label </b>
+  <dd><i>   itype, type_name </i> (i2,a24)
+<dt><b> [notesN]</b> - <i>N</i> lines of notes describing atom
+  <dd><i>   N comments line(s) </i> (a80)
+<dt><b> [mass  ]</b> - atomic mass for this atom type
+  <dd><i>   atom_mass </i> (d16.8)
+<dt><b> [energy]</b> - reference energy for atom
+  <dd><i>   atom_energy </i> (d16.8)
+<dt><b> effective nuclear charge </b> - valence charge of atom
+  <dd><i>   z_valence </i> (d16.8)
+<dt>  if( z_valence .eq. 0 ) goto basis: - skips grids/ppots for floating orbs
+<dt><b> pseudopotentials: Lmax, and effective gaussian range </b>
+  <dd><i>   L_max, gaussian </i> (free format int, real)
+<dt><b> [functional type used in generating potential]</b>
+  <dd><i>   gmethod </i> (a8)
+<dt><b> radial mesh: </b>number of points for local and non-local pot integrals
+  <dd><i>   N_loc, N_nonloc </i> (two free format integers)
+<dt><b> mesh points for nuclear potential </b>
+  <dd><i>   ( rmesh(i), i = 1, N_loc ) </i> (3x,6f12.8)
+<dt><b> radwts: weights for radial points </b>
+  <dd><i>   ( weight(i), i = 1, N_loc ) </i>(3x,6f12.8)
+<dt> if( L_max .lt. 0 ) goto basis: - skips ps-pot for bare core atom
+<dt>  do  L_pot = 0,L_max
+<dt><b> non-local potential: l,potential*integration weight </b>
+  <dd><i> L_pot, ( pspot(i,L_pot), i = 1, N_loc ) </i>(i2,1x,6f12.8/(3x,6f12.8))
+<dt>  enddo
+<dt><b> [partial core charge density] </b>
+  <dd><i>   ( corecharge(i), i = 1, N_loc ) </i>("-3",1x,6f12.8/(3x,6f12.8))
+<dt> basis:
+<dt><b> number of radial functions</b> - number of shells in basis
+  <dd><i> n_shell </i> (i2)
+<dt>  do  i_shell = 1, n_shell
+<dt><b> angular momentum, number of alphas </b>
+  <dd><i>   L_shell, n_gaus_shell </i> (i2,1x,i2)
+<dt><b> alphas </b> - gaussian exponents of contracted function
+  <dd><i>   ( alpha(i), i = 1, n_gaus_shell ) </i> (4d16.8)
+<dt><b> wave function coefficients </b> - contraction coefficients
+  <dd><i>   ( c_alpha(i), i = 1, n_gaus_shell ) </i> (4d16.8)
+<dt>  enddo
+<dt><b> shell occupancies </b> - reference atom shell occupancies
+  <dd><i>   ( occup_shell(i_shell), i_shell = 1, n_shell ) </i> (3x,6f12.8)
+<dt><b> end atom file  </b>
+</dl>
+</tt></font>
+
+<font size=-2><a href="#top">Return to Top</a></font>
+
+<hr>
+<a name="details"></a>
+<h2>Detailed explanation of input data</h2>
+
+<h4> type number, label </h4>
+  This data, the type number (int) and an atom name (char) are not used
+  in the code (unless the atom data is placed directly in the SeqQuest
+  input file rather than through a separate file, in which case the
+  type number keeps the sequence number of the atom type).  This input
+  is subject to change at some future date.  Currently, enter a "1" for
+  the atom type number, and give a name to the atom.  Up to 24 characters
+  are kept internally, but using the elemental symbol is usually best.
+<h4> notesN </h4>
+  The purpose of this section is to document the pedigree of the atom
+  file - who constructed the file when, using what kind of pseudopotential
+  generator, and basis refined in what kind of system, etc.
+<h4> mass </h4>
+  This data is optional (and can be overridden in the setup phase input).
+  It is used in the dynamical geometry (ASD, damped dynamics, MD) updates.
+  The units are atomic units, e.g., mass(carbon) = 12.0.
+<h4> energy </h4>
+  This data is optional (and can be overridden in the setup phase input).
+  It is a "reference" energy (Rydberg) for this atom type, and is used
+  in computing a "binding energy" for a calculation, i.e., the total
+  scf energy minus the sum of the atomic reference energies.
+<h4> effective nuclear charge </h4>
+  The effective nuclear charge ... the valence Z of the pseudo-atom.
+<h4> pseudopotentials: Lmax, and effective gaussian range </h4>
+  The max angular momentum included in the pseudopotential, and an
+  effective range for the potential, expressed as a Gaussian exponent.
+  This latter is used in computing a cutoff criterion for the evaluation
+  of non-local potential matrix elements between basis functions (themselves
+  composed of Gaussians).  Since the potential is expressed on a radial
+  grid (rather than as Gaussian fits), an effective Gaussian must be
+  provided.  The practice for Quest is to use the appropriate longest
+  (i.e., smallest) Gaussian in the pseudopotential fits in: PRB 26, 4199 (1982).
+<h4> functional type used in generating potential </b> OPT</h4>
+  Optional data.  Documents which flavor of DFT used to generate the potential.
+  Should use the same flavor of DFT to generate the atomic pseudpotential as
+  in the Quest calculation, but the code does not currently enforce this.
+<h4> radial mesh:</h4>
+  The number of points in the radial mesh about this atom type,
+  and the maximum number of points used
+<h4> mesh points for nuclear potential</h4>
+  The radial mesh, currently logarithmic, used in evaluating both the local
+  (xc and Coulomb) and non-local pseudopotential integrals over this atom.
+  It <i>must</i> be strictly monotonically increasing, and must <i>not</i>
+  include the origin (r=0).
+<h4> radwts: weights for radial points</h4>
+  The integration weights for each of the radial points.
+<h4> non-local potential:</h4>
+  The pseudopotential projectors, by angular momentum, on the radial mesh.
+<h4> partial core charge density </h4>
+  Optional data.  If provided, this is the partial core charge density
+  as described in Louie, Froyen, and Cohen.
+<h4> number of radial functions </h4>
+  For the basis set, the number of independent contracted radial shells.
+  In other words, the number of "zetas".  For example, a double-zeta-s,
+  double-zeta-p, single-zeta d-polarization basis for a carbon atom
+  would amount to five shells.
+<h4> angular momentum, number of alphas </h4>
+  The angular momentum for this shell, and the number of contracted
+  Gaussians in this shell.
+<h4> alphas </h4>
+  The exponents for the Gaussians in this contracted function.
+  These values <i>must</i> be in strictly increasing order, and should be
+  separated by at least a factor of two between successive exponents.
+<h4> wave function coefficients </h4>
+  The contraction coefficients for the primitive Gaussians in this shell.
+  The full contracted basis function need not be normalized; the code
+  will automatically apply a normalization internally.
+<h4> shell occupancies </h4>
+  In the order of the basis shells given above, the (spherical) occupancies
+  of the shells that define the "reference" atom density used in Quest.
+
+<hr>
+<a name="examples"></a>
+<h2>Examples</h2>
+Visit a Quest atom file library directory.
+
+<br>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Atom_Library.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Atom FIle Formats">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> December 3, 2004  <!-- update line  -->
+</font>
+
+</font>
+</body>
+</html>
