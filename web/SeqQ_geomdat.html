@@ -1,0 +1,350 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest input - Geometry relaxation </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest input - Geometry relaxation</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+ -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Overview</a>
+<li><a href="#inputs">   Input options</a>
+<li><a href="#cons">     Applying constraints</a>
+<li><a href="#gmeth">    Relaxation methods</a>
+<li><a href="#trouble">  Troubleshooting</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+This page gives a description of the input section that controls
+and modifies how an atomic geometry relaxation is done.
+The code does a full geometry relaxation via force-elimination,
+enforcing all user-specified symmetry, and respecting all constraints
+specified by the user in this section.
+The geometry relaxation input section is optional; all the user
+need do is add a "<tt>do relax</tt>" instruction in the
+<a href="SeqQ_runopt.html">command options</a> and the code will
+automatically attempt to relax the atomic positions to give zero forces.
+
+<p>
+The default units for the geometry relaxation section are Ry for energies
+and bohr for distances.
+
+<p>
+Current constraints, important version notes:
+<ul>
+<li> "<b><tt>end geometry</tt></b>" keyword required to end this section, new to version 2.53
+<li> "<b><tt>frame </tt></b>" keyword new, added in version 2.54
+<li> "<b><tt>vgfixM</tt></b>" keywords new, added in version 2.62
+</ul>
+
+<hr>
+<a name="inputs"></a>
+<h2>Input options</h2>
+
+The geometry relaxation input section can appear <i>anywhere</i> in the
+"run phase" section of the input file (as of v2.53), begins with the
+"<tt>geometry relaxation</tt>" keyword and ends with the
+"<tt>end geometry</tt>" keyword.
+<p>
+The following are the common input keywords in this section.
+All the keywords are optional, and can appear in any order within this section.
+The keywords must be left-justified, but all data input is free-format.
+
+<font face="courier">
+<tt>
+<dl>
+
+<dt><b> geometry relaxation </b> - begin relaxation input section
+  <dt>  ...
+
+<dt><b> gsteps </b> - maximum number of geometry steps
+  <dd><i>   n_step_g </i>
+
+<dt><b> ghistory </b> - max number of geometry steps to use in blend history
+  <dd><i>   n_hist_g </i>
+
+<dt><b> no ges </b> - <font color=red>(*)</font>turns off dynamic SCF guessing,
+                      reverts to overlapping spherical atom guess <br>
+       <font color=red> (*) Moved to
+       <a href="SeqQ_rundata.html">run phase data section</a> (2.61) </font>
+
+<dt><b> gconv </b> - force convergence criterion (Ry/bohr)
+  <dd><i>   force_conv </i>
+
+<dt><b> gblend </b> - initial update factor: R(2)=R(1)+gblend*F(1)
+  <dd><i>   gblend </i>
+
+<dt><b> gmethod </b> - specify <a href="#gmeth">relaxation method</a>
+  <dd><i>   gmethod </i> (BROYDEN, ASD, DMDAT, DAMPED, STEEPEST, ...)
+
+<dt><b> timestep </b> - time step for dynamical relaxation schemes
+  <dd><i>   time_step  </i>
+
+<!-- deprecated, as of 2.67, using label-based selection is better
+<dt><b> only relax </b> - <i><a href="#cons">about constraints</a></i>
+  <dd><i>   n_atom </i> (first n_atom if n_atom>0, last |n_atom| else)
+ -->
+
+<dt><b> gfixed </b> - fix positions for sequence of atoms
+            <i><a href="#cons">about constraints</a></i>
+  <dd><i>   start_atom  end_atom </i> (sequence to fix, inclusive)
+
+<dt><b> grelax </b> - relax positions for sequence of atoms
+                           <i><a href="#cons">about constraints</a></i>
+  <dd><i>   start_atom  end_atom </i> (sequence to relax, inclusive)
+
+<dt><b> frame  </b> - constraint: fix atom I, vector I-J, plane I-J-K
+                           <i><a href="#cons">about constraints</a></i>
+  <dd><i>   fixed_atom  vec_atom  plane_atom </i>
+
+<dt>
+   <b> vgfixM </b> - axis-related constraints for atoms (new in 2.62)
+                           <i><a href="#cons">about constraints</a></i>
+ <dd> <i> num_fixed_atoms  x_axis y_axis z_axis </i>
+          (number of atoms bound by this constraint,  and Cartesian axis)<br> 
+      <i> fixed_atom(1)  fixed_atom(2)  ...  fixed_atom(num_fixed_atoms)</i>
+          (list of atoms bound by this constraint)<br>
+    <ul>
+      <li> M = "a": free motion along axis, no motion normal to axis
+      <li> M = "d": fix axis-projected distance between listed atoms, free in-plane
+      <li> M = "p": no motion along axis vector, free in-plane
+    </ul>
+
+<dt>
+   <b> bond   </b> - fix bond distance between two atoms (new in 2.68)
+                           <i><a href="#cons">about constraints</a></i>
+  <dd><i>  atom_1 atom_2 </i>
+
+<dt>
+   <b> layers | slinky </b> - relax interlayer spacings or atoms (new in 2.68)
+                           <i><a href="#cons">about constraints</a></i>
+ <dd> <i> num_layer_atoms  x_axis y_axis z_axis </i>
+          (number of atoms in layer stack,  and Cartesian layer direction <br> 
+      <i> atom_top   atom_next  ...  atom_base </i>
+          (list of layer atoms, in order, from top (surface) atom to base (deep) atom <br>
+
+<!--  hold back RMV/SLIC until published
+<dt>
+   <b> slic1  </b> - local internal coordinate (sphere) projection for 1-fold atom (2.68)
+                           <i><a href="#cons">about constraints</a></i>
+  <dd><i> atom_1fold  atom_bond  atom_atom_anchor_</i>
+
+<dt>
+   <b> slic2  </b> - local internal coordinate (cylinder) projection for 2-fold atom (2.68)
+                           <i><a href="#cons">about constraints</a></i>
+  <dd><i> atom_2fold  atom_bond1  atom_atom_bond2_</i>
+
+<dt>
+   <b> slpar1 </b> (expert) adjust slic/sphere scalephi (g-update factor)
+                           <i><a href="#cons">about constraints</a></i>
+  <dd><i> scalephi_</i> (default=
+<dt>
+   <b> slpar2 </b> (expert) adjust slic/sphere scaletheta (g-update factor)
+                           <i><a href="#cons">about constraints</a></i>
+  <dd><i> scaletheta_</i> (default=
+<dt>
+   <b> fank0 | fnakf | fankb </b> (expert) force transformation scheme in slic/sphere
+    <ul>
+      <li> M = "0": use raw force on sphere anchor atom
+      <li> M = "f": combine full 1-fold force into sphere anchor atom
+      <li> M = "b" (default) : combine bond-project 1-fold force into sphere anchor
+    </ul>
+ RMV/SLIC -->
+
+<dt>         ...
+<dt><b> dynamics </b> - invokes MD input section
+  <dt>      ... <i><a href=SeqQ_dynamics.html> MD data input</a></i>
+
+<dt>    end dynamics - end of MD input section
+
+<dt>         ...
+  <dt><b> end geometry relaxation </b> - end of relaxation input section
+</dl>
+</tt></font>
+
+<hr>
+<a name="cons"></a>
+<h2>Applying constraints</h2>
+
+During relaxation, the code will automatically enforce the requirement
+that the atoms respect the symmetry specified in the setup phase.
+Other constraints currently available in the code include:
+<br> - fix selected atoms in place and allow the rest to totally relax
+<br> - fix the frame of reference defined by three atoms 
+<br> - fix selected atoms using a single type of axis-based constraint
+It is not avaulable to apply more sophisticated constraints on the system.
+For example, it is <i>not</i> possible to fix the C-O bond distance for a CO
+molecule otherwise free to relax when adsorbed on a metal slab.
+<p>
+To select sequences of atoms to be relaxed/fixed-in-place, one can use:
+<!--
+<ol>
+<li> <tt>only relax</tt> <i>n_atom</i>,  <i>n_atom</i> &gt 0 <br>
+Relaxes the first <i>n_atom</i> atoms, and fixes the others in place
+<li> <tt>only relax</tt> <i>n_atom</i>,  <i>n_atom</i> &lt 0 <br>
+Relaxes the last |<i>n_atom</i>| atoms, and fixes the others in place
+</ol>
+ -->
+<ol start=3>
+<li> repeated invocations of <tt>gfixed</tt>
+<li> repeated invocations of <tt>grelax</tt>
+</ol>
+The <b><tt>gfixed</tt></b> and <b><tt>grelax</tt></b> constraints
+cumulatively select out sequences of atoms to fix or relax, respectively.
+These keywords take two numbers as their argument for each invocation.
+To select one atom, input as a sequence of length one, i.e., enter the
+atom number twice (e.g. "2 2" to select the second atom).
+The keywords <tt>grelax</tt> and <tt>gfixed</tt> cannot be mixed in one input file!
+<p>
+Atom specification in these various constraints can either be by index within the list
+(e.g., "1 4" will select the first through fourth atom in a geometry list),
+or (as of 2.67) by the atom label within the list
+(e.g., "AT0001 AT0029" will select the atom sequence from the atom labeled "AT0001"
+through the atom labeled "AT0029", wherever those atom labels appear first in the list).)
+This allows for more flexible selections of atom sequences that do not required counting.
+Special names allow further flexibility in atom selection:
+"FIRST" and "LAST" will specify, naturally, the first atom, and last atom in the geometry list (e.g. "AT0002 LAST" will select the atoms from AT0002 through the last atom inclusive),
+provided that you have not already named an atom with "FIRST" or "LAST"
+(in which case the code will use the labeled atoms instead).
+<p>
+Different sets of contraints modify how the relaxations are done:
+either imposing more sophisticated constraints on the atomic positions,
+or transforming the coordinate relaxations from simple Cartesian to more effective framces.
+<p>
+The <b><tt>frame </tt></b> keyword
+can be useful for removing the artificial translational and rotational
+degrees of freedom in a molecular calculation when doing a NEB calculation
+(the artificial band forces of the NEB can couple to these spurious degrees
+of freedom and cause problems).
+The keyword requires three arguments:
+<i><tt>fixed_atom  vec_atom  k_plane_atom</tt></i>.
+This fixes the position of the first atom listed, <i><tt>fixed_atom</tt></i>,
+constrains the position of atom <i><tt>vec_atom</tt></i> such that the
+direction of the vector (<b>R</b>[J]-<b>R</b>[I]) does not change,
+and constrains the position of atom <i><tt>k_plane_atom</tt></i> such
+that the plane defined by I-J-K does not change (if I-J-K is desired to
+be linear, enter K as a negative number).
+<p>
+The <b><tt>vgfixM</tt></b> family of constraints
+allow for some interesting manipulations of the atom positions in a relaxation.
+These can be particularly useful in trapping semiconductor defect calculations in reduced symmetry configurations.
+<p>
+The <b><tt>bond</tt></b> constraint
+ does a very simplistic approach to fixing bond length between two atoms
+<p>
+The <b><tt>slinky | layer </tt></b> constraint
+transforms from a relaxation of atoms using Cartesian positions and forces,
+into a relaxation of interlayer spacings between atoms.
+This can be very useful for slab surface relaxations, eliminating the "caterpillar" effect that slows convergence.
+The layers are indicated by the order of the atoms, be sure to start from top slab layer, to deep layer.
+<!-- hold back RMV/SLIC
+<p>
+The <b><tt>slic# </tt></b> constraints
+do simple transformations of 1-fold and 2-fold atoms into more effective local "Z-matrix"-like forms.
+ -->
+<p>
+All these constraints must occur after all gfixed|grelax invocations are completed.
+Multiple constraints can be chosen.
+The code does check that the sets of atoms affected in multiple invocations of different constraints
+are completely disjoint, so as to avoid conflicts.
+
+<p>
+<b> Important </b>:
+The code does <i>not</i> check whether constraints
+(<b><tt> gfixed, grelax, frame, vgfixM, etc </tt></b>)
+are compatible with the symmetry specified in the input.
+If your constraints are incompatible with the symmetry (or with each other),
+then when the code completes the first force calculation and attempts a geometry update,
+it will stop the calculation when it discovers the (constrained) update violates symmetry.
+
+<hr>
+<a name="gmeth"></a>
+<h2>Relaxation methods</h2>
+
+The default relaxation method is BROYDEN.  This is the modified
+Broyden scheme due to D.D. Johnson, [Phys. Rev. B 38,12807 (1988)].
+This works very well when one is within a basin that has well-behaved second
+derivatives, but fails (badly) outside of its radius of convergence.
+The damped dynamics scheme originated by Hannes Jonsson is implemented
+in DAMPED, but is <i>not</i> recommended for use in Quest calculations.
+The force-coordinate damping leads to orientation-dependent trajectories and
+trajectories that can (and will) violate symmetry.  DMDAT modifies this to
+use the atomic force-vector, and makes the trajectory independent of system
+orientation, and thereby conserves symmetry.
+However, the recommended method for relaxation when BROYDEN fails is ASD.
+The Accelerated Steepest Descent method (P.A. Schultz, unpublished)
+is a very robust and remarkably effective geometry minimizer.
+
+<hr>
+<a name="trouble"></a>
+<h2>Troubleshooting</h2>
+
+<dl>
+<dt> The geometry relaxation violated symmetry on the first update step.
+  <dd> Check that constraints imposed on atomic relaxation are
+       consistent with the symmetry.
+<dt> The geometry "blew up" on the first relaxation update step.
+  <dd> Reduce: gblend, if doing Broyden; timestep, if doing a dynamical relax.
+       The gblend/timestep factors for minimization usually work best when
+       between 0.5 and 6.0, and the smaller these factors, the shorter the
+       first jump.
+<dt> During Broyden, my relaxation "blew up" or violated symmetry.
+  <dd> If you are not in a potential well, the second derivative matrix might
+       be ill-behaved and Broyden will fail.  Switch to the ASD method until
+       in a basin (forces getting smaller and energy getting lower).
+<dt> Using ASD (or damped dynamics), the geometry update violated symmetry.
+  <dd> Numerical noise - one atom of symmetrically related set of atoms got
+       damped but others did not.  Start geometry relaxation again with the
+       last good geometry.
+<dt> Geometry relax will not converge (with Broyden, esp), and is in a well.
+  <dd> Numerical noise - the convergence criterion might be smaller than the
+       inaccuracy in the computed forces.  Either increase force convergence
+       criterion, or use a denser grid (to get more accurate forces).
+</dl>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest relaxation input">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> June 27, 2018      <!-- d267a -atom label selectino -->
+</font>
+
+</font>
+</body>
+</html>

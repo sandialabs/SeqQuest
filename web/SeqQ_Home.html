@@ -1,0 +1,230 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Home Page </title>
+
+    <!-- SANDIA META tags ... mandated header data, from RandA requirements -->
+    <meta name="review" content="13 November 2002">
+    <meta name="filename" content="SeqQuest_Home.html">
+    <meta name="subject" content="SeqQuest home page">
+    <meta name="keywords"
+     content="QUEST, quantum, electronic structure, DFT, materials simulations">
+    <meta name="sandia.approval_type" content="formal">
+    <meta name="sandia.approved" content="2002-3808">
+    <meta name="sandia.create_date" content="13 November 2002">
+    <link rev="owns" title="Peter A. Schultz" href="mailto:paschul@sandia.gov">
+    <link rev="made, publisher"
+     title="Peter A. Schultz" href="mailto:paschul@sandia.gov">
+    <meta name="MSSmartTagsPreventParsing" content="TRUE">
+    <meta name="Author" content="Peter A. Schultz">
+</head>
+
+<!-- SANDIA official logo and home page link -->
+  <table width="664" height="112" border="0"
+   cellpadding="0" cellspacing="0" summary="layout only">
+  <tr width="664" height="101" valign="bottom">
+  <td width="557" height="101" valign="bottom">
+  <font face="arial, helvetica, sans" size="5"
+   style="family: arial, helvetica, sans">
+   <b><font size="+3">QUantum Electronic STructure</font></b> </font></td>
+  <td align="left" valign="bottom" width="107" height="101" rowspan="2">
+  <a href="http://www.sandia.gov/">
+  <img src="http://www.sandia.gov/images2002/snl_globe_right03.gif"
+    width="107" height="112" border="0"
+    align="left" valign="top" vspace="0" hspace="0"
+    alt="Sandia Home" title="Sandia Home"></a></td></tr>
+  <tr width="664" height="11" valign="top">
+  <td width="557" height="11" valign="top">
+    <img src="http://www.sandia.gov/images2002/gold_rule01.gif"
+    width="557" height="11" border="0"
+    align="left" valign="top" vspace="0" hspace="0" alt=""></td></tr>
+  </table>
+  <hr>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<font face="Arial, Helvetica, Sans Serif">
+
+<a name="top"></a>
+<h1>SeqQuest Electronic Structure Code</h1>
+
+<table bgcolor="#FFCC66" border=0 cellspacing=12>
+<tr>
+<td>
+    <a href="https://cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov?Subject=SeqQuest">
+       paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+</td>
+<td>
+       Richard P. Muller
+&lt;<a href="mailto:rmuller@sandia.gov?Subject=SeqQuest">
+       rmuller@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+</td>
+</tr>
+</table>
+
+<p>
+<b>SeqQuest</b> is a general-purpose electronic structure code to compute
+energies and forces for periodic surfaces (slabs) or solids, or finite
+molecules.
+SeqQuest uses density functional theory (DFT), and is capable of calculations
+using either LDA or GGA, with or without spin-polarization.
+It will do energy minimization of atomic positions through force elimination,
+cell shape optimization by stress-elimination,
+and molecular dynamics.
+SeqQuest rigorously and automatically corrects for supercell effects using
+the Local Moment Counter Charge method.
+SeqQuest uses norm-conserving pseudopotentials and high-quality
+contracted-Gaussian basis sets
+in a "Linear Combination of Atomic Orbitals" (LCAO) approach
+in its description of the electronic structure, and is a very efficient,
+compact code that enables very large-scale calculations (100's, even 1000+
+atoms on large memory workstations) using rather modest computational
+resources (single-processor work stations, or small clusters).
+Key to this performance is the implementation of highly efficient algorithms for the
+generation of the Hamiltonian matrix that scale linearly with problem size.
+
+<p>
+SeqQuest is actively under development at Sandia National Laboratories,
+within the
+<!--
+<a href="http://www.cs.sandia.gov/materials_methods/">
+ -->
+  Multiscale Science Dept. (1444).
+<!--
+</a>
+in an effort led by Peter A. Schultz.
+ -->
+The Quest effort owes <a href="SeqQ_Kudos.html">thanks to many</a>.
+
+<p>
+SeqQuest is being made available to the wider research community as a
+computational tool installed in
+the NSF <a href="http://nanohub.org/"> nanoHUB</a> web portal at Purdue
+and the <a href="http://memshub.org/"> memsHUB</a> web portal.
+SeqQuest is currently only licensed to "friendly users",
+and is being made available to a wider audience soon.
+<!--
+How do you find out how you can become "friendly"?  Contact the author.
+ -->
+
+<!--
+<p>
+<font color=red> Post-doctoral positions: </font> <br>
+<ul>
+<li>
+There are post-doc positions available at Sandia
+to be part of DFT methods development and applications.
+Electrochemistry and batteries,
+defects in semiconductors and other materials,
+functional development, etc.
+
+<li>
+For additional information, contact:
+<a href="mailto:paschul@sandia.gov?Subject=DFT apps post-doc">Peter Schultz</a>
+or see "Careers" on the
+<a href="http://www.sandia.gov">Sandia external web-site </a>
+<a href="http://www.cs.sandia.gov/materials_methods">Department web page</a>
+
+or
+<a href="mailto:jbaidun@sandia.gov?Subject=post-doc">John B. Aidun</a>
+or
+<a href="mailto:rmuller@sandia.gov?Subject=post-doc">Rick Muller</a>
+</ul>
+
+ -->
+
+<hr>
+
+<p>
+More information about use of the code can be found in the following:
+
+<ul>
+  <li> About the code and the method</li>
+  <ul>
+  <li><a href="SeqQ_News.html"><font color="red" size = "+1">News:</font></a>
+   <br> Update 2.68 now released (expanded/unified SLICs)
+  </li>
+  <li><a href="SeqQ_Features.html">Feature summary</a>
+  </li>
+  <li><a href="SeqQ_Background.html">Method background</a>
+  </li>
+  <li><a href="SeqQ_Publications.html">Bibliography</a>
+  </li>
+  <li><a href="SeqQ_Bugs.html">Reporting bugs</a>
+  </li>
+  </ul><br>
+
+  <li><a href="SeqQ_User_Guides.html">User Guides</a>
+  </li>
+  <ul>
+     <li> <a href="SeqQ_Input_Manual.html">      Input Reference Manual</a></li>
+     <li> Tutorials and examples:
+          <a href="SeqQ_Cluster_Tutorial.html">  molecule</a>,
+          <a href="SeqQ_Slab_Tutorial.html">     slab</a>,
+          <a href="SeqQ_Bulk_Tutorial.html">     bulk</a>,
+          <a href="SeqQ_NEB_Tutorial.html">      NEB transition state finder</a>,
+          <a href="SeqQ_bands_Tutorial.html">    band structure </a></li>
+     <li> <a href="SeqQ_AnalysisTools.html">     Analysis tools</a></li>
+     <li> <a href="SeqQ_Job_Manual.html">        Job Manual</a></li>
+     <li> <a href="SeqQ_File_Manual.html">       Files Manual</a></li>
+  </ul><br>
+
+  <li><a href="SeqQ_Atom_Library.html">Atom Libraries</a>
+  </li>
+  <ul>
+     <li> <a href="SeqQ_Atom_Library.html#atoms_lda"> LDA</a>,
+          <a href="SeqQ_Atom_Library.html#atoms_pbe"> PBE</a> (new: Lanthanides),
+          <a href="SeqQ_Atom_Library.html#atoms_am05"> AM05</a>,
+          <a href="SeqQ_Atom_Library.html#atoms_blyp"> BLYP</a>
+          atom availability </li>
+     <!-- NEWLIB
+     <li> <a href="Atom_Library/LDA/Atom_Library_LDA.html">    LDA</a>,
+          <a href="Atom_Library/PBE/Atom_Library_PBE.html">    PBE</a> (new: Lanthanides),
+          <a href="Atom_Library/AM05/Atom_Library_AM05.html">  AM05</a>,
+          <a href="Atom_Library/BLYP/Atom_Library_BLYP.html">  BLYP</a>
+          on-line atom availability </li>
+      END NEWLIB -->
+     <li> <a href="SeqQ_atomfile.html">Atom file format</a></li>
+  </ul><br>
+
+  <li><a href="SeqQ_Build_Guide.html">Build Guide - installing the code</a>
+  </li>
+  <ul></ul><br>
+
+  <li><a href="DFT_codes.html">Alternative DFT codes -
+       if Quest doesn't fit your needs ...</a>
+  </li>
+  <ul></ul><br>
+
+  <li><a href="SeqQ_Dev_Guides.html">SeqQuest Developer Guides</a></li>
+</ul>
+
+<hr>
+<font size="2">
+Sandia National Laboratories is a multimission laboratory managed and operated by National Technology and Engineering Solutions of Sandia, LLC., a wholly owned subsidiary of Honeywell International, Inc., for the U.S. Department of Energy's National Nuclear Security Administration under contract DE-NA0003525.
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=SeqQuest">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  Dec  1, 2021  <!-- web-links -->
+</font>
+
+<!-- SANDIA Privacy and Security link -->
+    <br><br>
+    <a href="http://www.sandia.gov/general/privacy-security/index.html">
+     Privacy and Security</a>
+
+</font>
+</body>
+</html>

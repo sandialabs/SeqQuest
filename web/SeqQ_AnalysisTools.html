@@ -1,0 +1,94 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Analysis Tools </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<font face="Arial, Helvetica, Sans Serif">
+
+<a name="top"></a>
+<h1>SeqQuest Analysis Tools</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<!--
+<hr>
+<h2><font color=red> Under construction </font></h2>
+ -->
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html"> SeqQuest<br> Home</a> </th>
+</tr>
+</table>
+
+<p>
+This page provides a description of some of the analysis tools
+and utility codes available for use with Quest.
+The tool set for Quest is not extensive, not that well organized, but is
+actively being developed.
+The following describe the principal tools currently available in some form:
+</p>
+
+  <ul>
+  <li> <A HREF="SeqQ_bandsdat.html"> band structure </A>
+       - compute band structure for 3D bulk crystals <br>
+       Done with SeqQuest itself, acting as its own post-processor.
+       <br><br>
+
+  <li> <A HREF="SeqQ_prop1e.html"> PROP1E </A>
+       - Mulliken populations, density of states, projected density of states
+       <br> Principal author: Art Edwards (AFRL)
+       <br> Required data: complex (requires Quest input file,
+            several Quest output files, and user input),
+             see <A HREF="SeqQ_prop1e.html"> PROP1E user guide </A>
+       <br><br>
+
+  <li> QGRIDS - obtain grid quantities (electron density, electrostatic potential)
+       <br> Interactive, menu-driven means to output grid fields for, e.g., plotting
+       <br> Required data: ".grd0" and ".grd" file from Quest job
+       <br><br>
+
+  <li> OUTPOST - generates input for MOLDEN/JMOL molecular visualization
+       <br> Required data: ".hist" file from Quest job
+       <br><br>
+
+  <li> BONDS - n.n. distance analysis, atom coordination analysis
+       <br> Required data: Quest main input file, Quest ".geom" file
+       <br><br>
+
+  <li> RINGS - ring statistics analysis
+       <br> Required data: Quest main input file, Quest ".geom" file
+       <br><br>
+
+  <li> CELLS - generates larger supercells from primitive unit cells
+       <br> Required data: interactive user input
+       <br><br>
+  </ul>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+   <a href="http://www.cs.sandia.gov/~paschul/">
+      Peter Schultz</a>
+at <a href="mailto:paschul@sandia.gov?Subject=Quest Development Guides">
+      paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> February 22, 2014   <!-- qgrids, band structure added -->
+</font>
+
+</font>
+</body>
+</html>

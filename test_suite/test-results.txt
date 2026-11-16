@@ -1,0 +1,12 @@
+Test suite run Thu Sep  1 09:43:53 2016 on edgemaster.sandia.gov
+
+__main__.QuestSuite.testGaN                     -58.7982954214
+__main__.QuestSuite.testH2                       -1.7865844666
+__main__.QuestSuite.testH2GGA                    -1.8399383623
+__main__.QuestSuite.testH2Geopt                  -1.7812643798
+__main__.QuestSuite.testH2GeoptGGA               -1.8352990446
+__main__.QuestSuite.testSi                      -62.2587838999
+__main__.QuestSuite.testSi112                  -125.2573983986
+__main__.QuestSuite.testSiCell                  -62.3086166266
+__main__.QuestSuite.testSiComplex               -62.2698261845
+__main__.QuestSuite.testSiIdosolv3              -62.2587838264

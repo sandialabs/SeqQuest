@@ -1,0 +1,192 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Input Reference Manual </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest Input Reference Manual</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html"> SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Overview</a>
+<li><a href="#inputs">   Global structure of input file</a>
+<li><a href="#examples"> Tutorials and examples</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+Quest uses a structured input file divided into sections of related data.
+The input is designed to be self-documenting.
+The input is keyword-driven (left-justified) followed by lines with (mostly)
+free-format data.
+Only the first few characters of a keyword line are significant; the remainder
+of a line can be used as documentation, aiding understanding and modification
+of an input file.
+
+<hr>
+<a name="inputs"></a>
+<h2>Global structure of input file</h2>
+
+The SeqQuest input file begins with a
+<a href=SeqQ_runopt.html>command options</a> section
+that controls the global operations of the code.
+Unless instructed otherwise in the command section, the code will stop
+after an SCF calculation, before a force evaluation.
+The first required "keyword" is the "<tt>setup data</tt>" which begins the
+<a href=SeqQ_setdata.html>setup data input</a> section that
+defines the structural characteristics of the problem.
+After the setup section ends, the optional <a href=SeqQ_rundata.html> run
+phase input data</a> section begins processing the file.
+The run phase section has embedding within it an optional
+<a href=SeqQ_geomdat.html> geometry relaxation input</a> section and
+<a href=SeqQ_celldat.html> cell optimization input</a> section for
+minimization, and a section for defining a
+<a href=SeqQ_dynamics.html> molecular dynamics</a> simulation.
+If the band structure post-processing step is selected in the
+<a href=SeqQ_runopt.html> run options</a>,
+the specification is required in an input section for the
+<a href=SeqQ_bandsdat.html> band structure section</a>,
+If the NEB transition state finder is invoked (in the command options),
+the <a href=SeqQ_nebdat.html> NEB data input</a> section is required
+and sets up a multi-image "chain-of-states" calculation to find a transition
+barrier.
+
+<hr>
+<font face="courier"><tt>
+<dl>
+  <dt>   ... <i><a href=SeqQ_runopt.html> command options</a></i>
+  <dd>   ...
+<dt><b> setup data </b> - begin setup phase input
+  <dd>   ...
+  <dt>   ... <i><a href=SeqQ_setdata.html> setup structure data</a></i>
+  <dd>   ...
+<dt><b> end setup phase data </b> - end of setup phase input section
+
+<dt><b> run phase data </b> - begin run phase data input section
+  <dd>   ...
+  <dt>   ... <i><a href=SeqQ_rundata.html> run phase input data</a></i>
+  <dd>   ...
+
+  <dt><b> bandstructure </b> - specifies band structure to compute
+    <dd>   ... <br>
+    <dt>   ... <i><a href=SeqQ_bandsdat.html> bands structure input</a></i>
+    <dd>   ...
+  <dt>    end bandstructure - end of b.s. input section
+    <dd>   ...
+
+  <dt><b> dynamics </b> - invokes molecular dynamics (MD) input section
+    <dd>   ... <br>
+    <dt>   ... <i><a href=SeqQ_dynamics.html> dynamics control input</a></i>
+    <dd>   ...
+  <dt>    end dynamics - end of MD input section
+    <dd>   ...
+
+  <dt><b> geometry relaxation </b> - invokes geometry relaxation input section
+    <dd>   ... <br>
+    <dt>   ... <i><a href=SeqQ_geomdat.html> geometry relaxation input</a></i>
+    <dd>   ...
+  <dt>    end geometry relaxation - end of geometry relaxation input section
+    <dd>   ...
+
+  <dt><b> cell optimization </b> - invokes cell input section
+    <dd>   ...
+    <dt>   ... <i><a href=SeqQ_celldat.html> cell optimization input</a></i>
+    <dd>   ...
+  <dt>    end cell optimization - end of cell optimization input section
+  <dd>      ...
+
+<dt><b> end run phase data </b> - end of run phase input section
+
+<dt><b> neb data </b> - begin data controlling NEB transition state finder
+  <dd>   ...
+  <dt>   ... <i><a href=SeqQ_nebdat.html> NEB control input</a></i>
+  <dd>   ...
+<dt><b> end neb data </b> - end NEB data
+</tt>
+</dl>
+</font>
+
+<hr>
+<a name="examples"></a>
+<h2>Tutorials and examples</h2>
+
+<h3> <a href=SeqQ_Cluster_Tutorial.html> Molecule Tutorial</a> </h3>
+
+This Tutorial discusses the construction of input file for molecules.
+Using a variety of molecules, it describes the special considerations
+that go into constructing true finite boundary conditions in a supercell
+code, and illustrates the use of successively more sophisticated input
+to aid ease of use and to trigger additional functionality in the code.
+
+<h3> <a href=SeqQ_Slab_Tutorial.html> Slab: CO/Ru(0001)</a> </h3>
+
+This Tutorial discusses the construction of the adsorption of CO
+in the hexagonal (0001) surface of Ru.  It starts with
+a very simple input file to look at the clean bulk-terminated
+surface, illustrates the use of successively more sophisticated input
+options to aid ease of use and trigger additional functionality in
+the code, and deals with some of the special issues that arise in
+designing slab calculations to examine chemistry at surfaces.
+
+<h3> <a href=SeqQ_Bulk_Tutorial.html> Bulk: wurtzite GaN</a> </h3>
+
+This Tutorial discusses the construction of an input file for a bulk
+wurtzite gallium-nitride crystal.
+It begins with a very simple (and flawed) input file, and illustrates
+the use of successively more sophisticated input to aid ease of use and
+to trigger additional functionality in the code.
+
+<h3> <a href=SeqQ_bands_Tutorial.html> Band structure: CdS</a> </h3>
+
+This Example discusses the computation of the band structure for a bulk CdS crystal.
+
+<h3> <a href=SeqQ_NEB_Tutorial.html> NEB: reaction of hydrogen and ethlylene </h3></a>
+
+This Tutorial discusses the construction of an input file for finding the reaction
+mechanism and transition state for the reaction of hydrogen and ethylene:<br>
+H<sub>2</sub> + C<sub>2</sub>H<sub>4</sub> &rarr  C<sub>2</sub>H<sub>6</sub> <br>
+using the nudged elastic band method (NEB).  The example shown is for a molecular
+calculation, but the NEB input is applicable to slab or bulk calculations as well.
+<Br><br>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Input Manual">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  February 22, 2014  <!-- band structure -->
+</font>
+
+</font>
+</body>
+</html>

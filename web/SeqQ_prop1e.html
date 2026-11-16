@@ -1,0 +1,221 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Post-processing: one-electron properties </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>PROP1E: populations and density of states</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+The one-electron properties code was developed by Art Edwards (AFRL).
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">          SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">   User<br> Guides</a> </th>
+</tr>
+</table>
+
+This page provides guidance in using the PROP1E one-electron properties
+post-processing code.
+
+<h2> Functionality </h2>
+PROP1E computes atomic electron populations and a total density of states
+from a DFT calculation.
+In addition, it can compute an projected density of states:
+atom-resolved,
+angular-momentum (l-)resolved,
+and m_l resolved.
+It does these analyses with either the Mulliken or Lowdin approach.
+
+<h2> Overview of use </h2>
+To use the post-processing code, the user must run a final calculation
+with the "do post" flag set in the command section, and then save a set
+of scratch and output files from the calculation for input to the
+post-processing code.
+The post-processing code can be run interactively.
+The user needs give instructions to the code about what analyses to perform
+and on which atoms.
+The output of the code is a set of files (the number and names of
+the files are dependent upon the particular analyses the user selects)
+that can be input to a graphics program,
+and are particularly suitable for visualization using XMGRACE.
+
+<h2> Instructions </h2>
+<p>
+Note that this code is under active development,
+and the conventions used for the input are subject to change.
+<br>
+To run the post-processing code, you will need to do the following steps:
+<ol>
+<li> <a href="#dopost">
+     Set "do post" flag in a final Quest run</a>
+<li>  <a href="#inpost">
+     Save the following files from the Quest calculation</a>:
+    <ul>
+    <li> lcao.s - overlap matrix
+    <li> lcao.vec - eigenvectors
+    <li> lcao.hist - history file
+    <li> lcao.post - additional data for the post-processing code
+    </ul>
+<li> <a href="#doslist">
+     Prepare a "pdos.list" file to specify which atoms to be analyzed </a>
+<li> <a href="#runpost">
+     Run the post-processing code</a> (either interactively, or batch)
+<li> <a href="#vizdos">
+     Do visualization</a> from the resulting output files (viz code not provided)
+<li> <a href="trouble"> Troubleshooting</a>
+</ol>
+
+<a name="dopost"></a>
+<h4> "do post" in final Quest run </h4>
+<p>
+This triggers additional output from the final Quest calculation
+that is needed for input to the post-processing code,
+generates a "lcao.post" file with the extra data need for the analysis.
+
+<a name="inpost"></a>
+<h4> Quest output files needed for input to post-processing code </h4>
+<p>
+From the output of the final Quest calculation, the populations/DOS analysis needs
+the eigenvector file "lcao.vec"
+and the overlap matrix file "lcao.s",
+along with the history file "lcao.hist"
+and post-processing file "lcao.post",
+with those exact names.
+<p>
+The lcao.* files can get quite large, so it is usual practice
+to delete all the lcao.* scratch files at the end of production
+runs to eliminate unnecessary disk usage.
+It is usually best to turn on "do post" only for the final
+converged system for which an analysis is desired and keeping
+the necessary scratch files from the final run,
+rather than saving the scratch files from all intermediate calculations.
+
+<a name="doslist"></a>
+<h4> Identify target atoms in a "pdos.list" file </h4>
+The pdos.list file is a simple ASCII text file that identifies the atoms
+for which projected population analyses are to be performed.
+Note: this file can be renamed for convenience.
+In this list file, the first line indicates the number of atoms
+for which projected densities of states.   Each line after that is the
+ordinal number of the atom (the order used in the Quest calculations)
+to do the analyses for. This file ...
+<pre>
+4    = total number of atoms from input to perform pDOS
+ 3   = ordinal number of first DOS atom (atom #3 in calculation)
+ 5   = ordinal number of second DOS atom  ...
+ 7
+ 8 </pre>
+ ... would compute pDOS for four atoms, the third, fifth, seventh, and
+eight atoms in the Quest input file.
+
+<a name="runpost"></a>
+<h4> Running the post-processing code </h4>
+The code is interactive, and asks a series of questions.
+<ol>
+<li> Which DFT code, Quest or GAMESS? <br>
+     Enter "1" to analyze Quest results (the GAMESS analysis is unsupported)
+<li> What is the name of the pdos.list file? <br>
+     The name need not be "pdos.list".
+<li> How much of an analysis? <br>
+     The default is to only do a Mulliken population analysis and stop.
+    <ul>
+    <li> Enter "0" to only to a population analysis
+    <li> Enter "1" to add an atom-resolved pDOS
+    <li> Enter "2" to further add an angular-resolved pDOS over each atom
+    <li> Enter "3" to yet further add an m_l resolved pDOS over each atom
+    <li> Enter other options as offered in the menu help listing.
+    </ul>
+<li> Do a Lowdin analysis of this as well? <br>
+    Enter "true"/"false"
+</ol>
+The post-processing does not (yet) offer the option to modify the range of
+energy to perform the DOS over, it uses the entire energy range from the
+output of the DFT calculation.
+The code does offer the option to change the Gaussian width used
+(default width=0.05 eV) in constructing the DOS from the eigenstate energies.
+
+<a name="donepost"></a>
+<h4> Post-processing output </h4>
+<p>
+The post-processing code always produces a "dos.dat" file that contains
+a total density of states over all atoms. <br>
+The Mulliken and Lowdin atomic populations are reported in the "out_test" file. <br>
+If requested to perform a projected density of states,
+the post-processing code outputs a series of atom-resolved files named
+"atomm{num}.dat" (Mulliken analysis) and
+"atoml{num}.dat" (Lowdin analysis),
+one for each atom in the list in the {pdos.list} file, enumerated by {num}. <br>
+The contents of these files is a multi-column list: <br>
+the first column being the energy, <br>
+the second-fourth columns being the s-,p-,d-projected
+density of states on that atom, <br>
+and the final entry being the total pDOS of that atom at that energy. <br>
+The units of the energy are in eV.
+
+<a name="vizdos"></a>
+<h4> Visualize results </h4>
+The atom*.dat files are in a format that can directly be read into a
+visualization code such as XMGRACE.
+<!--
+(We will consider installing other formats, if the necessary code
+for the alternate format is provided).
+ -->
+
+<a name="trouble"></a>
+<h4> Troubleshooting </h4>
+PROP1E is a working research code, not well-polished, still being actively revised.
+You are mostly on your own, but PROP1E is relatively simple code
+and should not be a difficult to modify.
+A few things to check:
+<ul>
+<li> Check that you have the <a href="#inpost"> necessary input files</a>
+     and that these files are not corrupted.
+<li> Perhaps the server you ran the DFT calculation on (e.g. parallel server)
+     and where you compiled the PROP1E code (e.g. your local workstation)
+     have incompatible binary formats (e.g., little- vs. big-endian)?
+     Convert the binary input files, or run the DFT and DOS analysis on the same platform.
+<li> Check that PROP1E is adequately dimensioned with respect
+     to the Quest calculation you are attempting to analyze.
+<li> Some internal issue in the PROP1E code - it is a simple f77 code, you
+     should be able to make simple modifications to accommodate your
+     specific needs.
+</ul>
+
+<hr>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+at <a href="mailto:paschul@sandia.gov?Subject=Quest prop1e">
+      paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  January 17, 2014 <!-- Cosmetics upon 2Dec10 version -->
+
+</font>
+</body>
+</html>
+
+
+
+
+

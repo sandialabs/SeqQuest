@@ -1,0 +1,559 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest NEB Tutorial </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest  NEB tutorial</h1>
+<!-- written by Renee M. Van Ginhoven -->
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+-->
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">             SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html">     Input<br> Manual</a> </th>
+   <th> <a href="SeqQ_Cluster_Tutorial.html"> Cluster<br> Tutorial</a> </th>
+   <th> <a href="SeqQ_Slab_Tutorial.html">    Slab<br> Tutorial</a> </th>
+   <th> <a href="SeqQ_Bulk_Tutorial.html">    Bulk<br> Tutorial</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">Introduction</a>
+<!--<li><a href="#eg_cluster"> Examples</a>-->
+<li><a href="#eg_cluster"> Example: reaction of hydrogen and ethylene</A>
+<li><a href="#eg_climb"   > Using the "climb" option </a>
+<li><a href="#eg_pbc"   > Calculations with periodic boundary conditions </a>
+<!--<li><a href="#eg_nebout"   > NEB output files</a>-->
+<li><a href="#issues"   > Additional issues</a>
+</ol>
+
+
+<hr>
+<a name="intro"></a>
+<h2>Introduction</h2>
+
+The purpose of this Tutorial is to introduce the user to the effective use
+of the NEB (nudged elastic band) method for finding transition states.
+<p>
+It is recommended that the user be somewhat familiar with the use of the code for 
+single configuration (non-NEB) calculations before using NEB.
+
+<h4>Units</h4>
+
+The default units for energy are Rydberg
+(1 Rydberg = 0.5 Hartree = 13.605 eV),
+and for distances are bohr (1 bohr = 0.52918 Ang = 0.052918 nm).
+All input coordinates will be in these units, though one can use
+the scaling functions in the code to aid in the conversions.
+
+<h4>Input files</h4>
+
+The code uses one main input file that the user must construct.
+Atom (potential+basis) files, which will need to be listed
+in the input file, can be obtained from atom libraries.
+The input file is a text-rich keyword-driven document that, once
+constructed, is self-documenting.  The input is a sequence of
+keyword lines with the indicated data on following lines.
+Only the first few (6 or 8) characters of the keyword line are significant.
+The remainder of a keyword line can be used for additional documentation.
+The data itself, in general, is free-format.
+The input in the <a href="SeqQ_setdata.html"> setup data</a>
+section is highly structured, and requires its input in a very
+specific order.  Other sections take their data in any order.
+If you miss putting something in the right place in the input,
+not to worry.  The code will very happily process the input file,
+and stop when it cannot find required input in the right place.
+It echoes the input file as it reads it, and will politely tell
+you what it was looking for when it runs into a problem.
+Interspersed among the required inputs, are a variety of
+usually invisible optional input sections.  The code uses a
+variety of defaults that can be overridden in the input file.
+
+<h4>Brief overview of NEB calculations </h4>
+
+Generally, NEB is used when the goal is to gain insight into 
+mechanisms, and determine activation energies for processes 
+such as chemical reactions or diffusion. 
+
+Briefly, the method works as follows: A chain of images is 
+generated between two minima on a potential energy surface, 
+by interpolating the coordinates of the atoms from one minimum 
+to another. Neighboring images interact via a harmonic potential 
+along the direction of the path described by the chain. The 
+forces on the ions are further modified such that the original 
+forces parallel to the path and the inter-image spring forces 
+perpendicular to the path are removed (this is the path 
+"nudging"). The entire chain is then relaxed as a unit. The 
+saddle point geometry may be refined by using the climbing image
+method, which works by inverting the parallel force on images that
+are higher in energy than either of their neighbors. This method
+robustly finds a saddle point on a given path, given that there are
+sufficient images to describe the path topology.   
+
+
+The implementation of NEB available in the code will work with
+cluster, slab or bulk calculations. The example is a cluster
+calculation, and should be able to run on a single processor in a few
+hours.   
+
+<hr>
+<a name="eg_cluster"></a>
+<h2>Example:Reaction of ethylene and H<sub>2</sub></h2>
+
+Illustrated in this example is a file for doing a
+simple finite (cluster) calculation of the gas phase reaction of ethylene and 
+hydrogen:
+<p>
+    &nbsp  &nbsp  &nbsp  &nbsp  H<sub>2</sub> +
+    C<sub>2</sub>H<sub>4</sub> &rarr  C<sub>2</sub>H<sub>6</sub>  
+<p>
+
+ Before performing an NEB calculation, you need to have endpoints for
+ the chain. Before setting up this example, I ran two separate cluster
+ calculations corresponding to the reactant (<par>H<sub>2</sub> +
+ C<sub>2</sub>H<sub>4</sub>),
+and product
+ 
+(C<sub>6</sub>H<sub>6</sub>) states of the reaction. The reactant
+ state is assigned to the initial NEB endpoint, and the product to the
+ final NEB endpoint. Since the NEB calculation will be subject to
+ some
+ constraints, I ran both endpoints subject to the same constraints.
+ It is necessary to think ahead when setting up the endpoints for an
+ NEB run. For example, if you are planning to have a subset of atoms frozen
+ at specific set of coordinates, those coordinates should be the same
+ in both endpoint calculations.
+<p>
+See the 
+<a href="http://www.cs.sandia.gov/~paschul/Quest/SeqQ_Cluster_Tutorial.html">
+   Cluster Tutorial</a>
+   for details about how to set up molecular calculations. 
+
+
+
+<h4><a href="SeqQ_runopt.html">Command options</a></h4>
+ The NEB method is invoked 
+by including the command option "<tt>do neb</tt>." 
+NEB will work with most of the available command options. The  "<tt>do
+ relax</tt>" is mandatory. The "<tt>do cell</tt>" is not permitted.
+ Both chain endpoints and all the intermediate images must have the
+ same fixed cell. The "<tt>do dynamics</tt>" is currently not
+ supported with NEB.   
+
+<h4><a href="SeqQ_setdata.html">Setup phase data</a></h4>
+
+The input here is the same as a regular, non-NEB run.  The atom
+position may be superceded by later input in the neb data, atom type
+is not. In an NEB run,  
+you may encounter difficulties with some functions:
+<li>symmetry - Use of symmetry with NEB is tricky. Not only both
+  endpoints, but the <i>entire chain</i> must have the same
+  symmetry. While this is sometime possible, particularly for
+  molecules, it requires careful thought.  </li>  
+<li>LMCC - This method assumes a fixed location for the localized
+  charge, and current implementation does not allow for motion of the
+  charge within the cell from image to image. </li>  
+
+<h4><a href="SeqQ_rundata.html">Run phase data</a></h4>
+
+Again, the code will accept any of the regular input options. For this
+example, I use a few options in the <a href="SeqQ_geomdat.html">
+  geometry section</a>.  
+<p>
+First, the use of the "<tt>frame</tt>" option is especially helpful
+for molecular calculations.  
+<pre>
+frame
+1 2 3
+</pre>
+I have frozen atom 1, (a carbon atom), fixed the direction of the
+vector between the atom 1  and 2 (the 2 carbon atoms), and fixed the
+plane of atoms 1, 2 and 3. This eliminates translational and
+rotational degrees of freedom, and keeps the molecules from "running
+away" to avoid the saddle point during the NEB calculation. These
+constraints are often not necessary for a bulk
+calculation. <b>Important:</b> The initial endpoint calculations were
+performed using the same frame constraints.  
+<p>   
+
+Second, I use Accelerated Steepest Descent (ASD) for the geometry
+relaxation method.  
+<pre>
+gmethod 
+ASD
+</pre>
+The is the recommended (and the default) option for NEB relaxation. <br>
+The Broyden method, default for single image relaxations, will
+often fail for the more complex NEB calculations, and should not
+be invoked for an NEB calculation.
+<p>
+
+
+The calculation is allowed to run for 25 steps.  This is not
+sufficient to converge to a saddle point, but will provide input for
+a further calculation, described below. 
+
+<h4><a href="SeqQ_nebdat.html">neb data</a></h4>
+
+This section begins with the line "<tt>neb data</tt>" and ends with
+the line "<tt>end neb data</tt>". This section contains chain
+coordinates, and allows the user to select
+<a href="http://www.cs.sandia.gov/~paschul/Quest/SeqQ_nebdat.html#inputs">
+options</a>
+to control the NEB run.  
+<p>
+At the beginning of this section, the user first sets the number of
+intermediate images in the NEB chain.  I have used  
+<pre>
+images
+6
+</pre>
+which results in 6 intermediate geometries to be relaxed between the
+fixed chain endpoints. A useful NEB chain usually needs at least 3
+intermediate images. The maximum number of images is currently limited
+to 12 (but could be increased by redimensioning and recompiling).
+<p>
+Next, the code requires information about the chain endpoints. The
+required input is the energies  (in Rydberg!) of the <b>initial</b>
+and <b>final</b> chain geometries, <b>einitial</b>, <b>efinal</b> and
+coordinates of the final chain endpoint. In this example, I have
+included coordinates for the initial state geometry. I have used the
+format <b>atom, types, and position</b>, and the coordinates for the
+initial image are identical to those in the setup phase. Different
+coordinates will override the setup phase coordinates. I chose this
+input format for convenience.
+The geometries are transferred directly from the lcao.geom output
+files of the initial preparatory runs to obtain the converged
+endpoints. Notice that the coordinates of the first 3 atoms in the
+initial and final geometries meet the same <tt>frame</tt>
+constraints. 
+<p>
+<b>Important:</b> The code obtains the atom types from the input in
+the setup phase, and this is <i>not</i> overridden here.  It is up to
+the user to make sure that the setup phase and neb section have
+consistent ordering of atom types. 
+<p> 
+Next comes optional input.
+I have used 
+<pre>
+antikink
+</pre>
+which uses a more efficient definition of the path tangent.
+This is the recommended setting.
+ 
+<pre>
+do setup
+do iters
+do force
+do relax
+<b>do neb</b>
+setup data
+notes
+ An example NEB calculation.
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+0
+primitive lattice vectors
+25.0000000000      0.0000000000      0.0000000000
+ 0.0000000000     30.0000000000      0.0000000000
+ 0.0000000000      0.0000000000     25.0000000000
+grid dimensions
+      90  100 90 
+atom types
+2
+atom file
+H = h_ps.atm
+atom file
+C  = c.atm
+number of atoms in unit cell
+  8
+atom, type, position; 
+      1       C                 0.0000000000    0.0000000000   -1.2453000000 
+      2       C                 0.0000000000    0.0000000000    1.2489100943 
+      3       H                -1.7584758285    0.0000000000   -2.3301860262 
+      4       H                 1.7584653078    0.0100205966   -2.3301646065 
+      5       H                -1.7585064612   -0.0008441341    2.3338084172 
+      6       H                 1.7584894664    0.0097791574    2.3337979751 
+      7       H                 0.0003487181    5.6228197807   -0.7233840640 
+      8       H                 0.0003518424    5.6189301345    0.7229545354 
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+geometry relaxation
+<b>frame
+1 2 3</b>
+gsteps
+25
+<b>gmethod
+ASD</b>
+end geometry relaxation
+end run phase data
+<b>neb data
+images
+6
+einitial
+-29.6690869400
+atom, type, position; H2 molecule plus C2H4      
+      1       C                 0.0000000000    0.0000000000   -1.2453000000 
+      2       C                 0.0000000000    0.0000000000    1.2489100943 
+      3       H                -1.7584758285    0.0000000000   -2.3301860262 
+      4       H                 1.7584653078    0.0100205966   -2.3301646065 
+      5       H                -1.7585064612   -0.0008441341    2.3338084172 
+      6       H                 1.7584894664    0.0097791574    2.3337979751 
+      7       H                 0.0003487181    5.6228197807   -0.7233840640 
+      8       H                 0.0003518424    5.6189301345    0.7229545354 
+efinal
+-29.8262256994
+atom, type, position; C2H6
+      1       C                 0.0000000000    0.0000000000   -1.2453000000 
+      2       C                 0.0000000000    0.0000000000    1.6127026368 
+      3       H                -1.9325347853    0.0000000000   -2.0125327795 
+      4       H                 0.9274168890   -1.7039832670   -1.9973680549 
+      5       H                -1.3457830207   -1.3888791220    2.3776347814 
+      6       H                 1.8745031884   -0.4702321383    2.3799786218 
+      7       H                 1.0056057745    1.6427026553   -2.0259990122 
+      8       H                -0.5350756401    1.8581263113    2.3819664428
+antikink
+end neb data</b> 
+</pre>
+
+<font size=-2><a href="#top">Return to Top</a></font>
+
+<a name="eg_climb"></a>
+<h2>Using the climb option to get closer to the saddlepoint and
+  including intermediate image coordinates in the input file</h2>
+
+In order to better approach the saddlepoint, use the "<tt>climb</tt>"
+option. It is often advisable to first run the NEB for a few steps
+without the climb option, to allow the chain to relax away from any
+possible high-energy initial configurations.  
+Notice that the format
+for the coordinates in the neb data section is different this time:
+the chain coordinates were transferred directly from the lcao.neb_geom
+file output 
+from the previous run. 
+
+
+
+<pre>
+do setup
+do iters
+do force
+do relax
+do neb
+setup data
+notes
+ Illustration of the "climb" option with the NEB
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+0
+primitive lattice vectors
+25.0000000000      0.0000000000      0.0000000000
+ 0.0000000000     30.0000000000      0.0000000000
+ 0.0000000000      0.0000000000     25.0000000000
+grid dimensions
+      90  100 90 
+atom types
+2
+atom file
+H = h_ps.atm
+atom file
+C  = c.atm
+number of atoms in unit cell
+  8
+atom, type, position; 
+      1       C                 0.0000000000    0.0000000000   -1.2453000000 
+      2       C                 0.0000000000    0.0000000000    1.2489100943 
+      3       H                -1.7584758285    0.0000000000   -2.3301860262 
+      4       H                 1.7584653078    0.0100205966   -2.3301646065 
+      5       H                -1.7585064612   -0.0008441341    2.3338084172 
+      6       H                 1.7584894664    0.0097791574    2.3337979751 
+      7       H                 0.0003487181    5.6228197807   -0.7233840640 
+      8       H                 0.0003518424    5.6189301345    0.7229545354 
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+geometry relaxation
+frame
+1 2 3
+gsteps
+50
+gmethod
+ASD
+end geometry relaxation
+end run phase data
+neb data
+images, and number of atoms
+      6      8
+einitial - energy for start-point
+         -29.66908694
+coordinates for start-point
+     0.0000000000    0.0000000000   -1.2453000000
+     0.0000000000    0.0000000000    1.2489100943
+    -1.7584758285    0.0000000000   -2.3301860262
+     1.7584653078    0.0100205966   -2.3301646065
+    -1.7585064612   -0.0008441341    2.3338084172
+     1.7584894664    0.0097791574    2.3337979751
+     0.0003487181    5.6228197807   -0.7233840640
+     0.0003518424    5.6189301345    0.7229545354
+efinal - energy for end-product
+         -29.82622570
+coordinates for end-product
+     0.0000000000    0.0000000000   -1.2453000000
+     0.0000000000    0.0000000000    1.6127026368
+    -1.9325347853    0.0000000000   -2.0125327795
+     0.9274168890   -1.7039832670   -1.9973680549
+    -1.3457830207   -1.3888791220    2.3776347814
+     1.8745031884   -0.4702321383    2.3799786218
+     1.0056057745    1.6427026553   -2.0259990122
+    -0.5350756401    1.8581263113    2.3819664428
+antikink
+<b>climb
+image number in NEB
+      1
+coordinates for this image
+     0.0000000000    0.0000000000   -1.2453000000
+     0.0000000000    0.0000000000    1.2479195030
+    -1.7682784683    0.0000000000   -2.3154236486
+     1.7500419238   -0.1247043290   -2.3383997023
+    -1.7493045783   -0.0109300541    2.3478654821
+     1.7619199452   -0.0750451854    2.3268306341
+     0.1890350370    4.8191631072   -0.6616504543
+    -0.0660714094    4.8901759400    0.7542001906
+image number in NEB
+      2
+coordinates for this image
+     0.0000000000    0.0000000000   -1.2453000000
+     0.0000000000    0.0000000000    1.2541414187
+    -1.7819797665    0.0000000000   -2.2930748462
+     1.7356773201   -0.2685628527   -2.3430631839
+    -1.7279616325   -0.1694757922    2.3846761056
+     1.7653405529   -0.1311556516    2.3339633442
+     0.2703519792    4.1177421581   -0.6024806639
+    -0.0208934101    4.0826842503    0.7962020009
+image number in NEB
+      3
+coordinates for this image
+     0.0000000000    0.0000000000   -1.2453000000
+     0.0000000000    0.0000000000    1.3180638612
+    -1.7938737354    0.0000000000   -2.2704139519
+     1.7002459021   -0.4502238630   -2.3286795024
+    -1.7053842796   -0.3467362060    2.4710612762
+     1.7840583963   -0.1906836189    2.3977228119
+     0.2594739311    3.4283310041   -0.7017886632
+    -0.0033894971    3.3388665739    0.8930933197
+image number in NEB
+      4
+coordinates for this image
+     0.0000000000    0.0000000000   -1.2453000000
+     0.0000000000    0.0000000000    1.5444241806
+    -1.7907946750    0.0000000000   -2.2695930873
+     1.6742300910   -0.5409416714   -2.3270244692
+    -1.7285814109   -0.4690410031    2.5205993441
+     1.8118215409   -0.2315843468    2.4462524518
+     0.2813849417    3.0236504843   -1.0905114021
+    -0.0573080325    2.8605801098    1.2868029533
+image number in NEB
+      5
+coordinates for this image
+     0.0000000000    0.0000000000   -1.2453000000
+     0.0000000000    0.0000000000    1.5869071781
+    -1.8088017879    0.0000000000   -2.2450191195
+     1.6305034787   -0.6796305224   -2.3191696089
+    -1.7125118531   -0.5948140327    2.5549212425
+     1.8259490870   -0.3255847865    2.4736259746
+     0.3494746795    2.4863018167   -1.3937245145
+    -0.1060411804    2.3304575331    1.6256081269
+image number in NEB
+      6
+coordinates for this image
+     0.0000000000    0.0000000000   -1.2453000000
+     0.0000000000    0.0000000000    1.6105030358
+    -1.8847231299    0.0000000000   -2.1180612900
+     1.3877240462   -1.1601595177   -2.2467239353
+    -1.5674330749   -0.9943891796    2.5274907833
+     1.8215855438   -0.5150435933    2.4533053967
+     0.5550633906    1.9941659708   -1.6992747907
+    -0.2522113539    2.0254380432    2.0768958092
+end neb data</b>
+</pre>
+
+
+
+<font size=-2><a href="#top">Return to Top</a></font>
+<a name="eg_pbc"></a>
+<h2>Calculations using periodic boundary conditions</h2>
+
+When using NEB in a periodic calculation, avoid running chains across
+the periodic boundaries, as the results can be unpredictable. 
+<p>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="issues"></a>
+<h2>Additional issues</h2>
+
+<li>NEB calculations can be quite difficult to converge. It is good to
+  keep in mind that the primary goal is usually to find a transition
+  state.  Rather than trying to fully optimize the entire path, it is
+  more important to monitor the behavior at or near the saddle point
+  geometry. </li>
+
+<li>NEB will find the minimum energy path <i>that is closest to the
+    initial path geometry</i>.  You should think about what other
+    mechanisms may occur and try to generate paths to check
+    them. Also, if the initial path is nonsensical, the MEP will be as
+    well.</li>
+<p>
+
+Also see
+<a href="http://www.cs.sandia.gov/~paschul/Quest/SeqQ_nebdat.html#trouble">
+NEB Troubleshooting</a>.
+<p>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+<hr>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+at <a href="mailto:paschul@sandia.gov?Subject=NEB Tutorial">
+      paschul@sandia.gov</a>
+<!--
+or  
+       Renee Van Ginhoven</a>
+at <a href="mailto:rmvangi@sandia.gov?Subject=NEB Tutorial">
+      rmvangi@sandia.gov</a>
+ -->
+<br>
+<i> Last updated: </i> June 15, 2015  <!-- notes/end_notes, rmv removed -->
+</font>
+
+</font>
+</body>
+</html>
+

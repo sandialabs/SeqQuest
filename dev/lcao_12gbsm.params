@@ -1,0 +1,51 @@
+c
+c * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+c             Dimension parameters for SEQQUEST code
+c * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+c
+c Configuration: 12 GB/SMALL
+c
+c  The parameters in this file can be changed, limited only by the
+c  memory available on the machine.  The first two lines determine the
+c  size of the executable and should be tailored to the RAM available.
+c  The rest of the parameters have only a minor impact on the total
+c  memory, and are set to roughly what is possible in this space.
+c  They can be increased at need (the code will request more if needed)
+c
+c Recommended values for given available memory:
+c maxwkd= max mem for big arrays: orb matrices and wave fcns on grid
+c               256MB    500MB    1GB     2GB
+c   maxwkd/mach  30M      60M     110M    240M (machine mem - OS mem)
+c   maxwkd/full  33M      66M     132M    265M (full mem image)
+      PARAMETER  (maxwkd=1 200 000 000)
+c inrec= usable bits in int - 1
+c nrecd= max int entries for atom-in-box sparsity bitmap
+c   nrecd       0.5M     1.0M     2.0M    4.0M
+      PARAMETER  (inrec=30, nrecd=24 000 000)
+c
+c nimgd=max number of independent images (for NEB)
+      PARAMETER  (nimgd=12)
+c
+c natmd=max atoms;  ntypd=max atom types;  norbd=max total orbitals
+      PARAMETER  (natmd=2000, ntypd= 7, norbd=24000)
+c
+c noad=max orbs/atom;  nshld=max shells/atom;  nald=max gauss/orb
+      PARAMETER  (noad=21, nshld=7, nald=6)
+c nrd=max radial mesh pts/local pot
+      PARAMETER  (nrd=200)
+c maxr1d=max linear dimension of total regular grid
+      PARAMETER  (maxr1d= 800)
+c nkd=max k-points; nsymd=max number of symmetries
+c nlatd=max number of unit cells interacting with central cell
+c neqlatd=max number of equivalent lattice vectors (nlocmat)
+      PARAMETER  (nkd=2000, nsymd=48, nlatd=2000, neqlatd=72)
+c
+c   ----------- DO NOT CHANGE ANYTHING BELOW THIS LINE ---------
+c nalfxcd=max alphas for xc fits;  nfitd=max atom types for xc fits
+      PARAMETER  (nalfxcd=1, nfitd=1)
+      PARAMETER  (neq3d=14)
+c
+      PARAMETER  (naldsq=nald**2)
+c
+c * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+c

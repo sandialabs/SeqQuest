@@ -1,0 +1,223 @@
+
+## Makefile for subroutines of SeqQuest.
+##
+## Written: Peter A. Schultz, 19-December-1996
+## Last revised: 21Apr15-PAS: for version 2.66 (new files)
+##
+## Note: this file requires two stages:
+##   1) to link the source files
+##   2) to compile the source files
+## Unfortunately, I was not able to figure out how to do this in
+## one step (without a full compile of everything every time - ugh)
+
+#### Set compiler for ...
+## standard f77
+#FC = f77
+## gnu
+#FC = g77
+## pgi/edge
+#FC = /opt/pgi/linux86-64/7.2-1/bin/pgf77
+## mpi: icc/liberty, nwcc/spirit, tbird, redsky, chama
+FC = mpif77
+
+#### Set compiler flags for ...
+##  ... general (sun,dec,ibm,...)
+# FFLAGS= -O
+##  ... dec
+# FFLAGS= -O5
+##  ... icc/liberty
+# FFLAGS= -O2 -tpp7 -xW
+##  ... nwcc/spirit, tbird/old/mvapich
+# FFLAGS= -O2 -tpp7 -xP
+##  ... tbird-mvapiach-0.9.8
+# FFLAGS= -O2 -xP
+##  ... tbird/opmenmpi-1.1.2
+# FFLAGS= -O2 -tpp7 -xP -assume 2underscores
+##  ... tbird/opmenmpi-1.2.4 (-tpp7, -assume 2underscores retire) redsky
+#FFLAGS= -O2 -xP
+## CHAMA
+FFLAGS = -O2 -xSSE3 -mcmodel medium -shared-intel
+
+#### Root directory for the source tree:
+SRC0 = ../../src
+
+#### Set the name of the archive the object code to be collected in:
+SUBS_MAIN=subs
+
+#### These routines contain the reduced precision grid orbital code:
+DIR_GRD = ${SRC0}/src_subs
+OBJ_GRD=boxrng.o  boxwfn.o   eslofrc.o  gradwf.o   grdovlp.o  gridwf.o  \
+        gridrho.o grhodm1.o  grhodm2.o  grhoef1.o  grhoef2.o  \
+                  grhodm1b.o grhodm2b.o grhoef1b.o grhoef2b.o \
+        vslomat.o vslom1.o   vslom2.o   vslom1b.o  vslom2b.o  \
+        vslofrc.o vslof1.o   vslof2.o   vslof1b.o  vslof2b.o
+
+#### The following contains the bulk of the main subroutines:
+DIR_SUB = ${SRC0}/src_subs
+OBJ_SUB=setdata.o ainit.o   aofr.o    atmdat1.o atmrho.o  \
+        bfsetup.o bfsplit.o boxr.o    bsiall.o  bsicbsv.o bsixgt4.o \
+        cee.o     cee1.o    cinit.o   cofr.o    cross.o   datsave.o defbox.o  \
+        df_gga.o  df_gga0.o dftgga.o  dftlda.o  dftset.o  dmd.o     \
+        eqtrip.o  evprnt.o  fftdrho.o ftorb.o   \
+        gnorm.o   govlp.o   gradrho.o gridave.o gridchg.o grid0xc.o h0writ.o  \
+        indbox.o  insetup.o intobox.o intsum.o  \
+        kgrid.o   latvec.o  lvproj.o  mesh.o    \
+        mkcuts.o  mkeikl.o  mkgaunt.o mkgrho.o  mkgvec.o  mkshl2d.o \
+        nearby.o  nrscut.o  nlocmat.o nlang.o   nlint.o   nlinteq.o nlrad.o   \
+        potnr0.o  projlv.o  projuc.o  rintrnl.o \
+        runopt.o  sij.o     symages.o symibz.o  tij.o     tintsum.o ucatchk.o \
+        vlocmat.o vlocmii.o vlradz.o  vlrad.o   vlradf.o  vlang.o   vljisrt.o \
+        vlocpot.o wf1cofk.o wrsetd.o  ylmreal.o ylp2m.o   ymm.o     \
+        atdefct.o blkvofn.o broyddj.o c16low.o  cfft3d.o  cfft3db.o convchk.o \
+        dippot.o  dipslab.o doebind.o doengy.o  dotrace.o dupemat.o \
+        eigsolv.o erlsolv.o grcofr.o  gvecmag.o \
+        invert.o  iongpot.o ionpot.o  mknrwt.o  mkrbox.o  \
+        moment.o  onectr.o  pop.o     potnear.o rhoij.o   \
+        rotgrp.o  rotmat.o  rundata.o schroed.o srint.o   symgrp.o  symmap2.o \
+        symmap3.o symmat.o  symordr.o symprod.o symrho.o  symrho2.o symrho3.o \
+        v1ctrij.o vesslo.o  vslofix.o wf1cofr.o \
+        ainitf.o  aofrf.o   cinitf.o  cmptorb.o cntrrho.o \
+        cofrf.o   corforc.o dvstres.o dylm.o    \
+        fintsum.o frc2ctr.o geomdat.o \
+        nlangf.o  nlintf.o  nlocfrc.o prodba.o  prodhab.o \
+        rh1orb.o  rho1ctr.o storylm.o symfrc.o  symrmat.o symstr.o  symvec.o  \
+        vlocfrc.o vlocf0.o  vlocf1.o  vlocf2.o  xconmsh.o xcorb.o   yrecur.o  \
+        atomnm.o  dat0ang.o dat0geom.o dat0opt.o dat0run.o \
+        doeng1c.o dosdump.o ef2dm.o   fdefect.o grelax.o  grid0set.o \
+        gselect.o gtypset.o gupdate.o lmcc.o    lmccint.o mat0frc.o mat0set.o \
+        mks1atm.o setgr1c.o setorig.o setxc1c.o symbuild.o wkmem.o \
+        dftcgga.o dftget.o  dftslda.o dftxgga.o gesser.o \
+        getmijk.o gridcgga.o griddft.o gridgga.o gridlda.o \
+        gridslda.o gridxgga.o rhdmat.o rheigvec.o treigvec.o \
+        rdstat.o  config.o  vnorms.o \
+        celldat.o cellopt.o cellrupd.o dat0cell.o str2gpa.o symlat.o \
+        dftstr.o ggastress.o \
+        assgn.o  dat0neb.o fixframe.o force_elastic.o force_neb.o gstamp.o \
+        nebassgn.o nebdat.o nebfill.o nebforce.o nebgio.o nebntrnl.o nebreap.o \
+        nebrun.o nebsetup.o reap.o tangent.o \
+        qhist.o dftstr2.o gridstr.o   kcell.o kwrite.o \
+        kcart.o \
+        fieldpot.o bulkpol.o dftstr2sp.o gridcstr.o gridxstr.o \
+        qmddat.o qmd.o  pop1k.o popclose.o fermipop.o  nebout.o \
+        broydata.o broydatf.o ebroyddj.o  rschroed.o rrhoij.o \
+        spinopt.o   matstr.o h0store.o dm0fetch.o \
+        slabchrg.o zpotout.o   kparallel.o \
+        banddata.o bandkpts.o bands.o \
+        elements.o vdwff.o vdwload.o vdwpair.o vdwstuff.o \
+        eblendasd.o nebstat.o runsteer.o \
+        slics.o slicstuff.o
+
+# precision.o
+
+# removed routines:
+#        bfgs_step.o lbfgs_g.o \
+
+DIR_LIB = ${SRC0}/src_lib
+OBJ_LIB=expund.o  mkszero.o mkzero.o  \
+        spline.o  splint.o  splind.o  splind2.o \
+        timstuff.o fftfns.o  strpars.o flstuff.o mpstuff.o strnum.o \
+        icopyoff.o bigio.o
+
+#### The following are the linpack routines the code uses:
+DIR_LIN = ${SRC0}/src_math/linpack
+OBJ_LIN=dsifa.o   dsisl.o
+
+#### The following are the expert lapack routines the code uses:
+DIR_LAPX= ${SRC0}/src_math/lapack
+OBJ_LAPX=dsygvx.o zhegvx.o
+
+#### The following are lapack/dsygv&zhegv routines the code uses ...
+DIR_LAP = ${SRC0}/src_math/lapack
+OBJ_LAP=dsygv.o  dsygvx.o zhegv.o zhegvx.o \
+        dlae2.o  dlaev2.o dlamc1.o dlamc2.o dlamc3.o dlamc4.o dlamc5.o \
+        dlamch.o dlanst.o dlansy.o dlapy2.o dlarf.o  dlarfb.o dlarfg.o \
+        dlarft.o dlartg.o dlascl.o dlaset.o dlasr.o  dlasrt.o dlassq.o \
+        dlatrd.o dorg2l.o dorg2r.o dorgql.o dorgqr.o dorgtr.o dpotf2.o \
+        dpotrf.o dsteqr.o dsterf.o dsyev.o  dsygs2.o dsygst.o dsytd2.o \
+        dsytrd.o ilaenv.o ieeeck.o lsame.o  xerbla.o \
+         zheev.o  zhegs2.o zhegst.o zhetd2.o zhetrd.o zlacgv.o \
+         zladiv.o zlanhe.o zlarf.o  zlarfb.o zlarfg.o zlarft.o zlascl.o \
+         zlaset.o zlasr.o  zlassq.o zlatrd.o zpotf2.o zpotrf.o zsteqr.o \
+         zung2l.o zung2r.o zungql.o zungqr.o zungtr.o \
+         dladiv.o dlapy3.o \
+        dsyevx.o dlacpy.o dlaebz.o dlagtf.o dlagts.o dlarnv.o dlaruv.o \
+        dorm2l.o dorm2r.o dormql.o dormqr.o dormtr.o dstebz.o dstein.o \
+         zheevx.o zlacpy.o zstein.o \
+         zunm2l.o zunm2r.o zunmql.o zunmqr.o zunmtr.o \
+        dgesv.o    dgetf2.o   dgetrf.o   dgetrs.o   dlaswp.o
+
+#### The following are blas routines the code uses:
+DIR_BLA = ${SRC0}/src_math/blas
+OBJ_BLA=daxpy.o  dcabs1.o dcopy.o  ddot.o   dnrm2.o  dscal.o  \
+        dswap.o  dzasum.o idamax.o izamax.o zaxpy.o  zcopy.o  \
+        zdotc.o  zdscal.o zswap.o  saxpy.o  sdot.o   \
+        dgemm.o  dgemv.o  dger.o   dsymm.o  dsymv.o  dsyr2.o  \
+        dsyr2k.o dsyrk.o  dtrmm.o  dtrmv.o  dtrsm.o  dtrsv.o  \
+        caxpy.o  cdotc.o  sgemm.o  cgemm.o  dasum.o  \
+         dznrm2.o zgemm.o zgemv.o zgerc.o zhemm.o zhemv.o zher2.o \
+         zher2k.o zherk.o zscal.o ztrmm.o ztrmv.o ztrsm.o ztrsv.o \
+         scopy.o
+
+OBJS_MAIN = ${OBJ_GRD} ${OBJ_SUB} ${OBJ_LIB}
+
+.SUFFIXES:
+.SUFFIXES: .f .o
+
+subs: ${SUBS_MAIN}.a
+
+all: ${SUBS_MAIN}.a subs_lap.a subs_bla.a
+
+${SUBS_MAIN}.a: source_main ${OBJS_MAIN}
+	ar ruv  ${SUBS_MAIN}.a ${OBJS_MAIN}
+	ranlib  ${SUBS_MAIN}.a
+
+subs_lapx.a: source_lapx ${OBJ_LAPX}
+	ar ruv  subs_lapx.a ${OBJ_LAPX}
+	ranlib  subs_lapx.a
+
+subs_lap.a: source_lap ${OBJ_LAP}
+	ar ruv  subs_lap.a ${OBJ_LAP}
+	ranlib  subs_lap.a
+
+subs_bla.a: source_bla ${OBJ_BLA}
+	ar ruv  subs_bla.a ${OBJ_BLA}
+	ranlib  subs_bla.a
+
+#### Link in source files from source libraries
+source_main:
+	-for file in ${OBJ_GRD:.o=.f} ; do  \
+           if test ! -f $$file ; then       \
+              ln -s ${DIR_GRD}/$$file ;     \
+           fi ;                             \
+         done
+	-for file in ${OBJ_SUB:.o=.f} ; do  \
+           if test ! -f $$file ; then       \
+              ln -s ${DIR_SUB}/$$file ;     \
+           fi ;                             \
+         done
+	-for file in ${OBJ_LIB:.o=.f} ; do  \
+           if test ! -f $$file ; then       \
+              ln -s ${DIR_LIB}/$$file ;     \
+           fi ;                             \
+         done
+
+source_lapx:
+	-for file in ${OBJ_LAPX:.o=.f} ; do \
+           if test ! -f $$file ; then       \
+              ln -s ${DIR_LAPX}/$$file ;    \
+           fi ;                             \
+         done
+
+source_lap:
+	-for file in ${OBJ_LAP:.o=.f} ; do  \
+           if test ! -f $$file ; then       \
+              ln -s ${DIR_LAP}/$$file ;     \
+           fi ;                             \
+         done
+source_bla:
+	-for file in ${OBJ_BLA:.o=.f} ; do  \
+           if test ! -f $$file ; then       \
+              ln -s ${DIR_BLA}/$$file ;     \
+           fi ;                             \
+         done
+

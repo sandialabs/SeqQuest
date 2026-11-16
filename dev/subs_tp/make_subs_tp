@@ -1,0 +1,51 @@
+
+## Makefile for task-parallel subroutines of SeqQuest.
+##
+## Written: Peter A. Schultz, 24-September-2004
+## Last revised: 27Jun18-PAS: for git dev repo
+##
+
+#### Set compiler for ...
+## ICC/liberty, NWCC/spirit, tbird, redsky, chama
+FC = mpif77
+
+#### Set task-parallel compiler flags for ...
+## Cplant/ross
+# FFLAGS= -O -fast -assume no2underscores
+## ICC/liberty
+# FFLAGS = -O2 -tpp7 -xW
+## NWCC/spirit, tbird-old
+# FFLAGS = -O2 -tpp7 -xP
+## NWCC/tbird-new
+# FFLAGS = -O2 -tpp7 -xP -assume 2underscores
+## NWCC/tbird-1.2.4 redsky
+#FFLAGS = -O2 -xP
+## CHAMA
+FFLAGS = -O2 -xSSE3 -mcmodel medium -shared-intel
+
+## Root directory for all the action: 
+SRC0 = ../../src
+## set the name of the archive the object code to be collected in:
+SUBS_ARCH=subs_tp
+
+## the following contain the bulk of the main subroutines:
+DIR_TP = ${SRC0}/src_tp
+
+OBJ_TP=mptools.o eigstuff.o \
+       peigsolv.o perlsolv.o prhoij.o pschroed.o pschroed2.o \
+       peigsolvkp.o pschroedkp.o
+
+
+.SUFFIXES:
+.SUFFIXES: .f .o
+
+${SUBS_ARCH}.a: source_tp ${OBJ_TP}
+	ar ruv  ${SUBS_ARCH}.a ${OBJ_TP}
+	ranlib  ${SUBS_ARCH}.a
+
+source_tp:
+	-for file in ${OBJ_TP:.o=.f} ; do  \
+	   if test ! -f $$file ; then       \
+	      ln -s ${DIR_TP}/$$file ;     \
+	   fi ;                             \
+	 done

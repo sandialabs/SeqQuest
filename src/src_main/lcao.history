@@ -1,0 +1,198 @@
+c
+c***********************************************************************
+c
+c PROGRAM: SEQQUEST
+c
+c PURPOSE: Gaussian-based "lcao", total energy&forces, pseudopotential,
+c          density functional, electronic structure code
+c          for both clusters and periodic systems, neutral or charged
+c
+c WRITTEN: Peter A. Schultz (PAS)
+c          Sandia National Laboratories
+c          paschul@sandia.gov
+c
+c          Based on a code originally written by Peter J. Feibelman
+c
+c On the web at:  http://www.cs.sandia.gov/~paschul/Quest/
+c
+c Copyright (c) 2007 Sandia National Laboratories
+c
+c***********************************************************************
+c
+c REVISION HISTORY:
+c
+c v2.66/24Apr15-PAS: reduced disk I/O; geom file input; ges(k) off
+c v2.65/Aug13-PAS: reset defaults; hse semilocal(JEM); vdw corrections (ulg,D2);
+c              enhanced cell constraints and optimization
+c    (a) 24Sep13-PAS: NEB+LMCC fix: propagate lmcc reference file to all image masters
+c                     compute enthalpy for pressure calculations.
+c    (b)  5Feb14-ACP&PAS: fix dscal arg in cellopt (fixed-volume); ACP: fix bands symbols
+c    (c)  9May14-PAS: fix vdwdata input bugs (2): ijvdw args, and errant goto
+c    (d) 15Dec14-PAS: fix bugs to band structure (nblocksz->nkblocksz), eV scale twice
+c v2.64/Jul13: band structure(AHE), k-parallel-parallel(ACP), cleanup(ACP&PAS)
+c v2.63/May12-ACP&PAS: k-parallel scf and k-point distributed memory; dble-lyr
+c    (a) 16Jan13-PAS: bugfix parallel solver memory dist for some small 4-proc cases
+c    (b) 26Feb13-PAS: bugfix wkmem parallel stripe v. square(ijk)
+c v2.62/Feb12-PAS: stripe-parallel 2/3-center routines; vgfix/cell-volume constraints;
+c                  basic double-layer boundary conditions
+c v2.61/Mar08-PAS: spin-optimization; grid parallelism; MD/NVT thermostats
+c    (a) 17Apr08-PAS: bugfix: nlat1c void with floaters at origin
+c    (b)  2May08-PAS: bugfix: parallel populations code argument
+c    (c) 17May08-PAS: bugfix: memory allocation in (parallel) spin code
+c    (d) 24May08-PAS: tweak mem allocs to allow larger (parallel) spin calcs
+c    (e)  2Jun08-PAS: bugfix: fix to 261(a)
+c    (f) 28Aug08-PAS: bugfix: fix to 261(a) (refix an old bug reinserted in a)
+c    (g)  4Sep08-PAS: bugfix: GGA and left-handed vectors (bug reinserted 2.55a)
+c    (h) 23Sep08-PAS: bugfix: memory allocator in wkmem
+c    (i) 30Sep08-PAS: bugfix: pop uninit variable, EF pop error
+c    (j) 26Jan09-PAS: bugfix: spsteps input bug; rhosave-as-subroutine
+c    (k) 29May10-PAS: bugfix: dosdump, lcao.post file repairs for prop1e
+c v2.60/Jun07-PAS: wrap more mpi; in-core broyden history; merge serial-tp,
+c    SLIC minimization (RMV);
+c    (a)  2Oct07-PAS: Sandia Copyright notice.
+c    (b) 16Nov07-PAS: nebsetup/mprecv bug fixed
+c    (c) 10Dec07-PAS: portability issues
+c    (d) 20Dec07-PAS: dangling BLACS_GRIDINIT now exited
+c    (e) 28Jan08-PAS: parallel- griddft uninit file unit rewind
+c    (f) 12Feb08-PAS: indexing error in nearby correction
+c v2.59/Jan06-PAS: task-parallelism; changes to maximize consistency
+c    with serial version; wall timer; defect/closed-shell sampling;
+c    update NEB (RMV); Quest as subroutine capability; mat-files (idhamfl);
+c    master-only matrix files.
+c    (a) 17Jul07-ACP/PAS: tp/pgrid0xc - initialized variable
+c    (b)  9Apr07-AHE/PAS: Art's DOSDUMP/post-proc update
+c v2.58/May04-PAS: atom proximity checks; ignore lmcc vectors when off;
+c    remove scf blend reset; purge "igtype"; molecular dynamics (RPM).
+c v2.57/Oct03-PAS: push itmaxd into broyden; ext. electric field (w/JTK);
+c    add Jost bulk polarization term (w/AHE); spin-GGA stress (w/AEM).
+c    (a) 5feb04: fix Broyden blend bug with limited history files.
+c    (b) 16feb04: fix reduced-sym grid; (c) 8mar04: fix pop/gap bug
+c    (d) 18Mar04: fix qhist/ECELL bug
+c v2.56/Aug03-PAS: BLYP-SP; redo k-point handling; clean bigio/tim modules
+c v2.55/Jul03-PAS: limited-history/disk Broyden; L-BFGS; add .hist file;
+c    "input data"->"setup data"; BLYP (AEM); NEB default=ASD; ETIME(2)
+c v2.54/Oct02-PAS: MPI-NEB installed; reduce setup memory footprint;
+c    lcao.geom file added; alter NEB options; opt non-local integrals
+c v2.53/May02: add (final) term for gga stress (PAS); cell opt (RPM);
+c              reconcile, package, generalize, and tune cell opt (PAS);
+c              cutoff data input moved to "rundata"
+c v2.52/Mar02-PAS: clean linux version: clean unused vars, fix some
+c                  uninitialized variables, literal reals with d0.
+c v2.51/Dec01-PAS: atom/type name i/o; added status/restart; file mgr;
+c                  STARTX(fl,mp); (d) 1c null bugfixes
+c v2.50/Oct01-PAS: "damped dynamics" relaxation, and more cleans/fixes
+c v2.49/Aug01-PAS: spin-polarized dft; single norb**2 dmat
+c v2.48/Jul01-PAS: STOPX installed, undirected writes replaced
+c v2.47/May01-PAS: refactor/cleanup of main program: push mat0/grid0/
+c    lmcc/set1c/relax/mem; clean up and centralize wk() mem in "wkmem";
+c    condense input routines and create default input routines; clean
+c    up logic; purge xc-fit diagnostics and explicit madelung.
+c v2.46/Jan01-PAS: gga (no-spin) installed (pw91 and pbe); cosmetics;
+c    atpot->vlocpot; "potnr0' reference nearby split from "grid0xc";
+c    "defbox" rejiggered to limit biggest box to 216 pts; atm notes;
+c    "indata"->"setdata"; (a) (gga+cntrch) grid0xc bugfix; unscratched
+c    file opens.
+c v2.45/Jul00-PAS: atom file input and some processing split from a
+c    cleaned indata and put elsewhere; unify/cleanup scaling and
+c    internal/external coordinate transformations; lattice coordinates;
+c    improved selection of fixed/relaxed atoms; strains; (d) lcao.h bug
+c v2.44/Jun00-PAS: internal documentation cleaned up; ability to alter
+c    scf blend parameter after first geometry added; dipoles and defects
+c v2.43/Apr00-PAS: 3ctr force opts; atpot(ntypd/cordrv&dim) bugfix;
+c    non-xcfit bugfix; enii bugfix; "vl"/"nl" routine name conventions:
+c    enij,enii->vlocmat,vlocmii, ennloc->nlocmat, calls; vlradf opt.;
+c    frc wf mem fix; (h) corforc bugfix - ndim=1,2 stress with core;
+c    (i) slab dipole bugfix
+c v2.42/Jan00-PAS: force/stress bugfixes; assorted cleanup/bugfixes;
+c    intercept big grid read/writes; clean up geometry continuations;
+c    phantom stress
+c v2.41/Oct99-DBR/PAS: non-local force optimizations
+c v2.40/Sep99-PAS: full three-dimensional stress tensor;
+c    symmetry checked/imposed on dipole/charge manipulations;
+c    automatic k-point generation; bsiall/chbsv opt
+c v2.39/Sep99-PAS: fix non-local force cutoffs; reduce number of
+c    big arrays required in setup routines (enij,h0writ,ennloc).
+c v2.38/Aug99-PAS: expert drivers for eigensolvers installed.
+c v2.37/Jul99-PAS: sym fix for non-symmorphic; fix ion diagnostic;
+c    box occupancy filter; retune cutoffs (using N:Si&atC problems);
+c    fix geom opt bugs.
+c v2.36/Jun99-PAS: level-3 blas into gridrho/vslomat/vslofrc
+c v2.35/May99-PAS: 2-center defect terms flag and memory; option to
+c    do grid density from grid eigenfcns; complex blas for grid
+c v2.34/Apr99-PAS: install lapack complex eigensolver
+c v2.33/Mar99-PAS: clean out green fcn stuff used for impurity code;
+c    tighten memory use in eigensolver routines.
+c v2.32/Mar99-PAS: charged periodic systems; with Madelung correction;
+c    periodic WS dipole calculation
+c v2.31/Feb99-PAS: scale up: real eigensolver; nearby arrays from wk;
+c    tune-up grid matrix routines, op ct plus blas; intercept and
+c    handle orbital i/o with long records; rework big array allocations
+c v2.30/Jan99-PAS: box up ion/dipole code; clean force arrays;
+c    redo symmetry (group generation, reduced symmetry);
+c    split out es grid force into own routine ("eslofrc")
+c v2.29/Dec98-PAS: promote source to explicit double precision
+c v2.28/Nov98-PAS: single precision grid orbitals
+c v2.27/Oct98-PAS: fix scaling problems (mem) in setup local 3-ctr;
+c    allow pseudo-ionic (for xc only) atoms; symmetry center code;
+c    rework logical structure of local 3ctr forces; change es boundary
+c    conditions; full ionic/dipole corrections for finite clusters;
+c    inter-slab dipole correction; geometry restart
+c v2.26/Sep98-PAS: on-the-fly grid orbitals
+c v2.25/Aug98-PAS: modify local 3-center integral routines: purge
+c    translation-equivalence triplets; condense arithmetic;
+c    rework non-local forces (now "nlocfrc"); f(grid) moved b4 f(ctr).
+c v2.24/Aug98-PAS: rework nl cutoff scheme; rationalize and finely
+c    control all optimized cutoffs
+c v2.23/Jul98-PAS: fix some memory defects; graded output levels;
+c    new energy w/o delh; choice to not cholesky d-Ham; split enij
+c    into II:N and IJ:N pieces; extend 3ctr II:N;  split basis!
+c v2.22/Apr98-PAS: fix some geom options bugs; geom scf accelerator
+c v2.21/Sep97-PAS: combine big arrays into single workspace;
+c    restart blend after some specified iteration; geometry relaxation!!
+c    allow/treat correctly zero-weight k-pts; clean/reduce diagnostics;
+c    change datsave to accomodate charge plotting routines
+c v2.20/Jun97-PAS: box up grid orbital calculations!!!!
+c v2.17/Apr97-PAS: conventions for variable names changed;cleanup
+c    IO files/units/names; vslofix cut from vslomat; do0trace engy;
+c    old orbbulk purged/new gridwf moved; yet another exc correction
+c v2.16/Apr97-PAS: in-core/no-disk grid wf; project uc; purge shortloops
+c v2.15/Apr96-PAS: ennloc neqlatd safe, auto atom sym images
+c v2.14/Dec95-PAS: damp eigen io/shell-by-shell ranged grid orb stores
+c v2.13/Aug95-PAS: partial core correction installed
+c v2.12/Apr95-PAS: cutoff cleanup/slow-extended cutoffs; slow nearby fix;
+c    latvec full opt/check; fix enij cutoff bug, potnear bug; blend3 mem.
+c v2.11/Nov94-PAS: blend/greens/sym/full cleanup, bessel opt,
+c    k-point scaling, 3d-bulk/sym, non-orth grids, latvec opt
+c v2.10/May94-PAS: force clean up. Redo input data. Allow ndim for other
+c    than slab calculations (molecular!). Enable full-real grid orbs.
+c    Separate out nearby stuff from "vslomat" (new routines "grdovlp"
+c    and "atdefct"), revise corresponding energies (new comprehensive
+c    routine "doengy"). Rework atom xc-potential cutoff scheme and add
+c    new atom-subtracted matrix Exc energy evaluation. Fuss with enij.
+c v2.06/Mar94-PAS: generally dimension norbd/natmd/nkd/nstd arrays.
+c    Install phantom xc atom force.  Clean version transmission!!
+c v2.04/Jan94-PAS: install nlat range controls.  Rework/clean/match h0
+c    matrix routines.  Improve grid dimension checking. 1st cut isetdat
+c    cleanup and version transmission.  Continue cleaning code.
+c v2.02/Jul-Sep93-PAS: "doengy1" and "vcholsk" split off from vslomat,
+c    as was determination of nearby potentials (new routine "potnear").
+c    Nearby construction repaired for atoms outside primary uc, and
+c    generalized to do weighted sampling of nearby pts.  Energy
+c    analysis enriched, particularly of xc-stuff.  Grid density routine
+c    "rhoofr" split out of "rhoofv" (itself cleaned/renamed "eigsolv").
+c v2.00/12Jun93-PAS: rework declarations, trim unused arrays, rewrite
+c    memory/file usage in setup/iters phases.  Reorganize setup phase
+c    routines and their output (new routine "h0writ") to allow greater
+c    control of files.  Continue effort to generalize dimensioning.
+c    Combine into single routine (new routine "vesslo") generation of
+c    slow electrostatic potential (formerly "fftrho" and "delvofr").
+c    Rework branching structure of iteration phase for greater clarity.
+c    Rewrite taking matrix elements off grid potentials (new routine
+c    "vslomat" replacing "vmatrix").  All intrinsics replaced by
+c    generics, except a couple DERFs, and I have purged chunks of
+c    complex declarations, but lots (CMPLX,IMAG,etc) still litters code.
+c
+c v1.0/1992: start with PJF+PAS code
+c
+c***********************************************************************
+c

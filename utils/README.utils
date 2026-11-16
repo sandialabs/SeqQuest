@@ -1,0 +1,26 @@
+This directory keeps a record of small fortran utilities to use with the Quest code.
+
+cells.f - generate supercells, input from CELLS/VASP/LAMMPS, some coordinate transformations
+
+birch.f - compute equations-of-state using the Birch-Muraghan EoS
+
+bonds.f - does nearest-neighbor and bonds distance analysis from quest output
+
+qgrids.f - accesses grid quantities from quest grid file (lcao.grd)--densities, potentials,
+           and manipulate into convenient forms
+
+rings.f - does a rings analysis for monoelemental covalent (used for amorphous-diamond)
+
+outpost.f - accesses Quest .hist file and manipulates geomtries into alternate format (e.g. JMOL).
+
+config.f - not a code, but a snippet from Quest that allows manipulation of Quest geometry files
+
+
+Also some very simple codes to do narrow tasks:
+
+emin.f - trivial code to generate approximate a0 from equally spaced E(a0)
+filecat.f - code to concatenate selected text files into sh-separable file (analogous to tarball)
+mktape5.f - used to create sequences of a0-varied files for generating PES (e.g. for birch)
+mk_hcp.f  - used to create sequences of a0/c0-=varied files for generating PES
+
+

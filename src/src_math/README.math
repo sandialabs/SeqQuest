@@ -1,0 +1,5 @@
+12Jun18-PAS:
+These are the LAPACK/BLAS math routines that are invoked for the serial code.
+There are the raw unoptimized f77 version downloaded from netlib in the distant past.
+With access to standard LAPACK/BLAS libraried (e.g. ATLAS), these are redundant.
+

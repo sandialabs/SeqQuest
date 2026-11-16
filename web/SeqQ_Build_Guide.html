@@ -1,0 +1,349 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Build Guide </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest Build Guide</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html"> SeqQuest<br> Home</a> </th>
+</tr>
+</table>
+
+<p>
+This page provides guidance and instructions for building an executable
+from the shipped code package.  Often this will be as simple as unpacking
+the code, and then "make" or "make <i>platform</i>", but should rarely
+be much more complicated than that.  Mostly, you will be visiting this
+page in the uncommon event that something broke, and are looking for
+details and instructions on how to fix the make.
+<p>
+The code is very compact, is written
+entirely in f77, and is fully self-contained except for the need to
+invoke LAPACK/BLAS math libraries.  Hence, the code has a relatively
+simple build procedure.  Usually, one of the named options within the
+provided makefile will build a working executable, by typing
+"make <i>platform</i>" and, at worst, you may need to modify the makefile
+to specify the appropriate compiler, some common compiler flags, and/or
+the location of the math libraries.  It is easier than it sounds, and the
+provided makefile gives lots of guidance.  And this web page is intended
+to help you through the process.
+
+<h2> The steps in the process: </h2>
+<ol>
+  <li> <a href="#prep">    Getting everything ready </a>
+  <li> <a href="#unpack">  Unpacking the shipped code package </a>
+  <li> <a href="#files">   The files that you get </a>
+  <li> <a href="#makes">   Making the executable </a>
+  <li> <a href="#compile"> Compilers and flags </a>
+  <li> <a href="#math">    Math libraries </a>
+  <li> <a href="#config">  Machine dependence - reconfiguring the code </a>
+  <li> <a href="#dims">    Redimensioning the code </a>
+  <li> <a href="#trouble"> Troubleshooting </a>
+</ol>
+<hr>
+
+<a name="prep"></a>
+<h2> Getting everything ready </h2>
+
+You will need a unix or linux computer.  The code can be and has been
+made to run on a PC or Mac, but unpacking the code package requires the
+use of some utilities.  You will need a Fortran compiler, and you should
+have LAPACK/BLAS libraries installed on the target machine (not required
+but highly recommended for performance reasons, and because I do not
+regularly test the make with the explicitly compiled math source).
+<p>
+You should set up a new empty directory for the code, and place the
+shipped package in that directory and unpack.
+<p>
+The libraries of atom files that the code needs to operate come in a
+separate package, and you should place them in their own directories,
+segregated by functional.
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="unpack"></a>
+<h2> Unpacking the shipped code package </h2>
+
+Eventually I will give in and deliver the package as a tarball.
+However, for historical reasons (don't ask), the code currently
+is delivered as a "sh"-unpackable file.
+<!-- that is "compress"ed to
+reduce its size, and that, further, may be "uuencode"d to turn
+it into an ASCII file.  You will know which form you have. -->
+<ol>
+  <li> Prepare an empty directory for the source package
+  <li> Put the shipped package in that directory
+<!--
+  <li> "uudecode", "uncompress", then finally "sh" the file
+ -->
+  <li> then finally "sh" the file
+</ol>
+That's all.  You will see a collection of files in the directory.
+The procedure does not modify any other files, it does not create
+subdirectories or new directories anywhere on your system, does
+not require setting environmental variables, or anything.  Really.
+It's that simple.
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="files"></a>
+<h2> The files you get </h2>
+
+Unpacking gives you a small number of files:
+<table>
+ <tr valign="top"> <td width=20>
+   <td> READ.ME
+   <td> The name says it all - brief instructions to make the code
+ <tr valign="top"> <td width=20>
+   <td> makefile
+   <td> The default makefile for the code
+ <tr valign="top"> <td width=20>
+   <td> lcaomain.f
+   <td> The main program for the code
+ <tr valign="top"> <td width=20>
+   <td> lcao.params
+   <td> Dimension parameters for the code
+ <tr valign="top"> <td width=20>
+   <td> lcaosubs.f
+   <td> All the functional subroutines
+ <tr valign="top"> <td width=20>
+   <td> utl_*.f
+   <td> The configuration files for the code.  All the machine/system
+     dependent code are in these routines, and the code can usually
+     be reconfigured for the idiosyncracies of almost any environment by
+     modifying the routines here: timing diagnostics, file systems,
+     I/O management, parallel handling, etc.  Currently only two versions:
+     <br> utl_gen.f - general usage <br> utl_mpi.f - MPI version <br>
+     Yup - machine/system dependence in the code is absolutely minimal.
+  <tr valign="top"> <td width=20>
+    <td> lapack.f, blas.f
+    <td> Explicit source for the LAPACK/BLAS routines (obtained from netlib)
+      required by the code, in the event that LAPACK/BLAS libraries are not
+      available on a target platform.
+  <tr valign="top"> <td width=20>
+    <td> lapackx.f
+    <td> Expert drivers for eigensolver routines, that are frequently
+      not part of vendor LAPACK libraries, and hence are explicitly
+      compiled and linked into the code.
+  <tr valign="top"> <td width=20>
+    <td> linpack.f
+    <td> Some isolated LINPACK routines that the code uses (these will
+      eventually be either purged or replaced).
+</table>
+
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="makes"></a>
+<h2> Making an executable </h2>
+
+One of two means.  You can:
+<ol>
+<li> use a named make, e.g. "make sgi", to invoke one of the existing
+     combinations (examine the makefile)
+<li> edit the menus at the beginning of the makefile to
+     select the compiler, its flags, and specify the location of the
+     math libraries, and then type "make".
+</ol>
+Your executable, should the make be successful, will appear as "lcao.x".
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="compile"></a>
+<h2> Selecting the compiler and compiler flags </h2>
+
+You may need to tell the makefile which Fortran compiler to use, and
+where to find it.   The code has been made to run with every Fortran
+compiler we have run across, but different compilers may require
+setting some compiler flags.  Some common combinations are named
+in the makefile (e.g. "make sgi"), and menus of compilers and
+their flags are listed (commented out) in the makefile that should
+allow for a makefile tailored to the special case of any platform.
+The make does use full optimization (ruthless pruning of non-porting
+and non-optimizable code makes this possible).
+<dl>
+<dt> The most common compiler names:
+  <dd> FC = f77, g77 (gnu), mpif77, ...
+<dt> Standard compiler flags:
+  <dd> FFLAGS = -O -fast
+<dt> Alternate standard, for some compilers do not recognize "-fast":
+  <dd> FFLAGS = -O
+<dt> gnu Fortran, g77, often (not always) balks at the way memory is
+     passed in the code. The "noglobal" flag circumvents this objection:
+  <dd> FFLAGS = -O -fnoglobal
+<dt> SGI's are special:
+  <dd> FFLAGS = -O3 -mips4 -OPT:IEEE_arithmetic=3:alias=restrict
+</dl>
+Other machines and compilers occasionally have other requirements.
+
+<br><font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="math"></a>
+<h2> Math libraries </h2>
+
+You may need to select/modify the location of the math libraries
+in the makefile.
+<p>
+The code makes liberal use of LAPACK and BLAS, to invoke specific
+functionality, e.g. eigensolvers, and to enhance performance of the
+code.  The name and location of the math libraries will vary from
+system to system.  On many SGI's, the math libraries are invoked
+by linking in -lcomplib.  On some Alpha-based machines, the libraries
+can be invoked with -ldxml, but on more recent Compaq-vintage Alphas
+this has become -lcxml.  IBM and Intel machines have yet different
+conventions.  If you have a platform that did not come equipped with
+a vendor-supplied math library, ATLAS-generated libraries will work
+well, but you will need to specify their location to link them.
+<p>
+Alternately, you can compile and link the math routines downloaded
+from NETLIB in the files (lapack.f, blas.f) sent with the package.
+Be aware that using these compiled (not-optimized) routines can
+significantly slow performance in key parts of the code.
+In particular, the BLAS/3 implementation of the grid integrals can be
+THREE times slower or worse.
+When linked to compiled math source rather optimized libraries, the input
+files should add an instruction to bypass the BLAS/3 routines (see the
+<a href="SeqQ_runopt.html"> command options</a>) and use the explicitly
+coded paths in the code.
+<p>
+<b>Important note:</b>
+The code requires Version 3.0 of LAPACK.  Earlier versions WILL fail.
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="config"></a>
+<h2> Reconfiguring the code </h2>
+
+Only if absolutely desperate and after consultation ...<br><br>
+
+The package has very little code that is truly machine dependent,
+but what little machine dependence there may be has been isolated
+in a small set of routines in the "utl_*.f" files, that handle
+I/O units and file structure, timing and error handling, etc.,
+functions that can be sensitive to the specific environment.
+These are segregated and organized in a fashion to make it easier
+to configure the code to the idiosyncrasies of a given platform.
+Currently, only two configurations are needed: a standard general
+version and a version to enable MPI-NEB, reflecting the
+militantly generic approach to programming structures used in
+the code (if it breaks, it's gone).  However, some computing
+platforms have special needs.  An some old Alpha machines,
+the system had limits on the length of a single written record;
+it would write any length record you asked, but a read would
+intermittently and irreproducibly fail.  Some systems have special
+conventions for connecting to the file system (esp. parallel
+file systems).  If you need to alter the convention for file
+names, or what the default standard out/in units are.
+If your platform uses non-standard timing routines.
+All these potentially machine-dependent aspects can be addressed
+in the utl_*.f file.  The code handles many system-dependent needs
+through pseudo-modules that are initialized in the STARTX routine.
+The utl_* routines should only be modified as a last resort and
+only after acquiring a detailed understanding of the problem.
+Handling machine dependencies without introducing other problems
+is an awkward enterprise.
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="dims"></a>
+<h2> Redimensioning the code - easy</h2>
+
+Sometimes you want to run a calculation that is larger than what
+the code dimension parameters allow (these are echo'd in the output).
+The code output will usually tell you exactly what it needs to run.
+It is a simple procedure to modify the code size: edit "lcao.params",
+the dimension file for the code, and recompile the main routine and
+relink the code.
+<p>
+The parameters in "lcao.params" define the limits on the code.
+This file is used in only one place: it is inserted via an "include"
+into the main program "lcaomain.f".  The virtue of this single use is
+that a redimensioned executable can be built by simply recompiling
+the main program (quick) and not the entire code (slower).
+The bulk of the code is in the subroutines file "lcaosubs.f", and
+those subroutines are completely insensitive to dimensions.
+<p>
+There are two kinds of parameters in the "lcao.params" file: those that
+determine specific problem aspects, and those that fix available memory.
+<p>
+Most of the parameters place limits on discrete problem aspects:
+number of atams, number of basis functions, k-points, symmetries, etc.
+It is clear what they refer to, and they can usually be modified
+rather freely as they do not allocate large amounts of memory.
+If your calculation requests a larger problem in some respect than what
+the code is dimensioned for, the input routines will stop and point
+out what parameter needs to be modified.  Modify that parameter in
+"lcao.params" and recompile.
+<p>
+The parameter "maxwkd" specifies the size of the principal workspace
+used in the code, and determines the amount of memory the code can use.
+At initialization, the code creates one huge real*8 workspace
+dimensioned to "maxwkd", and then dynamically allocates memory it
+needs from this workspace.  Before entering any computationally
+expensive routines, the code does an exact forecast of the memory
+needed to complete, and will stop if it sees it has insufficient to
+complete and will output the minimum necessary memory to finish.
+Modify "maxwkd" in "lcao.params" accordingly and recompile.
+The biggest workspace you can have --the maximum you can set "maxwkd"--
+is limited by the physical memory of your platform.  On a 256MB machine,
+the largest you can set "maxwkd" is about 30M, on 512MB about 60M,
+and on 1GB about 110M.  The exact limit will vary depending on the
+system, and how much space the OS reserves for other purposes.
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="trouble"></a>
+<h2> Troubleshooting </h2>
+
+Surprisingly, not much to say here, except to do a careful reading
+of the procedures above.  This page is itself a troubleshooting guide
+that you will consult only if a trivial make failed.
+Detailed attention has gone toward making the code portable and robust.
+The rule that "if it breaks, it's gone" has served the code well.
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<br><br>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Build Guide">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> May 1, 2006  <!-- update line -->
+</font>
+
+</font>
+</body>
+</html>

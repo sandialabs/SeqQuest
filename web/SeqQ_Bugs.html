@@ -1,0 +1,224 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Bug Reports </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<h1>SeqQuest - Reporting Bugs</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html"> SeqQuest<br> Home</a> </th>
+</tr>
+</table>
+
+<a name="top"></a>
+<p>
+On occasion, the code may fail to perform the function you desire.
+It might crash, or it might give (unpleasantly) surprising results.
+This page tells you how to set up a useful bug report, one that will
+result in getting you up and running again as quickly as possible.
+<p>
+<h2> The elements of a bug report:</h2>
+If you have an unexplained crash (i.e., it is not apparently a failure
+due to the compute platform - i.e., power, disk outage), and you are
+unable to resolve the problem (i.e., the code output does not tell
+you what went wrong), collect the following elements for a bug report:
+<ol>
+  <li> <a href="#purpose"> What are you trying to do?</a>
+  <li> <a href="#nature">  What is the nature of the failure?</a>
+  <li> <a href="#inputf">  What is the input file?</a>
+  <li> <a href="#errmsg">  What does the code tell you?</a>
+  <li> <a href="#check">   Did you do any troubleshooting?</a>
+  <li> <a href="#version"> What code version?</a>
+  <li> <a href="#where">   Where did you run the calculation?</a>
+  <li> <font color="red"> Compare to
+       <a href="#KnownBugs"> known bugs </a> and their workarounds </font>
+</ol>
+<hr>
+and send it as a
+<a href="mailto:paschul@sandia.gov?Subject=Quest bug">bug report to us</a>.
+
+
+<a name="purpose"></a>
+<h2> What are you trying to do? </h2>
+
+<font color="red">
+What kind of calculation are you trying to
+run, and what result are you trying to get out of it?
+</font>
+<p>
+It is easier to diagnose what a problem might be, if we know what
+it is that you are trying to accomplish with the code.
+An example: "I was trying to do an NEB calculation of a transition
+state barrier energy for an hydrogen atom migrating through alpha
+quartz."
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="nature"></a>
+<h2> What is the nature of the failure? </h2>
+
+<font color="red">
+What went wrong?
+</font>
+<p>
+Did the code die unexpectedly (where)? <br>
+Did the code give answers that were nonsense (how so)? <br>
+Did the code not parse your input file well (what)? <br>
+Did the code complain about something (what)? <br>
+How did the code not do what you hoped it would do?
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="inputf"></a>
+<h2> What is the input file? </h2>
+
+<font color="red">
+If possible, include the input file in the message. <br>
+</font>
+On occasion, it may make sense to also send the atom files, too.
+<p>
+The most common error in running the code is in setting up the
+input file, and inspection often reveals the problem.
+If the code stopped during reading the input file, it is almost
+certain that you have a format error in the input file.
+The code will have echoed the most recent line it read, and that
+is most likely the error in the input file.
+The code will attempt to speculate about the nature of the error,
+based on what it was trying to do at the moment, but certainly
+at that point or immediately above that in the input file is your
+error.
+<p>
+If inspection does not reveal the problem, if we have the
+input file we can do independent tests to reproduce your
+problem locally and diagnose the cause.
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="errmsg"></a>
+<h2> What does the code tell you? </h2>
+
+<font color="red">
+If possible, send the tail of the output file that contains
+at least the error message (if the code gives one) back to the
+last timing statement in the output file. <br>
+</font>
+Even better, rerun the calculation with more timing diagnostics,
+i.e., set the output level to "3" in the
+<a href="SeqQ_runopt.html"> command options</a></li> section
+to increase the number of timing statements and thereby narrow
+the location in the code where the failure occurred.
+<p>
+The code is very good at trapping problems and often errors
+can be isolated and diagnosed from the error message.
+If the code crashed, having the tail back to the final reported
+timing statement at least isolates the location of the
+failure better.
+
+<br><font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="check"></a>
+<h2> Did you do any troubleshooting first? </h2>
+
+<font color="red">
+What did you try to correct the problem, if anything?
+</font>
+<p> 
+Most of the
+<a href="SeqQ_Input_Manual.html">Input Manuals</a></li>
+have troubleshooting suggestions.  Many common problems and
+how to deal with them is described in specific sections.
+What did you try to get around the problem, if anything?
+If so, what happened?
+
+<br> <font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="version"></a>
+<h2> What version of the code are you using? </h2>
+
+<font color="red">
+Include the version of the code in the message.
+</font>
+<p>
+The code version (and code dimensions) are listed at the
+top of every output file.
+
+<br><font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="where"></a>
+<h2> Where did you run, where did you get the executable?</h2>
+
+<font color="red">
+What kind of machine are you running on, are you running
+in serial or parallel (how many processors?), etc? <br>
+Where did you get the executable (who built it)?
+</font>
+<p>
+A simple "I was running the task-parallel code on an
+mpi-cluster with 12 procs using version 2.59(b)" is
+the kind of information that should be included in
+every bug report.
+
+<p>
+Send all bug reports to
+<a href="mailto:paschul@sandia.gov?Subject=Quest bug">this address</a>.
+
+<hr>
+<a name="KnownBugs"></a>
+<h2> Some known bugs</h2>
+<ul>
+<li> <font color="red"> ODD2FFT (Oct-2013) - serious (faulty results without warning) </font>
+     <br> Faulty results (without crashing) for large calculations when *second* grid dimension is odd (e.g. 46 x 73 x 400)
+     <br> Status: unresolved, localized to use of FFT in code
+     <br> Workaround: avoid odd grid size in second dimension
+<li> <font color="red"> COREPHANTOM (Oct-2013) - minor (minimal numeric effect) </font>
+     <br> By code inspection, correction term for phantom force/stress from atomic core-valence appear incorrect
+     <br> Status: solved, but not installed (not yet verified and tested)
+<li> <font color="red"> KGESSER (Oct-2013) - failed scf with guessing </font>
+     <br> The code can do scf guessing, to accelerate SCF convergence in geometry relaxations. For systems with non-Gamma k-points, the guess is faulty IF an atom crosses a supercell boundary (a bad phase gets introduced into the construction of the gues Hamiltonian.
+     <br> Status: Unsolved.
+     <br> Workaround: By default, the guess is turned OFF for calculations with non-Gamma k-posint (as of 2.66, previously it was on).  The default for gamma-point calculations remains ON.  Use the <tt>do/no ges</tt> facility in the
+<a href="SeqQ_rundata.html"> run phase section</a>
+to change from the default setting.
+</ul>
+</ul>
+
+<br><br>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Bug Reports">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> May 18, 2015  <!-- kgesser, hilite known bugs -->
+</font>
+
+</font>
+</body>
+</html>

@@ -1,0 +1,22 @@
+A simple fortran code to concatenate a list of (ASCII) files into a sh-separable single file (like a tarball).
+Interactive, text-menu driven, self-explanatory.
+The filecat.input file illustrates how this code would create a file "utils.sh"
+that contains a series of fortran files within this utils directory, through the following:
+
+filecat << filecat.input
+
+filecat.input:
+utils.sh
+birch.f
+bonds.f
+cells.f
+config.f
+emin.f
+filecat.f
+mk_hcp.f
+mktape5.f
+outpost.f
+qgrids.f
+rings.f
+quit
+

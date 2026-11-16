@@ -1,0 +1,226 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Code Versions </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<font face="Arial, Helvetica, Sans Serif">
+
+<a name="top"></a>
+<h1>SeqQuest Version History (Retired versions)</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov">
+       paschul@sandia.gov?Subject=SeqQuest</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_News.html">         SeqQuest<br> News</a> </th>
+</tr>
+</table>
+
+<a name="recentvrs"></a>
+<h2> Recent SeqQuest code version history </h2>
+
+   <ul>
+
+   <li> Version 2.61k (Mar08-Jun10)
+     <ul>
+       <li> Automated optimization of net spin polarization
+       <li> Molecular dynamics NVT thermostats matured, more user-controls
+       <li> Some improved grid-routine parallelism
+       <li> Bugfixes/patches:
+         <dl>
+          <dt> (a) 18Apr08 - bugfix: void at origin with floating orbitals
+                             (born: old)
+          <dd> - with sizable void at cell origin with floaters, grid errors
+          <dt> (b)  2May08 - parallel version consistency bug (born: 2.61)
+          <dd> - parallel multi-k metallic population code would crash
+          <dt> (c) 17May08 - parallel spin memory allocation error(born: 2.61)
+          <dd> - parallel spin calculation would give (obviously) nonsense results
+          <dt> (d) 24May08 - tweak memory allocations to enable large spin calcs
+          <dd> - adjusted pointers to enable larger spin calcs (esp. parallel)
+          <dt> (e)  2Jun08 - fix to patch (a) (born 2.61a)
+          <dd> - if triggered, caused code to stop with improperly set flag
+          <dt> (f) 28Aug08 - another patch to (a), and ASD tune
+          <dd> - if triggered, real solver failed (leading to failed SCF); <br>
+                 and ASD initial atomic masses forced to be one (not atomic mass)
+           <font color="red">
+          <dt> (g)  4Sep08 - error fixed: GGA with left-handed cell vectors (born 2.55a)
+          <dd> - with left-handed cell vectors, GGA calculation would fail <br>
+                 (previously fixed in 2.53h, bug reinserted 2.55a)
+           </font>
+          <dt> (h) 23Sep08 - error fixed: grid memory assembly (born 2.61c)
+          <dd> - if triggered, code asked for too much memory; else, no effect
+          <dt> (i) 30Sep08 - error fixed: pop uninitialized variable (born 2.61)
+          <dd> - if triggered, code would stop with ER/pop error; else, no effect
+          <dt> (i) 26Jan09 - error fixed: "do post" crash on select platforms
+          <dd> - compiler/platform-dependent, if triggered crashed with seg-fault
+          <dt> (j) 26Jan09-PAS: bugfix: spsteps input bug; rhosave-as-subroutine
+          <dd> - minor cosmetics
+          <dt> (k) 29May10-PAS: bugfix: dosdump, lcao.post file format for prop1es
+          <dd> - various repairs to harmonize with updated prop1e code
+         </dl>
+     </ul>  <!-- end 2.61 descriptions -->
+
+   <li> Version 2.60f (Sep07-Mar08)
+     <ul>
+       <li> Expanded task-parallelism
+       <li> <a href="http://dft.sandia.gov/functionals/AM05.html">
+            AM05 functional </a> (spinless only) - AEM
+       <li> Molecular Dynamics matured - RPM
+       <li> parallel-parallel NEB (multi-processor per image) - APT
+       <li> test suites - RPM
+<!--
+       <li> Selected Local Internal Coordinate (SLIC) minimization - RMV
+       <li> In-core data-parallel blend
+       <li> Merged most code for task-parallel and serial
+ -->
+       <li> Bugfixes/patches:
+         <dl>
+          <dt> (a) 2Oct07-PAS - Full Sandia copyright notice inserted
+          <dd> - no change in code behavior
+          <dt> (b) 16Nov07-PAS - parallel NEB error fixed (born 2.60)
+          <dd> - crashed input of parallel-NEB with seg-fault
+          <dt> (c) 10Dec07-PAS - portability issues
+          <dd> - some compiler/OS portability problems fixed 
+          <dt> (d)  4Jan08-PAS - parallel-parallel NEB problem
+          <dd> - parallel eigensolves within parallel NEB would crash
+          <dt> (e) 28Jan08-PAS - parallel file access error
+          <dd> - if triggered, would cause crash of parallel GGA
+          <dt> (f) 12Feb08-PAS - index error in nearby function
+          <dd> - if triggered, very small error in energy on grid
+         </dl>
+       </li>
+     </ul>
+
+   <li> Version 2.59b (Jul06)
+     <ul>
+     <li> NEB updates: features, analysis, documentation - RMV
+     <li> Linear dependence handling: singular value decomposition - RPM
+     <li> Finite Defect Supercell Model - LMCC, sampling, bulk polarization
+     <li> Task-parallel version - faster, but not bigger
+     <li> <font color="red"> Bugfixes/patches: </font>
+       <dl>
+        <dt> (a)  17Jul06: tp/pgrid0xc - uninitialized variable (born 2.59/tp)
+        <dd> Unexpected seg-fault; downstream impact possible but not seen
+        <dt> (b)   9Apr07: dosdump - update for consistency with post-proc
+        <dd> No effect in main code; installing Art Edwards' post-proc updates
+       </dl>
+     </ul>
+
+   <li> Version 2.58b (Feb05)
+     <ul>
+     <li> Molecular dynamics - RPM:
+          NVE, Berendsen, scaled temp, Hoover, ...
+          <br> <font color="red"> MD capability is "beta" code: </font>
+          <br> input/output subject to change; Hoover code not fully verified
+     <li> Some improved internal exception/error handling
+     <li> Bugfixes/patches:
+       <dl>
+        <dt> (a) 2Dec04: phantom GGA stress term added for better grid
+             convergence of stress calculation
+        <dd> <font color="red"> computed GGA stress will change, giving
+             better convergence with respect to grid dimensions </font>
+        <dt> (a) 2Dec04: atom proximity diagnostic check fixed
+        <dd> - thanks to A.C. Pineda for fixing this error
+        <dt> (b) 10Feb05: completion status for mpi-NEB fixed
+        <dd> - uninitialized variable could cause crash
+       </dl>
+     </ul>
+
+   <li> Version 2.57d (Mar04)
+     <ul>
+     <li> <i>Spin-polarized</i> GGA stress implemented (AEM)
+     <li> External applied electric field (with help of JTK)
+     <li> Jost model bulk polarization added to bulk charged defect
+     <li> Step limits (both SCF and geometry) removed
+     <li> Default Broyden history length set to 10 (SCF and geometry). <br>
+          <font color="red"> - trajectories longer than 10 steps will change
+          </font>
+     <li> <font color="red"> Bugfixes/patches:</font>
+       <dl>
+        <dt> (a) 5Feb04: Broyden file+limit history bug fixed (from 2.55)
+        <dd> - for larger number of steps or larger problem, code would
+             unexpectedly crash in blend, typically with end-of-file error
+        <dt> (b) 16Feb04: Reduced-symmetry for grid fixed (original)
+        <dd> - code exited rather than properly reducing symmetry
+        <dt> (c) 6Mar04: Gap diagnostic in complex calc fixed (from 2.49)
+        <dd> - if triggered, code crashed OR reported (incorrect) zero gap
+        <dt> (d) 18Mar04: History file reported incorrect cell-opt energy
+        <dd> - no downstream impact
+       </dl>
+     </ul>
+
+   <li> Version 2.56 (Aug03)
+     <ul>
+     <li> Internal handling of k-point sampling modified <br>
+          <font color="red"> (very) small changes in numerics result</font>
+     <li> Spin-polarization added to BLYP (AEM)
+     <li> Timing and big-I/O modules polished (with new output diagnostics)
+       <br><font color="red">default I/O record lengths were changed</font>
+     <li> Cosmetic changes to NEB output
+     </ul>
+
+   <li> Version 2.55a (Aug03)
+     <ul>
+     <li> <font color="red">
+          Input format change:<br>
+          Setup data section now begins with "<tt>setup data</tt>",
+          changed from "<tt>input data</tt>"
+          </font>
+     <li> Limited-history, limited-file-size built into Broyden.
+     <li> Limited-history BFGS minimizer installed.
+     <li> Geometry history output for post-processing (e.g. MOLDEN).
+     <li> <font color="red">
+          Altered makefile (simplified machine dependence in "utl")
+          </font>
+     <li> BLYP functional installed (Ann E. Mattsson)
+     </ul>
+
+   <li> Version 2.54e (Jan03) - NEB transition state finder
+      <ul>
+      <li> NEB transition state finder implemented
+      <li> Trivial MPI by NEB image implemented, Cplant-compatible
+      <li> Small optimization of setup-phase non-local integrals
+      </ul>
+
+   <li> Version 2.53h (Oct02) - cell optimization
+      <ul>
+           <font color="red">
+      <li> (g) **** error fixed: GGA with left-handed cell vectors
+           </font>
+      <li> cell optimization
+      <li> GGA stress completed
+      <li> cutoff input moved to run phase (from setup phase)
+      </ul>
+
+   </ul>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest News">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> February 5, 2014  <!-- move 2.61k into history -->
+</font>
+
+</font>
+</body>
+</html>

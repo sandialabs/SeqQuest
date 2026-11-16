@@ -1,0 +1,324 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest input - Molecular dynamics </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest input - Molecular dynamics</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~rmuller/">
+       Richard P. Muller</a>
+&lt;<a href="mailto:rmuller@sandia.gov"> rmuller@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+ -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Overview</a>
+<li><a href="#inputs">   Input options</a>
+<li><a href="#detail">   Details and defaults</a>
+<li><a href="#mdmeth">   MD methods and thermostats</a>
+<li><a href="#doctor">   Diagnostic tools</a>
+<li><a href="#trouble">  Troubleshooting</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+This page gives a description of the input section that controls
+and modifies how a molecular dynamics run is done.
+The MD input section is optional; all the user
+need do is add a "<tt>do dynamics</tt>" instruction in the
+<a href="SeqQ_runopt.html">command options</a> and the code will
+automatically launch a molecular dynamics run, with an NVE
+simulation at room temperature.
+
+<p>
+The default units for the dynamics section are Ry for energies,
+bohr for distances, Kelvin for temperature, and femtoseconds for time.
+
+<p>
+Current constraints, important version notes:
+<ul>
+<li> The atom files must have atomic mass data in them OR
+     the input file must specify masses for each atom type.
+<li> Default integrator is leapfrog Verlet
+</ul>
+
+<hr>
+<a name="inputs"></a>
+<h2>Input options</h2>
+
+The molecular dynamics input section can appear <i>anywhere</i> in the
+"run phase" or "geometry relaxation" section of the input file,
+begins with the "<tt>dynamics data</tt>" keyword and
+ends with the "<tt>end dynamics</tt>" keyword.
+<p>
+The following are the common input keywords in this section.
+All the keywords are optional, and can appear in any order within this section.
+The keywords must be left-justified, but all data input is free-format.
+
+<font face="courier"><tt>
+<dl>
+<dt><b> dynamics input</b> - begin MD input section
+  <dt>  ...
+<dt><b> timestep </b> - time step (femtoseconds) for dynamics
+  <dd><i>   dt_md </i>
+<dt><b> md_steps </b> - number of (thermalized stage) MD steps
+  <dd><i>   n_step_md </i>
+<dt><b> md_method </b> - <a href="#mdmeth"> molecular dynamics method </a>
+  <dd><i>   mdtype </i> ( NVE | BERENDSEN | HOOVER | TSCALE )
+<dt><b> md_temperature </b> - molecular dynamics temperature (Kelvin)
+  <dd><i>   temp_md </i>
+<dt><b> md_parameter </b> - parameter defining MD method (see below) (2.61)
+  <dd><i>   param_md </i>
+<dt><b> equilibration steps </b> - number of equilibration steps
+  <dd><i>   n_step_eq </i>
+<dt><b> eq_method </b> - <a href="#mdmeth"> equilibration method </a>(2.61)
+  <dd><i>   eqtype </i> ( NVE | BERENDSEN | HOOVER | TSCALE )
+<dt><b> eq_temperature </b> - equilibration target temperature (Kelvin)
+  <dd><i>   temp_eq </i>
+<dt><b> eq_parameter </b> - parameter defining eq method (see below) (2.61)
+  <dd><i>   param_eq </i>
+<dt>         ...
+  <dt><b> end dynamics input </b> - end of MD input section
+</dl>
+</tt></font>
+
+<hr>
+<a name="detail"></a>
+<h2>Details and defaults</h2>
+
+The dynamics section enables the SeqQuest program to run molecular
+dynamics on the Born-Oppenheimer potential energy surface.
+The units of temperature are Kelvin, the unit of time is fs, and
+the length of simulation is in number of timesteps.
+<p>
+<i>Temperature</i>.
+The default temperature for the dynamics is 300 K, room temperature,
+unless the user specifies an input <i>md_temperature</i>.
+<p>
+<i>Initialization</i>.
+For initialization (if there is no MD restart file),
+velocities are randomly assigned from a
+Boltzmann distribution oriented in random directions.
+The initial velocities are consistent with a temperature <b>twice</b>
+the simulation temperature.
+Note: this implicitly assumes the atomic positions are at, or near,
+equilibrium positions, such that half the energy will go into
+potential modes and thereby leading to an equilibrated temperature
+half that of the temperature defined by the initial velocities.
+If the atoms are away from initial positions, the internal energy
+they possess will result in a higher equilibrated temperature than
+the target simulation temperature.
+<p>
+<i>Equilibration</i>.
+The equilibration phase takes the initialized position and
+velocities and runs a number of equilibration steps specified
+by the user with the <tt>eq_steps</tt> keyword.
+The default number of equilibration steps is 0,
+but 100-1000 steps are typical values.
+The default equilibration scheme is <i>TSCALE</i>.
+The user can select a any valid thermostat with the
+<tt>eq_method</tt> keyword, and input a parameter to tune that
+thermostat with <tt>eq_parameter</tt> keyword.
+<p>
+<i>Dynamics</i>.
+After the system has been equilibrated, the MD phase begins.
+The user may specify the number of time steps to be run
+with the <tt>md_steps</tt> keyword.
+The default number of time steps is 1000000, to effectively run
+until the user kills the job, or the job times out.
+The user may specify the type of molecular dynamics
+to be run (see below) with the "<tt>md_method</tt>" keyword.
+The default dynamics method is <i>NVE</i>.
+<p>
+<i>Restart</i>.
+To continue a dynamics run from a previous set of
+positions and velocities, keep the last "lcao.vxyz" file from the
+previous run and place it in the running directory of the SeqQuest job.
+This MD job will then continue from the last point in the previous run
+(with the latest coordinates, velocities, and thermostat conditions).
+<p>
+The vxyz file begins with a line specifying the number of atoms in
+the molecule, followed by a title line. These lines are followed by
+one line for each atom in the unit cell containing a symbol for the
+atom (ignored by SeqQuest), and six floating point fields
+(input in free format) containing the x, y, and z coordinates, and
+the v<sub>x</sub>, v<sub>y</sub>, and v<sub>z</sub> velocities.
+At the end of the vxyz file is a set of additional data necessary to
+consistently continue the thermostat.
+The vxyz file is a variant of
+the <a href="http://www.ahpcc.unm.edu/~chem/xmol/xmol.html">XMol XYZ
+Format</a>, except that instead of records for only the coordinates,
+the velocity fields are added.
+If the vxyz file is present, the positions of the atoms in the
+SeqQuest input file will be overwritten by the values in the vxyz
+file.
+
+<hr>
+<a name="mdmeth"></a>
+<h2>MD methods and thermostats</h2>
+
+The update scheme used in the molecular dynamics is leapfrog verlet.
+The default thermostat for dynamics is NVE, and the default thermostat
+for the equilibration is TSCALE.
+The available thermostats are:
+<ul>
+<li> NVE - microcanonical ensemble
+<br>
+The default dynamics is NVE, the microcanonical ensemble.
+In principle, this method conserves total (electronic + kinetic energy
+of ions) energy.
+<li> BERENDSEN - NVT
+<br>
+The BERENDSEN keyword selects the method of Berendsen <i>et al</i>
+[J. Chem. Phys. <b>81</b>, 3684 (1984)] for running molecular
+dynamics coupled to an external heat bath to conserve the
+temperature.
+<!--
+It does not generate states in the canonical ensemble,
+but with a long relaxation time, should be not be all that bad.
+ -->
+The Berendsen friction is expressed as s=(1/(2*tau))(T_c-T)/T_c,
+where T is the target temperature, T_c is the current temperature,
+and tau is parameter corresponding to a relaxation time, fs time units.
+This parameter is set to 400fs as a default when BERENDSEN is invoked.
+<li> HOOVER - NVT
+<br>
+The HOOVER keyword selects the Hoover thermostat,
+[Phys. Rev. A <b>31</b>, 1695 (1985)], which, in principle,
+ produces states in the canonical ensemble.
+The time derivative of the friction coefficient is implemented
+as ds=(1/tau^2)(T_c-T)/T_c, where T is the target temperature,
+T_c is the current temperature, and tau is a parameter that scales
+the connection to the heat bath, again a relaxation time in fs.
+This parameter is set to 100fs as a default when HOOVER is invoked.
+However, the value of this parameter should be tailored to the
+specific application rather than depending upon the default.
+This is a poor means to equilibrate a system, and one should
+use some temperature-scaling method (TSCALE/BERENDSEN/LANGEVIN)
+to equilibrate the system to near the target temperature before
+starting a MD simulation with a Hoover thermostat.
+<li> LANGEVIN - NVT
+<br>
+The Langevin thermostat can be very useful for equilibration.
+It is not yet available.
+<li> TSCALE
+<br>
+Temperature scaled dynamics scales the velocities to match a
+temperature at every time step.
+Temperature scaled dynamics do not reproduce good physics, and should
+only be used for equilibrating velocities at the beginning of an MD run.
+The scaling is implemented with a parameter f, such that the new
+target temperature T_i at each step is T_i = f*T_c - (1-f)*T,
+where T_c is the current simulation temperature and T is the target.
+To scale the temperature to the target at every step, set f=0.
+The limit f=1 recovers the NVE microcanonical ensemble.
+An intermediate value allows ramping the temperature more gently.
+The default f is 0.98, to allow for a modest quenching of the system
+toward the desired temperature.
+</ul>
+
+<a name="doctor"></a>
+<h2>Diagnostic tools</h2>
+There are a few built-in diagnostic tools in the MD output:
+<ul>
+<li> Temperature
+  -    grep output for "MDtemperature" to monitor simulation temperature
+<li> Total energy
+  -    grep output for "MDenergy" to monitor total (KE+electronic) energy
+<li> Equipartition
+  <ul>
+  <li> grep "TEMP" to view step-wise atom-type-resolved temperatures.
+  <li> grep "temps" to view current job-average of atom-type-resolved temperatures.
+  <li> grep "last100T" for atom-type-resolved temperature averages over 100 step intervals.
+  <li> final entry is overall temperature, preceeding entries are temps over atom-types.
+  <li> Temperatures computed four separate ways (TEMP#,temps#,#=1-4):
+  <ol>
+   <li> temperature using v(t) (i.e., in-synch with positions/forces)
+   <li> at time t+1/2 (out-of-synch with positions, in-synch with velocities)
+   <li> time-averaged KE around time t, using v(t-1/2) to v(t+1/2)
+   <li> approximately time-averaged KE around time t+1/2
+  </ol>
+  </ul>
+</ul>
+<hr>
+
+<a name="trouble"></a>
+<h2>Troubleshooting</h2>
+
+The dynamics module will print some warning messages if parameters
+are input that appear suspect:
+<dl>
+<dt> WARNING: Quest MD -- Temperature high
+  <dd> indicates that the input temperature is outside of the range
+       that SeqQuest believes will work.
+<dt> WARNING: Quest MD -- Large time step entered
+  <dd> indicates that the time step entered is too large for SeqQuest
+       to accurately integrate Newton's equations
+<dt> WARNING: Quest MD -- Small time step entered
+  <dd> indicates that the time step entered is very small, and that
+       too many time steps will be required to obtain meaningful
+       statistics.
+<dt> WARNING: likely uninitialized mass
+     <dd> suggests that an atom file may have been input without field
+          describing the atomic mass (note: the default mass is 1.0,
+          and Hydrogen in your system may be incorrectly flagged as
+          not being initialized).
+</dl>
+Other problems that may occur:
+<dl>
+<dt> With NVE, a larger energy drift is observed
+  <dd> Reduce the size of the time step in the MD.
+<dt> Slow equilibration for NVE (or Hoover, Berendsen):
+  <dd> Use an aggressive temperature scaling method to pre-equilibrate
+       (e.g., a 100fs Berendsen, 20fs Hoover, TSCALE, etc.).
+<dt> Poor equipartition (uneven temperature distribution among atoms)
+  <dd> <ul>
+    <li> Check that size of time step is small enough (5-10 steps, or
+         more, per fastest vibration period in problem is supposedly needed).
+    <li> Check that thermostat relaxation times are (at least)
+         a factor of 2-10 larger than that fastest vibrational period.
+    <li> A too <i>long</i> relaxation time in the thermostat can lead
+         to poor equilibration that looks like poor equipartition.
+    </ul>
+</dl>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~rmuller/">
+       Rick Muller</a>
+ at <a href="mailto:rmuller@sandia.gov?Subject=Quest MD">
+       rmuller@sandia.gov</a> <br>
+
+<i> Last updated: </i> January 17, 2014 <!-- PAS - atom mass note -->
+</font>
+
+</font>
+</body>
+</html>

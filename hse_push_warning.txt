@@ -1,0 +1,60 @@
+brij> git push
+warning: push.default is unset; its implicit value has changed in
+Git 2.0 from 'matching' to 'simple'. To squelch this message
+and maintain the traditional behavior, use:
+
+  git config --global push.default matching
+
+To squelch this message and adopt the new behavior now, use:
+
+  git config --global push.default simple
+
+When push.default is set to 'matching', git will push local branches
+to the remote branches that already exist with the same name.
+
+Since Git 2.0, Git defaults to the more conservative 'simple'
+behavior, which only pushes the current branch to the corresponding
+remote branch that 'git pull' uses to update the current branch.
+
+See 'git help config' and search for 'push.default' for further information.
+(the 'simple' mode was introduced in Git 1.7.11. Use the similar mode
+'current' instead of 'simple' if you sometimes use older versions of Git)
+
+
+Legal Notice Reminder - SF 2902-NTU (2-2009)
+
+         WARNING NOTICE TO USERS: SNL Systems Are Monitored
+
+ This Sandia National Laboratories (SNL) information system is monitored.
+ It is the property of the U.S. Government and is for authorized uses only.
+
+ --------------- Be aware you have no privacy on these systems. --------------
+
+    All users of this system and all information on this system are
+    subject to interception, monitoring, recording, copying, auditing,
+    and inspection at the discretion ofNational Technology and Engineering
+    Solutions of  Sandia, LLC (NTESS), and disclosure to NTESS and 
+    third parties, including, but not limited to, the 
+    United States Government,any authorized
+    investigative and law enforcement personnel, and officials of
+    other entities, both domestic and foreign. By using or accessing
+    this system, you consent to and permit all of the above without
+    limit as to when such action may be undertaken.
+
+    Unauthorized or improper use of this SNL system may result in:q
+    disciplinary, administrative, civil, and/or criminal penalties.
+
+    LOGIN to acknowledge and agree with these terms and conditions or
+   DISCONTINUE all efforts to access or use this SNL information system.
+
+Counting objects: 4, done.
+Delta compression using up to 16 threads.
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (4/4), 403 bytes | 0 bytes/s, done.
+Total 4 (delta 2), reused 0 (delta 0)
+remote: 
+remote: To create a merge request for HSE, visit:
+remote:   https://gitlab.sandia.gov/paschul/PGQuest/merge_requests/new?merge_request%5Bsource_branch%5D=HSE
+remote: 
+To git@gitlab.sandia.gov:paschul/PGQuest.git
+   0fe97ee..82789c2  HSE -> HSE

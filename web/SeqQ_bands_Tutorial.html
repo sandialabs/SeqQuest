@@ -1,0 +1,176 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Band Structure Example </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest band structure example</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+This band structure example and associated scripts was developed by Andrew C. Pineda (AFRL),
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+   <th> <a href="SeqQ_rundata.html">      Run phase<br> Manual</a> </th>
+   <th> <a href="SeqQ_bandsdat.html">     Bands<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#bsetup">  Setting up the band structure calculation</a>
+<li><a href="#bands">   CdS Band structure</a>
+<li><a href="#qinput">  Quest input file</a>
+</ol>
+
+
+<hr>
+<a name="bsetup"></a>
+<h2> Setting up the band structure calculation </h2>
+
+To set up a band structure calculation, first you do a single-point SeqQuest calculation,
+configuring the band structure calculation using the options specified in the
+<a href="SeqQ_bandsdat"> band structure manual</a>.
+The input file to generate the CdS band structure,
+along a user-specified set of branches, is <a href="#qinput"> below</a>.
+<p>
+At the conclusion of the run, the code generates two files needed to plot the band structure:
+<ul>
+<li> <b>lcao.bands</b> - contains the band energies plotted versus distance
+<li> <b>lcao.bandlbls</b> - contains the labels of the high symmetry points and their positions along this path.
+</ul>
+These files can be used to plot a band structure using a visualization tool such as
+<a href="http://plasma-gate.weizmann.ac.il/Grace/">Grace/XMGrace</a>.
+A Perl script that combines these two files into a usable plot using Grace/XMGrace is
+available <a href="Grace_bands.pl">here</a>.
+This script includes options for adding labels.
+The <a href="#bands"> figure below</a> presents an example output from the script.
+The dashed line in the figure represents the Fermi level output by the code.
+In this figure, the Fermi level has been shifted to zero using the capabilities of
+<a href="http://plasma-gate.weizmann.ac.il/Grace/">Grace/XMGrace</a>.
+
+
+<a name="bands"></a>
+<h2> Example band structure for CdS </h2>
+
+<p>
+<center><img src="CdSBandsExample.png" alt="CdSBandsExample.png" width="792" height="612" border="3" ></img></center>
+
+
+
+<hr>
+<a name="qinput"></a>
+<h2> Example SeqQuest input file to generate CdS band structure </h2>
+<pre>
+output level
+4
+do setup
+do iters
+no force
+no relax
+do post
+no cell
+do bands
+setup data
+notes 
+ CdS (Fd-3m)(sg 227) FINAL RELAXED CELL ENERGY =     -113.1589305653
+end_notes
+functional
+ PBE
+dimension of system (0=cluster ... 3=bulk)
+ 3
+coordinates
+lattice
+primitive lattice vectors
+  0.0000000000        5.6252238919        5.6252238919
+  5.6252238919        0.0000000000        5.6252238919
+  5.6252238919        5.6252238919        0.0000000000
+grid dimensions
+  36 36 36
+atom types
+  2
+atom file
+/home/acpineda/QUEST/atmlib-27jun07/pbe/Cd.atm
+atom file
+/home/acpineda/QUEST/atmlib-27jun07/pbe/S.atm
+number of atoms in unit cell
+   2
+atom, type, position vector
+   1    1   0.00000000000   0.00000000000   0.00000000000
+   2    2   0.25000000000   0.25000000000   0.25000000000
+kgrid
+ 8 8 8
+symops - for symmetry group #  227
+ 3
+definitions of symmetry operations
+-4   0.00000   0.00000   1.00000      0.00000   0.00000   0.00000
+ 3   1.00000   1.00000   1.00000      0.00000   0.00000   0.00000  
+-2   1.00000   1.00000   0.00000      0.00000   0.00000   0.00000 
+end setup phase data
+run phase input data
+cutfrc - extends cutoffs for force calculations, to get better stress
+ 5.d-2
+convergence criterion
+ 0.000010
+geometry parameters
+gblend
+ 0.42
+gsteps
+ 50
+gconv  - max force convergence criterion
+ 0.0001
+end geometry data
+bandstructure input
+bravais lattice
+fc2
+nbranch
+5
+symbol labels
+GX
+XW
+WL
+LG
+GK
+end bandstructure input
+end of run phase data
+</pre>
+
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_bandsdat.html"> Band structure manual</a>
+or <a href="SeqQ_rundata.html"> Run phase manual</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Cell Optimization">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  February 22, 2014  <!-- ACP revisions  -->
+</font>
+
+</font>
+</body>
+</html>

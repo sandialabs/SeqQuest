@@ -1,0 +1,153 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest: Thanks to ... </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<font face="Arial, Helvetica, Sans Serif">
+
+<a name="top"></a>
+<h1>SeqQuest: Thanks to ... </h1>
+
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov?Subject=Quest Kudos">
+       paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+
+<br>
+<b>SeqQuest</b> is an electronic structure code developed
+at Sandia National Laboratory in an effort led by Peter A. Schultz.
+The success of any significant coding effort such as SeqQuest
+is not the work of a single individual, but is due to the contributions,
+both knowing and unknowing, of a large number of people.
+The method and code are descended from the work of Peter Feibelman.
+Collaboration with Bill Goddard's group at Caltech has been
+critical to furthering Quest as a viable electronic structure method
+development effort.  A variety of people made important contributions
+to SeqQuest, including:
+
+<dl>
+
+<dt> <b> Dr. Richard P. Muller (Sandia, formerly Caltech) </b>
+<dd> Designed the development system (esp. test suites).
+     Designed the cell optimization scheme implemented in SeqQuest.
+     Wrote the molecular dynamics (MD) integrators in Quest.
+
+<br><br>
+<dt> <b> Dr. Peter J. Feibelman (Sandia) </b>
+<dd> Formulated the basic method used in implementing the Gaussian
+     code, and the current SeqQuest code is descended from the
+     original slab code he wrote.
+
+<br><br>
+<dt> <b> Dr. Arthur H. Edwards (Air Force Research Laboratory) </b>
+<dd> Wrote the post-processing code (DOS, pDOS, Mulliken analyses)
+     for Quest, and developed the band structure code.
+     Assisted Aidan in developing the NEB, and was
+     particularly helpful in porting the code to MPI clusters.
+
+<br><br>
+<dt> <b> Dr. Dwight R. Jennison (Sandia, retired) </b>
+<dd> Dwight's expansive research interests drove the development
+     of the code toward a broad general purpose applicability.
+     Good problems drive good methods development, and Dwight
+     challenged Quest with a seemingly endless, and varied set
+     of interesting, difficult physics modeling problems.
+
+<br><br>
+<dt> <b> Prof. William A. Goddard III, and his group at Caltech </b>
+<dd> Bill's interest and commitment to the Quest effort, and the active
+     collaboration of members of his group enabled Quest to grow
+     beyond the lean development years and reach the level it has.
+     His invitation to spend a year visiting the rich environment of
+     his group at Caltech was both very enjoyable and very productive.
+
+<br><br>
+<dt> <b> Ms. Carolina E. Mattsson (Sandia) </b>
+<dd> Constructed the atom library on-line download web pages (not yet posted)
+     Built the PP from the original generator files,
+     performed the reference energy calculations,
+     made the PP plots,
+     and constructed web pages where all of these could be downloaded.
+
+<br><br>
+<dt> <b> Dr. Aidan P. Thompson (Sandia) </b>
+<dd> Designed SeqQuest's transition state finder based on the nudged
+     elastic band (NEB) method.
+     Implemented the "parallel-parallel" NEB - parallel NEB, with
+     task-parallel images.
+
+<br><br>
+<dt> <b> Dr. Renee M. Van Ginhoven (PNNL, formerly Sandia) </b>
+<dd> Added features and analysis tools to the NEB capability.
+     Developing new geometry minimization coordinate scheme.
+
+<br><br>
+<dt> <b> Dr. Ann E. Mattsson (Sandia) </b>
+<dd> Implemented new DFT functionals (BLYP, AM05).
+     Developed formalism and implemented stress for <i>spin-polarized</i> GGA.
+
+<br><br>
+<dt> <b> Dr. Rudy J. Magyar (Sandia) </b>
+<dd> Implemented spin version of AM05.
+
+<br><br>
+<dt> <b> Dr. Andrew C. Pineda (UNM/AFRL) </b>
+<dd> Helped install the upgrade from task-parallelism to
+     distributed (esp. k-parallelism) parallelism in version 2.62.
+
+<br><br>
+<dt> <b> Dr. David B. Raczkowski (formerly UCDavis, LBNL) </b>
+<dd> Designed and wrote a linear solver for SeqQuest.
+     Along the way, he identified the LAPACK expert eigensolvers that
+     SeqQuest now uses for its highly efficient conventional solution
+     of Schrodinger's equation, pointed out how to integrate BLAS/3
+     routines for faster evaluation of compute-intensive grid integrals,
+     and developed an eigenfunction-based scheme for computing the
+     grid density that is faster than the default density-matrix
+     scheme for modest-sized problems.
+
+<br><br>
+<dt> <b> Dr. Jamil Tahir-Kheli (Caltech) </b>
+<dd> Development of method for external applied electric field.
+
+<br><br>
+<dt> <b> Dr. Dean McCoullough (HPTi) </b>
+<dd> Initial development of the parallel algorithms for the
+     cluster parallel" code, i.e.,
+     non-scalable, "task-distributed" parallelism.
+
+<br><br>
+<dt> <b> Dr. Roland Stumpf (Sandia) </b>
+<dd> The idea of using single precision arithmetic in the evaluation
+     of integrals on the grid came from a conversation with Roland.
+
+</dl>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+Sandia National Laboratories is a multimission laboratory managed and operated by National Technology and Engineering Solutions of Sandia, LLC., a wholly owned subsidiary of Honeywell International, Inc., for the U.S. Department of Energy's National Nuclear Security Administration under contract DE-NA0003525.
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Kudos">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  January 17, 2014  <!-- Carro web work -->
+</font>
+
+</font>
+</body>
+</html>

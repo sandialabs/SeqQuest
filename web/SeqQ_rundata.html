@@ -1,0 +1,272 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest input - Run phase </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest input: Run phase data</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Overview</a>
+<li><a href="#inputs">   Input options</a>
+<li><a href="#trouble">  Troubleshooting</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+This page gives a description of the "<tt>run phase data</tt>"
+input section that modifies all the default parameters in the code
+that affect the scf calculation.
+The entire run phase section input is optional.
+The geometry relaxation and cell optimization input
+modules can be invoked from within the run phase section input.
+
+<p>
+The default units for the run phase section are Ry for energies
+and bohr for distances.
+
+<p>
+Current constraints, important version notes:
+<ul>
+<li> geometry section only at end of run phase section before v2.53
+<li> geometry input ends with "<tt>end geometry</tt>" as of v2.53
+<li> cell optimization installed in v2.53
+</ul>
+
+<hr>
+<a name="inputs"></a>
+<h2>Input options</h2>
+
+The run phase input section appears directly after the setup phase section,
+begins with the keyword "run phase data" and ends with the keyword
+"end run phase data".  The entire run phase section input is optional.
+<p>
+The following are the common input keywords in this section.
+All the keywords are optional, and can appear in any order within this section.
+The keywords must be left-justified, but all data input is free-format.
+
+<font face="courier"><tt>
+<dl>
+<dt><b> run phase data </b> - begin run phase data input section
+  <dt>      ...
+<dt><b> temperature (Ry) for occupation weighting</b>
+  <dd><i>   temp </i>
+<dt><b> blend ratio </b> - initial scf blend factor
+  <dd><i>   blend </i>    (require 0 &lt <i>blend</i> &lt 1)
+<dt><b> scfbl2 </b> - scf blend factor for subsequent geometries in relaxation
+  <dd><i>   scfbl2 </i>    (require 0 &lt <i>scfbl2</i> &lt 1)
+<dt><b> convergence </b> - <a href="#conv">scf convergence</a> criterion (Ry)
+                                            (delta-Hamiltonian matrix)
+  <dd><i>   conv_scf </i>
+<dt><b> states</b> - number of eigenstates to obtain in solve
+  <dd><i>   n_state </i>
+<dt><b> iterations </b> - maximum number of scf iterations
+  <dd><i>   n_iter </i>
+<dt><b> history </b> - max number scf iterations in Broyden blend history
+  <dd><i>   n_hist_scf </i>
+<dt><b> no ges </b> - turns off dynamic SCF guessing,
+                      reverts to overlapping spherical atom guess (2.61)
+<dt><b> cutgrd </b> - set orbital range on grid, see <a href="#cutgrd">explanation below</a>
+  <dd><i>   cutgrd </i>   Default=2d-8 (2.65), 2d-7 (2.64 and earlier)
+<dt><b> cutfrc </b> - alter force integral <a href="#cutoff">cutoffs</a>
+  <dd><i>   cutfrc </i>   (set to 0.01 - 0.001 for fine stress accuracy)
+<dt><b> cutfac </b> - alter all integral <a href="#cutoff">cutoffs</a>
+  <dd><i>   cutfac </i>   (less accurate 10.0 - 1.0 - 0.001 most accurate)
+<dt><b> closed shell </b> - enforce closed shell (0K w/gap) occupations (2.59)
+<dt><b> kclosed shell </b> - almost closed shell, finite T within k-pt (2.59)
+<dt>         ...
+<dt><b> spconv </b> - set convergence for spin polarization (in electron #)
+  <dd><i>   conv_sp </i> 
+<dt><b> spmeth </b> - method for spin optimization
+  <dd><i>   method_sp </i>  (a6) (method_sp = SIMPLE, LINEAR=default )
+<dt><b> spsteps </b> - number of steps (trial polarizations) to find optimal spin
+  <dd><i>   nstep_sp </i>
+<dt><b> spblend </b> - blend factor for spin update (simple scheme)
+  <dd><i>   blend_sp </i> (should be between 1.0-2.0, default=1.5, "safe"=1.0)
+<dt>         ...
+<dt><b> dynamics </b> - invokes MD input section
+  <dt>      ... <i><a href=SeqQ_dynamics.html> MD data input</a></i>
+<dt>    end dynamics - end of MD input section
+<dt>         ...
+<dt><b> geometry relaxation </b> - invokes geometry input section
+  <dt>      ... <i><a href=SeqQ_geomdat.html> geometry optimization data</a></i>
+<dt>    end geometry - end of geometry input section
+<dt>         ...
+<dt><b> cell optimization </b> - invokes cell input section
+  <dt>      ... <i><a href=SeqQ_celldat.html> cell optimization data</a></i>
+<dt>    end cell parameters - end of cell optimization input section
+<dt>         ...
+<dt><b> bandstructure </b> - invokes band structure input section
+  <dt>      ... <i><a href=SeqQ_bandsdat.html> band structure configure</a></i>
+<dt>    end bands - end of band structure configure section
+<dt>         ...
+<dt><b> end run phase data </b> - end of run phase input section
+</dl>
+</tt></font>
+
+<hr>
+<a name="conv"></A>
+<h2>SCF Convergence</h2>
+
+The code uses the maximum change of a Hamiltonian matrix element as its
+figure of merit for the convergence of the self-consistent calculation,
+rather than the change of the total energy, density matrix, density or
+potential on grid.  The motivation for this is that the code uses a
+modified Broyden blending scheme on the Hamiltonian matrix in its SCF
+updates.  Hence the Hamiltonian matrix is the appropriate item to test.
+The change in the total energy is not necessarily correlated with the
+level of convergence.
+<p>
+The criterion the code uses to determine convergence is a change (Ry)
+in any matrix element.  In every SCF cycle, the Broyden code writes out
+what the rms and max change are (grep output for 'scfch', or 'max change' for pre-2.63).
+For different problems, metals vs. insulators, transition metals vs. alkali metals, etc.,
+the convergence of the energy (and other properties) will be different
+as a function of the convergence criterion.  The user can examine this
+relative convergence, and modify the SCF criterion appropriately to
+either converge more finely (make the criterion smaller) or to converge
+less if the problem is overconverged for their needs (make the criterion
+larger).
+
+<a name="cutgrd"></a>
+<h2>Orbital range cutoffs</h2>
+
+The grid range cutoff, using "cutgrd", sets the range that basis functions extend on the grid,
+the smaller the parameter, the longer the range.
+The default value of this cutoff in 2.64 and earlier was 2.d-7.
+This proved inadequate for the fine stresses needed to compute elastic constants
+from stress-strain relations (using small strains), for some (soft) cell optimizations,
+and for some long-range van der Waals calculations.
+In 2.65, this default was changed to 2.d-8, extending the range of local basis functions farther.
+This change in default causes the computed energy of all calculation results to change slightly.
+Direct comparisons of results between pre-265 and post-265 should avoided, unless this parameter
+is made consistent between the different versions---the <tt>cutgrd</tt> option,
+even though undocumented until 2.65, is available in earlier versions.
+We have found that we prefer even longer cutoffs, using 1.d-8, for some very fine work.
+
+<a name="cutoff"></a>
+<h2>Cutoffs</h2>
+
+The cutXXX keywords modify cutoffs for integral evaluations, and are used
+to scale the default cutoffs in the code, i.e., a input value of 1.0
+would have a null effect.  The cutoffs represent the minimum absolute
+magnitude of an overlap Gaussian for an integral to be evaluated (otherwise,
+it is skipped).  The cutoffs have been carefully tuned, but experience has
+shown that the force cutoffs might need to be reduced for better accuracy
+in very fine atomic relaxation, and when doing elastic constant calculations
+from stress-strain curves.  In the latter case, the cutfrc parameter we use
+typoically ranges from 0.1 to 0.01, but might need to be as small as 0.005.
+Note that calculations get more expensive the smaller this factor is set.
+
+<br><br><font size=-2><a href="#top">Return to Top</a></font>
+
+<hr>
+<a name="trouble"></a>
+<h2>Troubleshooting</h2>
+
+The calculation will not converge (the most common complaint):
+<ul> 
+<li> If it fails to converge in the first step ...
+<dl>
+<dt> Check that atomic configuration makes sense
+  <dd> e.g.: scaling set to convert Angstrom to bohr, correct cell dimensions
+<dt> Check that atomic identities are correct in setup phase
+  <dd> e.g.: that you have not accidentally interchanged hydrogen atoms
+       and carbon atoms to create a carbohydrogen
+<dt> Change the initial <b>blend ratio</b>
+  <dd> The default is 0.30.
+       Try smaller, to as small as 0.01, or bigger, to as big as 0.80
+<dt> If the calculation is still converging (according to "max change"),
+     increase the maximum <b>iterations</b>
+  <dd> If "max change" is still shrinking (not stalled), sometimes you
+       just need more iterations to converge the calculation
+<dt> If metallic (no gap), esp. transition metal, try increasing the
+     electronic <b>temperature</b>.
+  <dd> The default is 0.003 Ry.  Maybe a higher temperature,
+       0.010 or even 0.020 will stabilize the calculation?
+       The energies, forces, and stresses are not as good, but this
+       is a common means to stabilize the SCF in a difficult metal.
+<dt> Change (increase) the <b>convergence</b> parameter
+  <dd> If the SCF stalls but is reasonably well converged, this works.
+       Examine total energy vs. "max change" as a function of iterations
+       in the output file ("max change" is the figure of merit for SCF)
+<dt> Reduce the <b>history</b> used in the Broyden SCF blend
+  <dd> "Forget" bad iterations more quickly by reducing the used
+       history (to as small as 4 or 5 perhaps)
+<dt> If a metal (esp. a free-electron metal like aluminum), check that you
+     have sufficient <b>states</b> specified.
+  <dd> Look in the output file in the eigenstate/occupation listing.
+       If the highest state (in any k-point) is occupied, you may not have
+       solved for enough states.  Increase the number of states until you
+       have at least one (and preferably more) empty states at the top.
+</dl>
+<li> If the SCF succeeds in the first step, and fails after that ...
+<dl>
+<dt> Change the SCF blend parameter for follow-on steps ("<b>scfbl2</b>")
+  <dd> With SCF guessing ON, the follow-on steps may have a different
+       SCF behavior.
+<dt> Turn off the SCF guessing scheme ("<b>no ges</b>")
+  <dd> 
+<!--
+       This is accessed in the
+       <a href=SeqQ_geomdat.html> geometry relaxation data</a> section.
+ -->
+       Sometimes the SCF guess goes bad.
+       There is a known problem (bug) with the SCF guess if an atom crosses
+       a boundary of the principal unit cell in a relaxation/MD when
+       using non-gamma k-points.
+       The <b>no ges</b> option turns the guessing off.
+<dt> Take the last good geometry and restart the calculation
+  <dd> As mentioned above, the SCF guess will go bad in a non-gamma
+       point calculation if an atom crosses a cell boundary.
+       If you simply take that last geometry and relaunch a new
+       calculation (which will start without a SCF guess), that
+       geometry will converge.
+</dl>
+</ul>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Run Phase Data">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  February 22, 2014 <!-- band structure, cutgrd -->
+</font>
+
+</font>
+</body>
+</html>

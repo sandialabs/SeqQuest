@@ -1,0 +1,161 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Job Manual </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest: Job Manual</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Overview</a>
+<li><a href="#inputs">   Sample job script</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+A Quest calculation requires an <a href="SeqQ_Input_Manual.html"> input
+file</a> called "lcao.in", needs to locate atom files specified in the
+input file, generates an output file to standard output (which can be
+redirected), and generates a number of local files in the course of
+execution that can possible be very sizeable.
+Only one Quest calculation can run simultaneously in the one directory.
+Multiple runs in the same directory will attempt to use the same files
+for their work, with disastrous results.
+Typically, you will want to keep your important input and output files
+on a home disk, but perform calculations on separate scratch disks that
+have more space and are faster.  This makes for easier cleanup afterwards
+and allows multiple jobs to be run remotely from a single home directory.
+While it is possible to run the code interactively, it is usually most
+convenient to let scripts handle the task of putting the right input
+files in the right places, running the job, and retrieving the desired
+output files and putting them in the right place.
+In the following is outlined one particular example of such a script,
+within csh, to illustrate how a job script might be assembled.
+<p>
+A job script needs to do the following:
+<ol>
+   <li> Create a Quest input file for the system of interest
+   <li> If it doesn't already exist, identify and create the directory
+        where the calculation is to be done.
+   <li> Copy the Quest input file to that directory.
+   <li> Put the atom files in that directory (or make sure that they are
+        in the correct directory as specified in the Quest input file).
+   <li> Move to that directory.
+   <li> Find and run the Quest executable.
+   <li> Put the output listing file in the right place.
+   <li> If desired, save other output files to long-term storage.
+   <li> Clean up all the temporary files (big files accumulate otherwise)
+</ol>
+
+<hr>
+<a name="inputs"></a>
+<h2> Sample job script </h2>
+
+The following sample script, call it "<tt>quest.job</tt>", runs a SeqQuest job.
+This particular script is specific to systems with Al,O, and H atoms in the
+calculation (the script transfers those files to a remote directory), but
+it should be transparent to see how to adapt it for other systems.
+The script is invoked with one argument "input_file":
+<font face="courier"><pre>
+  quest.job input_file
+</pre></font>
+where "<tt>input_file.in</tt>" is an input file to the calculation.
+The script sets up a remote directory on a scratch disk, coordinates
+all the files, runs the calculation, puts the output listing file
+in "<tt>input_file.out</tt>", returns to the home directory,
+and cleans up all the scratch files when it is done.  This file is
+meant as an illustration only of a possible job script.  Different
+users (and different OS shells) will need to modify this for their
+own requirements.
+
+<font face="courier">
+<pre>
+################# Sample csh job script: "quest.job"  #######################
+# provide location of the executable:
+alias xlcao ~/bin/seqquest.x
+# provide location of the scratch disk root:
+set rdisk = '/scratch/${USER}/'
+####
+# "jobnm" is name of quest input (and output) file for this calculation
+#    and it is passed into this script as an argument
+set jobnm = ${1}
+####
+# map names of atoms as stored in home directory (atm#) to names
+# of atoms as specified in the the input file (lbl#).
+# Here, I have the atom files stored in my home directory as "al_lda.atm"
+# while the input file refers to the atoms as "al.atm", etc.
+set atm_fcnal = 'lda'
+set atm1 = 'al_'${atm_fcnal} ; set lbl1 = 'al'
+set atm2 = 'o_'${atm_fcnal}  ; set lbl2 = 'o'
+set atm3 = 'h_'${atm_fcnal}  ; set lbl3 = 'h'
+####
+# set up a name for (temporary) subdirectory to do calculations in
+set tmpnm = 'tmp_'${jobnm}
+# assemble total pathname for the remote scratch directory, and create it ...
+set rdir = ${rdisk}/${tmpnm}; mkdir -p ${rdir}
+#  ... and "remember" the local home directory in "ldir"
+set ldir = $cwd
+####
+# Record a time stamp in the log file for the job start ...
+date ; echo STARTING JOB
+####
+set inputnm = ${jobnm}  ; set outnm = ${inputnm} ; echo starting ${jobnm}
+# clean out remote directory, and go there ...
+rm  ${rdir}/* ; cd  ${rdir}
+# copy over the atom files ...
+cp ${ldir}/${atm1}.atm ${lbl1}.atm ; cp ${ldir}/${atm2}.atm ${lbl2}.atm
+cp ${ldir}/${atm3}.atm ${lbl3}.atm
+# copy over the input file into "lcao.in" ...
+cp      ${ldir}/${inputnm}.in   lcao.in
+# run the executable, redirecting the output listing to the home directory
+xlcao >  ${ldir}/${outnm}.out
+####
+# return to the local directory, and time stamp the log file ...
+cd ${ldir} ; echo ${jobnm} done ; date
+# ... and clean up remote directory, and remove it
+rm ${rdir}/* ; rmdir ${rdir}
+###################### end sample job script ####################
+</pre>
+</font>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Job Manual">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  Decmeber 3, 2004  <!-- update line -->
+</font>
+
+</font>
+</body>
+</html>

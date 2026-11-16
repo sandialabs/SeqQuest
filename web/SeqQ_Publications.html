@@ -1,0 +1,441 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Bibliography </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<font face="Arial, Helvetica, Sans Serif">
+
+<a name="top"></a>
+<h1 align="center">SeqQuest Bibliography </h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+<<a href="mailto:paschul@sandia.gov?Subject=SeqQuest">
+       paschul@sandia.gov</a> > <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html"> SeqQuest<br> Home</a> </th>
+</tr>
+</table>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+There have been three generations of codes implementing the
+method as of this date, and the publications in the following
+are segregated by which code was employed in the application.
+<ol type="I">
+  <li><a href="#pjfhist">
+  Peter Feibelman's original slab code</a>
+  <li><a href="#mpqhist">
+  A massively parallel code by Mark Sears (with PAS)</a>
+  <li><a href="#seqqpub">
+  The current production code</a>
+</ol>
+
+
+<a name="pjfhist"></a>
+<h2>I. Feibelman's original slab code</h2>
+
+<p>
+The basic idea of the method used by the codes was originally
+articulated by
+<a href="http://www.sandia.gov/surface_science/pjf/">
+Peter J. Feibelman</a>
+(Sandia) and expressed in a computer code he wrote for slab geometries
+whose output served as an input to a scattering theory code to study defects
+and adsorbed atoms or molecules on metal surfaces.  The papers below are
+those specific to that slab code.  For applications of the scattering
+theory method that used output from this code as input, see
+<a href="http://www.sandia.gov/surface_science/pjf/PJFpublications.html">
+Feibelman's publication list</a>.
+
+<ol>
+<li> <!-- pjf-69 -->
+"Efficient Solution of Poisson's Equation in Linear Combination of
+   Atomic Orbitals (LCAO) Electronic Structure Calculations" <br>
+ P.J. Feibelman,  J. Chem. Phys. <b>81</b>, 5864 (1984).
+<li> <!-- pjf-76 -->
+"Efficient Solution of Poisson's Equation in Linear Combination of
+   Atomic Orbitals (LCAO) Calculations of Crystal Electronic Structure" <br>
+ P.J. Feibelman,  Phys. Rev. B <b>33</b>, 719 (1986).
+<li> <!-- pjf-88 -->
+"Local Orbital Basis for Defect Electronic Structure Calculations of
+   an Al(100) Film" <br>
+ P.J. Feibelman,  Phys. Rev. B <b>38</b>, 1849 (1988).
+<li> <!-- pjf-109 -->
+"Pulay-type Formula for Surface Stress in a Local Density Functional,
+   Linear Combination of Atomic Orbital Electronic Structure Calculation" <br>
+ P.J. Feibelman,  Phys. Rev. B <b>44</b>, 3916 (1991).
+<li> <!-- pjf-112 -->
+"Efficient Brillouin-Zone Averaging in Surface Force Calculations" <br>
+ P.J. Feibelman,  Phys. Rev. B <b>45</b>, 3842 (1992).
+<li> <!-- pjf-136 -->
+"Calculation of Surface Stress in a Linear Combination of
+ Atomic Orbitals Representation" <br>
+ P.J. Feibelman,  Phys. Rev. B <b>50</b>, 1908 (1994).
+<li> <!-- pjf-142 -->
+"Anisotropy of the Stress on fcc(110) Surfaces" <br>
+ P.J. Feibelman,  Phys. Rev. B <b>51</b>, 17867 (1995).
+</ol>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+</font>
+
+
+<a name="mpqhist"></a>
+<h2>II. MPQuest applications</h2>
+
+<p>
+In the early 1990's, Mark P. Sears (eventually assisted by PAS)
+at Sandia wrote a new, massively parallel code, ultimately
+named MPQUEST, to enable large-scale DFT calculations.
+This code was designed to be a fully capable stand-alone production
+code for general purpose (not just slabs!) applications.
+
+<ol start=8>
+<li>
+    "Basis-set convergence of highly defected sites in amorphous carbon" <br>
+     J.S. Nelson, E.B. Stechel, A.F. Wright, S.J. Plimpton,
+       P.A. Schultz and M.P. Sears,
+     Phys. Rev. B <b>52</b>, 9354 (1995).
+<li> <!-- pjf-145 -->
+    "Energetics of Steps on Pt(111)" <br>
+     P.J. Feibelman,  Phys. Rev. B <b>52</b>, 16845 (1995).
+<li> <!-- pjf-150 -->
+    "O Binding Sites on Stepped Pt(111) Surfaces" <br>
+     P.J. Feibelman, Stefanie Esch, and Thomas Michely,
+     Phys. Rev. Lett. <b>77</b>, 2257 (1996).
+<li>
+    "Ab initio ammonia and CO lateral interactions on Pt(111)" <br>
+     D.R. Jennison, P.A. Schultz, and M.P. Sears,
+     Phys. Rev. Lett. <b>77</b>, 4828 (1996).
+<li> <!-- pjf-153 -->
+    "First-principles calculations of stress induced by gas adsorption
+       on Pt(111)" <br>
+     P.J. Feibelman,  Phys. Rev. B <b>56</b>, 2175 (1997).
+<li> <!-- pjf-154 -->
+    "d-electron 'frustration' and the large fcc vs. hcp binding
+       preference in O adsorption on Pt(111)" <br>
+     P.J. Feibelman,  Phys. Rev. B <b>56</b>, 10537 (1997).
+<li>
+    "Ab initio calculations of Ru, Pd, and Ag cluster with 55, 135,
+       and 140 atoms" <br>
+     D.R. Jennison, P.A Schultz, M.P. Sears,
+     J. Chem. Phys. <b>106</b>, 1856 (1997).
+<li>
+    "DIET in the bulk: evidence for hot electron cleavage of Si-H bonds
+       in SiO<sub>2</sub> films" <br>
+     D.R. Jennison, J.P. Sullivan, P.A. Schultz, M.P. Sears, and E.B. Stechel,
+     Surf. Sci. <b>390</b>, 112 (1997).
+<li>
+    "All-atom ab initio energy minimization of the kaolinite structure" <br>
+     J.D. Hobbs, R.T. Cygan, K.L. Nagy, P.A. Schultz, and M.P Sears,
+     Amer. Mineralogist <b>82</b>, 657-662 (1997).
+<li>
+    "Ordered phases of potassium on Pt(111): Experiment and theory" <br>
+     S. Mor&eacute, W. Berndt, A.M. Bradshaw, and R. Stumpf,
+     Phys. Rev. B <b>57</b>, 9246 (1998).
+<li>
+    "Effects of basis set quality on the prediction of structures, energies,
+       and properties of amorphous tetrahedral carbon" <br>
+     P.A. Schultz and E.B. Stechel,  Phys. Rev. B <b>57</b>, 3295 (1998).
+<li>
+    "Unusual structural relaxation for rare-earth impurities in sapphire:
+       ab initio study of lanthanum" <br>
+     C. Verdozzi, D.R. Jennison, P.A. Schultz, M.P. Sears, J.C. Barbour,
+       and B.G. Potter,
+     Phys. Rev. Lett. <b>80</b>, 5615 (1998).
+<li>
+    "Molecular orientation with visible light: reflectance-anisotropy
+       spectroscopy of 3-thiophene carboxylate on Cu(110) surfaces" <br>
+     B.G. Frederick, R.J. Cole, J.R. Power, C.C. Perry, Q. Chen, N.V. Richardson,
+       P. Weightman, C.  Verdozzi, D.R. Jennison, P.A. Schultz, and M.P. Sears,
+     Phys. Rev. B <b>58</b>, 10883 (1998).
+<li>
+    "Valence and atomic size dependent exchange barriers in vacancy-mediated
+       dopant diffusion" <br>
+     J.S. Nelson, P.A. Schultz, and A.F. Wright,
+     Appl. Phys. Lett. <b>73</b>, 247 (1998).
+<li>
+    "The saphhire(0001) surface, clean and with d-metal overlayers" <br>
+     C. Verdozzi, D.R. Jennison, P.A. Schultz, and M.P. Sears,
+     Phys. Rev. Lett. <b>82</b>, 799 (1999).
+<li>
+    "Structural and adsorption properties of ultrathin
+       Al<sub>2</sub>O<sub>3</sub> films" <br>
+     D.R. Jennison, C. Verdozzi, P.A. Schultz, M.P. Sears,
+     Phys. Rev. B <b>59</b>, 15605 (1999).
+<li>
+    "Oxygen induced restructuring of the TiO<sub>2</sub>(110) surface:
+       A comprehensive study" <br>
+     M. Li, W. Hebenstreit, U. Diebold, M.A. Henderson, D.R. Jennison,
+       P.A. Schultz, and M.P. Sears,
+     Surf. Sci. <b>437</b>, 173-190 (1999).
+
+</ol>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+</font>
+
+
+<a name="seqqpub"></a>
+<h2>III. Applications of the current production code SeqQuest</h2>
+
+<p>
+In the late 1990's, performance issues prompted reexamining and
+reformulating the method in detail.
+New more efficient serial algorithms were designed and tuned,
+and a highly optimized serial code developed to implement those algorithms.
+The vastly improved computational efficiency of the new serial code,
+along with greatly expanded functionality,
+prompted a new line of development that has evolved into the current (not-yet-"massively") parallel code.
+This generation now serves as the production version of the method.
+
+<ol start=25>
+<li>
+    "Generating structural models of amorphous tetrahedral carbon:
+       basis set dependencies" <br>
+     P.A. Schultz and E.B. Stechel,
+     in "Covalently Bonded Disordered Thin-Film Materials", edited by
+       M.P. Siegal, W.I. Milne, and J.E. Jaske,
+       MRS Symposia Proc. <b>498</b>, 11 (1998).
+<li>
+    "Small rings and amorphous tetrahedral carbon" <br>
+     P.A. Schultz, K. Leung, and E.B. Stechel,
+     Phys. Rev. B <b>59</b>, 733 (1999).
+<li>
+    "Local electrostatic moments and periodic boundary conditions" <br>
+     P.A. Schultz,  Phys. Rev. B <b>60</b>, 1551 (1999).
+<li>
+    "Charged local defects in extended systems" <br>
+     P.A. Schultz,  Phys. Rev. Lett. <b>84</b>, 1942-1945 (2000).
+<li>
+    "Fast through-bond diffusion of nitrogen in silicon" <br>
+     P.A. Schultz and J.S.Nelson,  Appl. Phys. Lett. <b>78</b>, 736-738 (2001).
+<li>
+    "Unconstrained and constrained minimization, localization, and the Grassmann
+       manifold: Theory and application to electronic structure" <br>
+     D. Raczkowski, C.Y. Fong, P.A. Schultz, R.A. Lippert, and E.B. Stechel,
+     Phys. Rev. B <b>64</b>, 155203 (2001).
+<li>
+    "Layer intermixing during metal/metal oxide adsorption: Ti/sapphire(0001)"
+     C. Verdozzi, P.A. Schultz, R.Q. Wu, A.H. Edwards, and N. Kioussis,
+     Phys. Rev. B <b>66</b>, 125408 (2002).
+<li>
+   "Applicability of O(N)-like density functional study on the structural
+     properties of nitrogen defects in SiC" <br>
+    D. Raczkowski and C.Y. Fong,  Phys. Rev. B <b>68</b>, 014116 (2003).
+<li>
+   "Localization in an occupied-subspace-optimization approach to electronic
+      structure: Application to yttria-stablized zirconia" <br>
+    D. Raczkowski, C.Y. Fong, and E.B. Stechel,
+    Modelling Simul. Mater. Sci. Eng. <b>12</b>, 133 (2004).
+<li>
+   "Evidence for interstitial hydrogen as the dominant electronic defect
+      in nanometer alumina films" <br>
+    D.R. Jennison, P.A. Schultz, and J.P. Sullivan,
+    Phys. Rev. B <b>69</b>, 041405 (2004).
+<li>
+   "BaO/W(111) thermionic emitters and the effects of Sc, Y, La, and the
+      density functional used in computations" <br>
+    D.R. Jennison, P.A. Schultz, D.B. King, and K.R. Zavadil,
+    Surf. Sci. <b>549</b>, 115 (2004).
+<li>
+   "Spontaneous ionization of hydrogen atoms at the Si-SiO<sub>2</sub>
+      interface" <br>
+    A.H. Edwards, P.A. Schultz, and H.P. Hjalmarson,
+    Phys. Rev. B <b>69</b>, 125318 (2004).
+<li>
+   "Density functional theory and molecular dynamics studies of the energetics
+      and kinetics of electroactive polymers: PVDF and P(VDF-TrFE)" <br>
+    H. Su, A. Strachan, and W. A. Goddard III,
+    Phys. Rev. B <b>70</b>, 064101 (2004).
+<li>
+   "First-Principles Study of the Switching Mechanism of [2]Catenane
+      Molecular Electronic Devices" <br>
+    Y.-H. Kim, S.S. Jung, Y.H. Jang, and W.A. Goddard III,
+    Phys. Rev. Lett. <b>94</b>, 156801 (2005).
+<li>
+   "Conformations and charge transport characteristics of biphenyldithiol
+    self-assembled-monolayer molecular electronic devices:
+    A multiscale computational study" <br>
+    Y.-H. Kim, S.S. Jang, and W.A. Goddard III,
+    J. Chem. Phys. <b>122</b>, 244703 (2005).
+<li>
+   "Designing meaningful density functional calculations in material
+      science--A primer" <br>
+    A.E. Mattsson, P.A. Schultz, M.P. Desjarlais,
+      T.R. Mattsson, and K. Leung,
+    Modelling Simul. Mater. Sci. Eng. <b>13</b>, R1-R31 (2005).
+   <br> (Invited Topical Review article)
+<li>
+   "Theory of persistent, p-type, metallic conduction in c-GeTe" <br>
+    A.H. Edwards, A.C. Pineda, P.A. Schultz, M.G. Martin,
+      A.P. Thompson, and H.P. Hjalmarson,
+    J. Phys. Cond. Matter <b>17</b>, L329-335 (2005).
+<li>
+   "Density functional theory study of the geometry, energetics and
+      reconstruction process of Si(111) surfaces" <br>
+    S.D. Solares, S. Dasgupta, Y.-H. Kim,
+      C.B. Musgrave, P.A. Schultz, and W.A. Goddard III,
+    Langmuir <b>21</b>, 12404-12414 (2005).
+<li>
+   "Electronic structure of intrinsic defects in crystalline germanium
+      telluride" <br>
+    A.H. Edwards, A.C. Pineda, P.A. Schultz, M.G. Martin,
+      A.P. Thompson, H.P. Hjalmarson, and C.J. Umrigar,
+    Phys. Rev. B <b>73</b>, 045210 (2006).
+<li>
+   "Density functional theory and  DFT+U study of transition metal
+     porphine adsorbed on Au(111) surfaces and effects of applied
+     electric field" <br>
+    K. Leung, S.B. Rempe, P.A. Schultz, E.M. Spoviero,
+      V.S. Batista, M.E. Chandross, and C.J. Medforth,
+    J. Am. Chem. Soc. <b>128</b>, 3659-3668 (2006).
+<li>
+   "Nonequivalence of the generalized gradient approximations PBE and PW91" <br>
+    A.E. Mattsson, R. Armiento, P.A. Schultz, and
+      T.R. Mattsson,
+    Phys. Rev. B <b>73</b>, 195123 (2006).
+<li>
+   "Possible performance improvement in [2]catenane molecular electronic
+      switches" <br>
+    Y.-H. Kim, S.S. Jang, and W.A. Goddard III,
+    Appl. Phys. Lett. <b>88</b>, 163112 (2006).
+<li> 
+   "Theory of defect levels and the 'band gap problem' in silicon" <br>
+    P.A. Schultz,
+    Phys. Rev. Lett. <b>96</b>, 246401 (2006).
+<li>
+   "First-principles approach for the charge-transport characteristics of
+      monolayer molecular electronic devices:
+      Application to hexanedithiolate devices" <br>
+    Y.-H. Kim, J. Tahir-Kheli, P.A. Schultz,
+      and W.A. Goddard III,
+    Phys. Rev. B <b>73</b>, 235419 (2006).
+<li>
+    "Scanning Tunneling Microscopy of Ethylated Si(111) Surfaces Prepared by a
+       Chlorination/ Alkylation Process
+     Hongbin Yu, Lauren J. Webb, Santiago D. Solares, Peigen Cao, William A. Goddard III,
+       James R. Heath, and Nathan S. Lewis,
+     J. Phys. Chem. B <b>110</b>, 23989 (2006).
+<li>
+   "Dose-rate dependence of radiation-induced interface trap density in
+      silicon bipolar transistors"
+    H.P. Hjalmarson, R.L. Pease, C.E. Hembree, R.M. Van Ginhoven, and  
+      P.A. Schultz,
+    Nucl. Instr. and Meth. B <b>250</b>, 269 (2006).
+   <!-- SAND# 2005-5783C, Pub. Date: Sep. 2006 -->
+<li>
+   "Radiation-induced hydrogen release in SiO2: source sites and release
+      mechanisms"
+    R.M. Van Ginhoven, H.P. Hjalmarson, A.H. Edwards, and B.R. Tuttle,
+    Nucl. Instr. and Meth. B <b>250</b>, 274 (2006).
+   <!-- SAND# 2005-5782C, Pub. Date: Sep. 2006 -->
+<li> 
+   "Electrical effects of transient neutron irradiation of devices" <br>
+    H.P. Hjalmarson, R.L. Pease, R.M. Van Ginhoven, P.A Schultz, and
+      N.A. Modine,
+    Nucl. Instr. and Meth. B <b>255</b>, 114 (2007).
+   <!-- SAND# 2005-4970J, Pub. Date: Feb. 2007 -->
+<li>
+   "Atomistic Simulation of Si/SiO2 Interfaces" <br>
+    R.M. Van Ginhoven and H.P. Hjalmarson.
+    Nucl. Instr. and Meth. B <b>255</b>, 183 (2007).
+   <!-- SAND# 2006-6311J, Pub. Date: Feb. 2007 -->
+<li>
+   "Contact Resistance Properties between Nanotubes and Various Metals from
+      Quantum Mechanics" <br>
+    Y. Matsuda, W.-Q. Deng, and W.A. Goddard, III,
+    J. Phys. Chem. C <b>111</b>, 11113 (2007).
+<li>
+   "Bifunctional Anchors Connecting Carbon Nanotubes to Metal Electrodes for
+      Improved Nanoelectronics" <br>
+    W.-Q. Deng, Y. Matsuda, and W.A. Goddard III,
+    J. Am. Chem. Soc. <b>129</b>, 9834 (2007).
+<li>
+   "Reactivities of ultrathin alumina films exposed to intemediate pressures of H2O:
+      Substrate-mediate mechanism for growth and loss of surface order" <br>
+    J. Kelber, N. Magtoto, C. Vamala, M. Jain, D.R. Jennison, and P.A. Schultz,
+    Surf. Sci. <b>601</b>, 3464 (2007).
+<li>
+   "Structure and band gaps of Ga-(V) semiconductors:
+      The challenge of Ga pseudopotentials" <br>
+    O. Anatole von Lilienfeld and Peter A. Schultz,
+    Phys. Rev. B <b>77</b>, 115202 (2008).
+<li>
+   "First principles site occupation and migration of hydrogen, helium, and
+      oxygen in beta-phase erbium hydride" <br>
+    R.R. Wixom, J.F. Browning, C.S. Snow, P.A. Schultz, and D.R. Jennison
+    J. Appl. Phys. <b>103</b>, 123708 (2008).
+<li>
+   "Schultz replies (to Comment on Theory of Defect Levels and the 'Band Gap
+      Problem' in Silicon") <br>
+    P.A. Schultz, Phys. Rev. Lett. <b>103</b>, 089702 (2008).
+<li>
+   "Simple intrinsic defects in gallium arsenide" <br>
+    Peter A. Schultz and O. Anatole von Lilienfeld,
+    Modelling Simul. Mater. Sci. Eng. <b>17</b>, 084007 (2009).
+<li>
+   "Efficient hybrid evolutionary optimization of interatomic potential models" <br>
+    W.M. Brown, A.P. Thompson, and P.A. Schultz,
+    J. Chem. Phys., in press.
+<li>
+    <font color=red>
+    I surrender --- I cannot keep up with all the publications using the code. <br>
+    This page will only get intermittently and haphazardly updated,
+    until we figure out a better means to track and post entries. <br>
+    In the meantime, google "SeqQuest" and see
+    <a href="http://www.cs.sandia.gov/~paschul/"> PAS publications page</a>
+    for litany of PAS publications. </a>
+    </font>
+
+<!-- ***** NOT YET PUBLISHED *****
+<li>
+   "Bistability of oxygen vacancies revisited: First principles
+      calculations of E' centers in crystalline and amorphous
+      SiO<sub>2</sub> using very large unit cells" <br>
+    Arthur H. Edwards, Amdrew C. Pineda, Peter A. Schultz,
+      Harold P. Hjalmarson, Peter Shusko, Alex Shluger, and W. Beall Fowler,
+    Phys. Rev. B (in preparation).
+<li>
+   "Density functional studies of N<sub>x</sub>:TiO<sub>2-x</sub>:
+      Screened negative relaxed defect reproduces observed color" <br>
+    Dwight R. Jennison and Peter A. Schultz,
+    Phys. Rev. B (stale).
+ -->
+
+</ol>
+
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=SeqQuest">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  February 23, 2014  <!-- surrender -->
+</font>
+
+</font>
+</body>
+</html>

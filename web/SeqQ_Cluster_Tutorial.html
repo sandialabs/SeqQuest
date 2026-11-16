@@ -1,0 +1,1724 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest Cluster/Molecule Tutorial </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest Cluster Molecule Tutorial</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">             SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html">     Input<br> Manual</a> </th>
+   <th> <a href="SeqQ_Slab_Tutorial.html">    Slab<br> Tutorial</a> </th>
+   <th> <a href="SeqQ_Bulk_Tutorial.html">    Bulk<br> Tutorial</a> </th>
+   <th> <a href="SeqQ_NEB_Tutorial.html">     NEB<br> Tutorial</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ul>
+<li><a href="#intro">Introduction</a>
+<li><a href="#pitfalls">
+ <font color="red">Pitfalls</font> - it's not your usual molecular code</a>
+<li><a href="#eg_basic" > Examples</a>
+<ol>
+<li><a href="#eg_basic" > Example: A basic input file - the H atom</a>
+<li><a href="#eg_fcnal" > Picking a density functional (and spin) - H atom</a>
+<li><a href="#eg_cell"  > Supercell size - H2 molecule</a>
+<li><a href="#eg_atoms" > Multiple atoms and types - C6H6 benzene</a>
+<li><a href="#eg_cell2" > Supercell shape - C6H6</a>
+<li><a href="#eg_scale" > Scaling coordinates - C4H4</a>
+<li><a href="#eg_alias" > Aliasing atom types - O(CH3)2</a>
+<li><a href="#eg_origin"> Shifting the origin - O(CH3)2</a>
+<li><a href="#eg_scf"   > SCF parameters - C4H4</a>
+<li><a href="#eg_relax" > Structural energy minimization - CH4</a>
+<li><a href="#eg_geom"  > Geometry relaxation parameters - O(CH3)2</a>
+<li><a href="#eg_sym"   > Symmetry: Point groups</a>
+<ul>
+ <li><a href="#eg_symc2v"> Symmetry: O(CH3)2 - C2v</a>
+ <li><a href="#eg_symd6h"> Symmetry: C6H6 - D6h</a>
+ <li><a href="#eg_symtd" > Symmetry: CH4 - Td</a>
+ <li><a href="#eg_symlin"> Symmetry: CO - linear molecules</a>
+</ul>
+<li><a href="#eg_dipole"> Dipole moments and supercells - OH hydroxyl</a>
+<li><a href="#eg_charge"> Net charge and supercells - OH electron affinity</a>
+<li><a href="#eg_labels"> Labeling atoms with names</a>
+<li><a href="#eg_field" > External electric field - CH4</a>
+</ol>
+</ul>
+
+<hr>
+<a name="intro"></a>
+<h2>Introduction</h2>
+
+The purpose of this Tutorial is to introduce the user to the effective use
+of the code for finite molecular/cluster (dimension=0) problems.
+<p>
+Quest is different, fundamentally different, from conventional molecular
+quantum chemistry codes.  The key difference: treatment of periodic
+boundary conditions was designed into the code from the outset, so as to
+efficiently handle bulk and slab periodic systems.  To handle all system
+dimensionalities from molecular (dim=0) to bulk (dim=3) on an equal
+footing, it is necessary to be careful in problem assembly to be sure
+that the necessary boundary conditions are applied properly, and it is
+this concern that distinguishes Quest from quantum chemistry codes.
+Conventional quantum chemistry codes explicitly <i>assume</i> finite
+boundary conditions.  In Quest, the finite boundary conditions must
+be specifically <i>selected</i> and <i>imposed</i>, and the user must
+select this in problem assembly.
+<p>
+Quest is a supercell code.  However, Quest is different in its
+treatment of finite molecules from most traditional supercell codes
+(e.g. plane-wave methods).  Supercell codes typically suffer from
+the problem that artificial periodic images in non-periodic directions
+generate spurious Coulomb fields that corrupt the local potential
+around a molecule.  In essence, supercell codes do molecular calculations
+(very expensively, usually!) as molecular crystals.  Quest, on the other
+hand, does a very different calculation for a molecular (dim=0) vs.
+molecular crystal (dim=3), even with an identical molecular configuration
+and supercell!  The boundary conditions are different.
+Quest <i>automatically</i> and <i>exactly</i>
+eliminates up to spurious dipole interactions using the Local Moment
+CounterCharge (LMCC) method desribed in:<br>
+<tt> "Local electrostatic moments and periodic boundary conditions",<br>
+     P.A. Schultz,  Phys. Rev. B 60, 1551 (1999).</tt><br>
+But to set up the finite boundary conditions requires that the input
+be constructed within certain guidelines.
+<p>
+The central consideration in constructing a viable molecular (dimension=0)
+calculation is the construction of the supercell (actually, better to
+think of it as an integration box), and the alignment of the molecule
+within the supercell so that the molecule and its electron density is
+entirely contained within the integration box.  The code cannot do this
+alignment for the user.  The user must do this alignment of the molecule
+in the integration box so that the molecule and its electron density to
+not overstep the box boundary.
+
+<h4>Units</h4>
+
+The default units for energy are Rydberg
+(1 Rydberg = 0.5 Hartree = 13.605 eV),
+and for distances are bohr (1 bohr = 0.52918 Ang = 0.052918 nm).
+All input coordinates will be in these units, though one can use
+the scaling functions in the code to aid in the conversions.
+
+<h4>Input files</h4>
+
+The code uses one main input file that the user must construct.
+Atom (potential+basis) files, which will need to be listed
+in the input file, can be obtained from atom libraries.
+The input file is a text-rich keyword-driven document that, once
+constructed, is self-documenting.  The input is a sequence of
+keyword lines with the indicated data on following lines.
+Only the first few (6 or 8) characters of the keyword line are significant.
+The remainder of a keyword line can be used for additional documentation.
+The data itself, in general, is free-format.
+The input in the <a href="SeqQ_setdata.html"> setup data</a>
+section is highly structured, and requires its input in a very
+specific order.  Other sections take their data in any order.
+If you miss putting something in the right place in the input,
+not to worry.  The code will very happily process the input file,
+and stop when it cannot find required input in the right place.
+It echoes the input file as it reads it, and will politely tell
+you what it was looking for when it runs into a problem.
+Interspersed among the required inputs, are a variety of
+usually invisible optional input sections.  The code uses a
+variety of defaults that can be overridden in the input file.
+The use of many optional inputs will be illustrated in the tutorial.
+
+<hr>
+<a name="pitfalls"></a>
+<h2>Pitfalls - it's not your usual molecular code</h2>
+
+For a molecular calculation, a couple of items for are critical enough
+and different from standard molecular quantum chemistry codes
+to bear repeating:
+<ul>
+<li> <font color=red> Distance unit is Bohr, NOT Angstrom </font> <br>
+     Many if not most molecular quantum chemistry codes, and some
+     periodic codes, use Angstrom units for distances.  Quest uses
+     atomic unit distance units called Bohr: 1 Bohr = 0.529177 Angstrom
+<li> <font color=red> Quest is a supercell code </font> <br>
+     This means that construction of the integration box (supercell)
+     is central to constructing a viable molecular calculation.
+     Many of the examples below, in addition to discussing the
+     specific feature in the example, will include a discussion of
+     the supercell/molecule construction.
+<li> <font color="red"> Default is LDA, spin=0 </font> <br>
+     The code does NOT automatically infer that an odd number
+     of electrons means a radical.  E.g., it will treat a hydrogen
+     atom as spin-zero, half an electron spin-up and half spin-down,
+     unless you specify otherwise.
+<li> <font color="red"> Performance issues - do not panic! </font> <br>
+     For <i>small</i> molecules, the code can be very slow in
+     comparison to conventional molecular quantum chemistry codes.
+     Do not despair!  While this is a very slow way to solve
+     a hydrogen molecule (though far better than the truly wretched
+     performance of a plane wave calculation for the same!), the
+     favorable scaling of the method means that the code will
+     quickly begin to outperform standard molecular codes as you
+     increase the number of atoms in your system.
+</ul>
+
+<hr>
+<a name="eg_basic"></a>
+<h2>Example: A basic input file - the H atom</h2>
+
+Illustrated in this first example is a very basic file for doing the
+simplest possible finite calculation: an isolated hydrogen atom.
+
+<h4><a href="SeqQ_runopt.html">Command options</a></h4>
+
+The input file begins with a sequence of instructions to the code about
+the sort of calculation it will be doing.  In this example, we will
+"<tt>do</tt>" a "<tt>setup</tt>" (the iteration independent integrals),
+and "<tt>do iters</tt>" (self-consistency), and "<tt>no force</tt>".
+The "<tt>setup data</tt>" is the instruction to the code to read the
+data that describes the system. Please do not try to "<tt>do iters</tt>"
+with "<tt>no setup</tt>"!
+
+<h4><a href="SeqQ_setdata.html">Setup phase data</a></h4>
+
+This section begins with a title line(s).
+The keyword "<tt>notes</tt>" signals that the next line is a text line
+that describes the nature of the problem.
+The keyword "<tt>end_notes</tt>" signals the end of the notes section
+The <tt>notes</tt> keyword and title lines are optional, but highly encouraged.
+Since the entire input file will be echoed into the output listing file,
+this provides a useful output record of the nature of the calculation.
+<p>
+The first required data is the "<tt>dimension</tt>" statement. <br>
+We are doing a molecular problem with finite boundary conditions:
+the dimension is "0".
+If we wanted to do a slab calculation, we would enter a "2",
+or if we were doing a bulk (or a molecular crystal!) calculation system with
+full periodic boundary conditions, we would enter a "3" here.
+<p>
+The next required input is "<tt>primitive lattice</tt>". <br>
+This is the integration box (the supercell) for the calculation, and must
+be large enough to contain the molecule and all its electron density.
+Conversely, every atom in the molecule must be far enough away from every
+box boundary that its density does not significantly overlap the boundary.
+A typical rule of thumb: density around "hard" atoms extends about 9 bohr
+from an atom, around main group atoms about 10-11 bohr, and around metals
+about 11-12 bohr for the basis sets that Quest typically uses.  Shorter
+ranges can be used, but if an atom is placed outside the box, or so close
+to a box boundary that the code estimates that the calculation fidelity is
+compromised, the code will stop the calculation and report a problem.
+<p>
+Hydrogen is a "hard" atom, and therefore we need an integration box
+that extends about 9 bohr in every direction from the hydrogen.
+Here we use a cube 18 bohr on a side.  Note: the cubic supercell is only
+a convenience, not a requirement.  For a dimension=0 molecular
+calculation, we can make the supercell whatever shape we want.
+<p>
+The next required input is "<tt>grid dimensions</tt>".<br>
+The code evaluates many of its integrals on a regular space (fft) grid.
+This regular grid is defined by taking the primitive lattice vectors,
+and dividing them into grid intervals.
+Here we use a 60<sup>3</sup> grid, for a grid spacing of 0.300/point,
+and 216000 total grid points on the integration grid.
+The more grid intervals, the more accurately the integrals are evaluated,
+but, also, the more expensive the calculation.  A general rule of thumb:
+you want spacing between points of 0.30-0.40 bohr for most systems,
+and 0.20-0.30 for finer accuracy in systems containing "hard" atoms.
+Hard atoms include late first row atoms like N, O, F, or late 3d atoms.
+<p>
+The next required input is the number of "<tt>atom types</tt>".<br>
+Right now we only have a single atom, a hydrogen atom, and specify
+that it will read one atom type from a file called "h.atm".
+<p>
+Next, the input requires the <tt>number</tt> of atoms (just one),
+and then a list of each "<tt>atom, type, and position</tt>".
+The arguments for an atom input are the atom index (the order of the atom in
+the list, we only have an atom #1 heer), which type (using the order in which
+the types were listed above, just type #1), and the positions of the atoms
+in Cartesian coordinates (in bohr).
+<p>
+<b> Important note: </b>  The integration box by default (this default can
+be altered, as we will see later) is centered around the coordinate origin.
+I.e., (0,0,0) is the center of the integration box, and that is where we
+put our H atom to keep it as far as possible from all vacuum boundaries.
+The code detects if atoms or their density cross the cell boundary,
+giving a warning, or even stopping the calculations with an error message
+if the atoms are much to close to a vacuum boundary.
+<p>
+For a molecular (dimension=0) calculations, this is the final required
+input in the setup section.  For a periodic calculation (if, for example,
+we selected dimesion=3 for the system and done a calculation of very diffuse
+molecular crystal of hydrogen atoms instead of an isolated hydrogen atom),
+we would have been required to input a Brillouin Zone sampling.  However,
+for molecular calculations this is unnecessary - one has only real
+integrals, or the "gamma-point", to worry about.
+<p>
+The final, required statement in the setup phase section is
+the "<tt>end setup phase</tt>" line.
+
+<h4><a href="SeqQ_rundata.html">Run phase data</a></h4>
+
+The next section begins with the line "<tt>run phase</tt>" and ends
+with the line "<tt>end run phase</tt>".
+Input data in this section allows you to modify parameters that
+affect the run (SCF) phase of the calculation and beyond.
+In this example, we modify the convergence criterion to be 0.0005.
+This criterion does NOT refer to the convergence of the energy in
+the SCF cycle, but rather refers to the maximum change in a
+Hamiltonian matrix element (integrals between basis functions over
+potentials).
+The value specified here will converge the total energy to
+roughly 1.d-6 Ry for this problem, but this will vary between
+different systems (e.g., a covalent system with a big energy
+gap will converge differently than a metallic system).  Note
+that the convergence criterion is an optional parameter, and
+that the code will provide a default if you do not override
+it with this input.
+
+<pre>
+do setup
+do iters
+no force
+setup data
+notes
+ H atom, LDA no-spin
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 0
+primitive lattice vectors
+  18.00   0.00   0.00
+   0.00  18.00   0.00
+   0.00   0.00  18.00
+grid dimensions
+  60  60  60
+atom types
+   1
+atom file
+ h.atm
+number of atoms in unit cell
+   1
+atom, type, position vector (cleaved bulk positions)
+   1     1    0.0   0.0   0.0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_fcnal"></a>
+<h2>Picking a density functional (and spin) - H atom again</h2>
+
+By default, the code runs a spin-restricted (spin=0) LDA calculation,
+using the Perdew-Zunger parameterization of the Ceperley-Alder electron
+gas results (CAPZ).  However, the code is capable of spin-polarized and
+GGA calculations, too.  Add the "<tt>functional</tt>" keyword between
+the <tt>notes</tt> section and <tt>dimension</tt> statement, and select the
+desired functional.  The <a href="SeqQ_setdata.html#dftflavor"> available
+functionals </a> include: CAPZ, LDA (which defaults to CAPZ),
+PBE, PW91, BLYP and GGA (which defaults to PBE).
+Note that atom files are functional-specific.  However, the code does
+not check that atom files and calculations be the same flavor of DFT.
+It is possible to use PBE atoms in PW91 calculations, for example, and
+get good results. However, mixing functionals (atoms and calculations)
+is not advised, and mixing GGA and LDA is dangerous.
+<p>
+To invoke spin, one specifies a spin-polarized functional.
+All currently implemented DFT functionals are spin-capable.
+The <a href="SeqQ_setdata.html#dftflavor"> valid choices </a> include:
+LDA-SP, CAPZSP, PBE-SP, PW91SP, etc.
+If one specifies a spin polarized functional, additional input is *required*
+immediately following the functional. The keyword "<tt>spin polarization</tt>"
+with the net spin polarization must be given.  The spin polarization is in
+units of excess electrons of majority spin, must be non-negative (it can
+be zero), but note that it need not be an integer.
+<p>
+Suppose we wanted to do a PBE functional calculation.  We would enter
+"PBE" after the functional.  The hydrogen atom has a net spin, with one
+spin-up electron and no spin-down electrons, for a net majority of one
+electron more spin up than spin down.  Hence, we want to select a spin
+polarized functional "PBE-SP", and enter a spin polarization of one.
+<pre>
+do setup
+do iters
+setup data
+notes 
+ H atom
+ Example: specify spin-polarized PBE functional, with net spin of 1e
+end_notes <b>
+functional
+ PBE-SP
+spin polarization (units of excess electrons of majority spin)
+ 1.0                   </b>
+dimension of system (0=cluster ... 3=bulk)
+ 0
+primitive lattice vectors
+  18.00   0.00   0.00
+   0.00  18.00   0.00
+   0.00   0.00  18.00
+grid dimensions
+  60  60  60
+atom types
+   1
+atom file
+ h.atm
+number of atoms in unit cell
+   1
+atom, type, position vector (cleaved bulk positions)
+   1     1    0.0   0.0   0.0
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_cell"></a>
+<h2>Supercells - H<sub>2</sub> molecule</h2>
+
+The H atom is not all that interesting.  Our next step is to look at how
+a H2 molecule is formed from two H atoms.  Suppose we want to run a
+sequence of H-H separations, computing the energies starting at 8 bohr
+(about 4.23 A) and move closer, to get a potential energy surface?
+<p>
+First, let's place the atoms.  We want the H atoms to be 8 bohr apart.
+Putting the atoms at +/-4.0 bohr in the <i>x</i>-direction accomplishes
+this.  Making the atom positions symmetric about the origin centers the
+molecule within the integration cell.  One could orient the molecule
+in any direction, the <i>x</i>-direction selected is totally arbitrary.
+<p>
+Second, we need to adjust the supercell.  The original 18.0<sup>3</sup>
+supercell we used for the H atom will not be sufficient for the H2.
+That cell was large enough so that the isolated H atom at the origin was
+was 9 bohr from any cell edge, but our two H atoms are 4.0 bohr off the
+origin in the <i>x</i>-direction.  The cell edge is still 9 bohr away in
+the <i>y</i>- and <i>z</i>-directions, so we can leave the last two
+primitive lattice vectors alone.  We need only modify the first vector,
+to make it at least 8.0 bohr longer.  Here, we set the vector to 27.0,
+giving a little extra just in case we might want to move the H atoms
+even farther apart.  The extra volume will not affect the result, outside
+of making the calculation marginally more expensive.  Making the volume
+too small, however, can and will materially affect the results.
+<p>
+Third, and last step: we need to modify our integration grid.
+To maintain the same grid spacing in the <i>x</i>-direction as in the
+<i>y</i>- and <i>z</i>-directions (0.3 bohr/point), we need to increase the
+number of grid points in the <i>x</i>-direction to 90.  This is not
+required for the method, but it is always a good idea and most efficient
+to have as isotropic an integration grid as possible.  A computational
+cost of having finer grid in one direction is wasted if another
+direction has a very coarse grid that is not as accurate.
+
+<pre>
+do setup
+do iters
+setup data
+notes 
+ H2 molecule, R(H-H) = 8.0 bohr
+ Example: modifying the cell to accomodate a molecule.
+end_notes
+functional
+ LDA
+dimension of system (0=cluster ... 3=bulk)
+ 0
+primitive lattice vectors   <b> Second: adjust the supercell to the atoms
+  27.00   0.00   0.00
+   0.00  18.00   0.00
+   0.00   0.00  18.00      </b>
+grid dimensions             <b> Third: adjust the grid to the cell
+  90  60  60               </b>
+atom types
+   1
+atom file
+ h.atm
+number of atoms in unit cell
+   2
+atom, type, position vector <b> First: place the atoms
+   1     1    4.0   0.0   0.0
+   2     1   -4.0   0.0   0.0  </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_atoms"></a>
+<h2>Multiple atoms and types - C<sub>6</sub>H<sub>6</sub></h2>
+
+Adding more atoms and atom types is straightforward.  For benzene,
+we have two atom types, carbon and hydrogen, and 12 total atoms.
+We specify two atoms types, and tell the code that the first atom
+type will be read from a file called "c.atm" and the second atom
+type will be read from a file called "h.atm".  This order will be
+important when listing the atoms and their positions.
+<p>
+Next, let's place the atoms.  We put our carbon atoms in a six-fold
+hexagon around the origin in the x-y plane, 2.65 bohr (~1.40 A) apart,
+and add the hydrogen atoms 2.05 bohr (~1.08 A) distance from each carbon.
+The first entry on each atom line is the atom identifier, and indexes
+the atom in the list of atoms.  The second entry specifies the atom type.
+Atoms #1-#6 are carbon atoms.  We therefore specify type #1, the first
+atom type we input above.  Atoms #7-#12 are hydrogen atoms, and are of
+the second atom type.
+<p>
+Next, we set up the supercell.  Remember that we want to have all
+atoms at least 9-10 bohr away from any box edge.  Here I choose to
+have a margin of ~10 bohr (extra doesn't hurt but may cost a little
+more, while too little can truncate densities and affect the results).
+The atoms are all at <i>z</i>=0, so the <i>z</i>-vector of 20 bohr
+leaves 10 bohr of space on either side of each atom.  The atoms extend
+from -4.70 to 4.70 bohr in the <i>x</i>-direction, 9.4 bohr total, so
+that a box that is 30 bohr wide, extending from -15.0 to 15.0 bohr, is
+sufficient.  In the <i>y</i>-direction, the atoms go from -4.1 to 4.1,
+so a box extending from -14.25 to 14.25, 28.5 bohr wide, is sufficient.
+<p>
+Third, and last step: we need to set our integration grid.
+A grid of 96x90x64 give about a 0.31 spacing in every direction, and
+should be good enough for our needs.
+
+<pre>
+do setup
+do iters
+setup data
+notes 
+ C6H6 benzene molecule, R(C-C)=2.65 bohr, R(C-H)=2.05 bohr
+ Example: multiple atoms and atom types.
+end_notes
+functional
+ LDA
+dimension of system (0=cluster ... 3=bulk)
+ 0
+primitive lattice vectors
+  30.00   0.00   0.00
+   0.00  28.50   0.00
+   0.00   0.00  20.00
+grid dimensions
+    96     90     64
+atom types <b> Add a carbon atom type to the list of atom types:
+   2
+atom file
+ c.atm
+atom file
+ h.atm     </b>
+number of atoms in unit cell  <b> and put the 12 atoms in their places:
+  12
+atom, type, position vector - note that this input is free-format
+   1     1    2.65    0.00         0.00
+   2     1   -2.65    0.00         0.00
+   3     1    1.325   2.29496732   0.00
+   4     1   -1.325   2.29496732   0.00
+   5     1    1.325  -2.29496732   0.00
+   6     1   -1.325  -2.29496732   0.00
+    7     2    4.70    0.00         0.00
+    8     2   -4.70    0.00         0.00
+    9     2    2.35    4.070319398  0.00
+   10     2   -2.35    4.070319398  0.00
+   11     2    2.35   -4.070319398  0.00
+   12     2   -2.35   -4.070319398  0.00 </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_cell2"></a>
+<h2>Non-orthogonal supercells - C<sub>6</sub>H<sub>6</sub></h2>
+
+There is no requirement that the supercell vector be orthogonal,
+and, in fact, in the molecular case, there no restriction on the
+directions the supercell vectors have at all (beyond that they
+be linearly independent, of course).  In benzene, all the carbon
+atoms are symmetrically equivalent to one another (more on
+symmetry later), and all the hydrogen atom are equivalent to
+one another.  If we used the orthorhombic grid above, however,
+the atoms would be different from one another based on their
+position with respect to the grid, because the grid would have
+a rectangular symmetry in the plane of molecule, not the full
+six-fold symmetry of the molecule.  There may be other reasons to
+use a non-orthogonal set of vectors for a cluster, based on the
+shape of the molecule perhaps.  In this example, we illustrate
+this by using a hexagonal supercell.
+<p>
+First, we are placing the atoms in the same places as before,
+with a C-C distance of 2.65 bohr and a C-H distance of 2.05 bohr.
+<p>
+Second, we set the supercell.  We want a hexagonal grid, so we set the
+first supercell vector along the <i>x</i>-direction, and the second
+vector at 60 degrees to it in the <i>x-y</i> plane.  Satisfying the
+requirement that all atoms be at 9-10 bohr from a box edge is less
+obvious than with orthogonal vectors, but a cell length that is
+32.0 bohr is large enough so that the hydrogen atoms are about
+9.8 bohr from an edge - adequate for our needs.  The third supercell
+vector, in the <i>z</i>-direction, can stay the same as before.
+<p>
+Third, and final step: setting the integration grid.
+The grid in the <i>z</i>-direction can stay the same as before.
+To get a hexagonal integration grid in the <i>x-y</i> plane,
+we need to have the grid dimensions along the first two supercell
+vectors to be the same.  We use a 96x96x64 grid here.  A side note:
+it may appear that the grid in the <i>x</i>-direction is coarser than
+in the <i>z</i>-direction.  In the <i>z</i>-direction, the spacing is
+0.313/pt while in the <i>z</i>-direction the apparent spacing is
+32.0/96=0.333/pt.
+First, this difference is not all that large.  Second, the
+hexagonal mesh in the <i>x-y</i> plane is denser than a rectangular
+mesh with the same net spacing.
+
+<pre>
+do setup
+do iters
+setup data
+notes 
+ C6H6 benzene molecule, R(C-C)=2.65 bohr, R(C-H)=2.05 bohr
+ Example: non-orthogonal supercells.
+end_notes
+functional
+ LDA
+dimension of system (0=cluster ... 3=bulk)
+ 0
+primitive lattice vectors <b>
+  32.00   0.00         0.00
+  16.00  27.71281292   0.00
+   0.00   0.00        20.00
+grid dimensions
+    96     96          64   </b>
+atom types
+   2
+atom file
+ c.atm
+atom file
+ h.atm
+number of atoms in unit cell
+  12
+atom, type, position vector
+   1     1    2.65    0.00         0.00
+   2     1   -2.65    0.00         0.00
+   3     1    1.325   2.29496732   0.00
+   4     1   -1.325   2.29496732   0.00
+   5     1    1.325  -2.29496732   0.00
+   6     1   -1.325  -2.29496732   0.00
+   7     2    4.70    0.00         0.00
+   8     2   -4.70    0.00         0.00
+   9     2    2.35    4.070319398  0.00
+  10     2   -2.35    4.070319398  0.00
+  11     2    2.35   -4.070319398  0.00
+  12     2   -2.35   -4.070319398  0.00
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_scale"></a>
+<h2>Scaling coordinates - C<sub>4</sub>H<sub>4</sub></h2>
+
+It is possible to install a scaling factor for the input atomic coordinates.
+The most common motivation is to take atomic coordinates that are given
+in Angstrom somewhere else and insert them into this code, whose native
+distance units are Bohr (=0.529177 A).  To scale all the atomic positions
+by a scale factor, enter the keyword "<tt>scale </tt>" between
+<tt>dimension</tt> statement and <tt>primitive lattice vector</tt>,
+and enter the desired scale factor in the next line.  Here, we enter
+the value "1.8897265", which converts Angstrom coordinates into the Bohr
+units the code uses.  Here we have set up a square cyclobutadiene C4H4
+molecule, with C-C distances of 1.40 A, and C-H distance of ~1.08 A.
+<p>
+<b>Important note/pitfall:</b>  The supercell vectors are NOT scaled
+by this action, but remain in units of Bohr.  Even though the atomic
+positions are represented in Angstrom, the user still must convert and
+construct the supercell (integration box) in units of Bohr.
+<p>
+Setting up the integration box:  The atoms range from -1.5 A to +1.5 A
+in both the <i>x</i>- and <i>y</i>-direction.  This is about -2.8 au
+to +2.8 au.  We want about 10 au to box edges, so the box needs to extend
+from about -13 to +13 au, for a width of 26 au.  All atoms are at <i>z</i>=0,
+so the box needs to extend from -10 to +10 au in the <i>z</i>-direction.
+Therefore, a box that is 26.0 x 26.0 x 20.0 should be good enough.
+A grid of 80 x 80 x 64 will give net grid spacing of ~0.31 for this
+calculation, also good enough.
+<p>
+There are also direction-specific (<i>x,y,z</i>) scaling functions.
+
+<pre>
+do setup
+do iters
+setup data
+notes 
+ C4H4 square cyclobutadiene - R(C-C)=1.40 A, R(C-H)~1.08 A
+ Example: scaling coordinates, here to use Angstrom for atomic positions.
+end_notes
+functional
+ CAPZ
+dimension of system (0=cluster ... 3=bulk)
+ 0 <b>
+scale   (1 Angstrom = 1.8897265 bohr, 1 bohr = .529177 A )
+ 1.8897265 </b>
+primitive lattice vectors <b> NOTE: cell vectors remain in Bohr units </b>
+  26.0   0.0    0.0
+   0.0  26.0    0.0
+   0.0   0.0   20.0
+grid dimensions
+  80  80  64
+atom types
+   2
+atom file
+ c.atm
+atom file
+    h.atm
+number of atoms in unit cell
+   8
+atom, type, position vector        <b>
+   1    1    0.70     0.70  0.00
+   2    1    0.70    -0.70  0.00
+   3    1   -0.70    -0.70  0.00
+   4    1   -0.70     0.70  0.00
+   5     2    1.46     1.46  0.00
+   6     2    1.46    -1.46  0.00
+   7     2   -1.46    -1.46  0.00
+   8     2   -1.46     1.46  0.00 </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.000500
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_alias"></a>
+<h2>Aliasing atom types - O(CH<sub>3</sub>)<sub>2</sub></h2>
+
+Sometimes keeping track of which atom is which type can be confusing,
+particularly in larger input files with involved configurations.
+Doing a long calculation on a carbohydrogen when you really intended
+to do a calculation on a hydrocarbon can be very frustrating.
+The code offers the ability to use named atom types in the input of
+the configurations, and to alias atom files to those atom types.
+<p>
+There are two methods to alias the input atom files.  One is explicit,
+as with the the carbon atom below.  You provide the alias name and set it
+equal to the atom file: <tt>C = c.atm</tt>.  The code will read the
+atom type from file <tt>c.atm</tt>, and apply it to atoms given the
+atom type "C".
+<p>
+If you do not explicitly specify an alias,
+the code will construct a default alias from the atom file name,
+by using the file name prefix (assuming a suffix of "<tt>.atm</tt>")
+From <tt>H.atm</tt> it abstracts the alias "<tt>H</tt>".
+From <tt>/library/lda/o.atm</tt> it abstracts the alias "<tt>o</tt>".
+Note that the code ignores the directory specification.
+To use the alias in the input, simply replace all the type <i>numbers</i>
+with a type <i>alias</i>.
+<p>
+To use the alias names, simply replace ALL the type numbers with type
+names in the atom input.
+<br> <b> Important note: </b> this is all or nothing.
+Enter atom types as names only, or as type numbers only.
+
+<pre>
+do setup
+do iters
+setup data
+notes 
+ O(CH3)2 dimethyl ether
+ Example: Aliasing atom types.
+end_notes
+functional
+ LDA
+dimension of system (0=cluster ... 3=bulk)
+ 0
+scale   (1 Angstrom = 1.8897265 bohr, 1 bohr = .529177 A )
+ 1.8897265
+primitive lattice vectors
+  24.00   0.00   0.00
+   0.00  24.00   0.00
+   0.00   0.00  22.00
+grid dimensions
+    80     80     72
+atom types
+   3
+atom file   <b> - explicitly set alias "C"
+ C = c.atm  </b>
+atom file   <b> - implicitly set alias "H"
+ H.atm      </b>
+atom file   <b> - implicitly set alias "o"; note case, and ignore directory
+ /library/lda/o.atm     </b>
+number of atoms in unit cell
+   9
+atom, type, position vector
+   1   <b> o </b>   0.00    0.70    0.00
+   2     <b> C </b>   1.15   -0.10    0.00
+   3       <b> H </b>   2.02    0.57    0.00
+   4       <b> H </b>   1.19   -0.74    0.90
+   5       <b> H </b>   1.19   -0.74   -0.90
+   6     <b> C </b>   -1.15   -0.10    0.00
+   7       <b> H </b>   -2.02    0.57    0.00
+   8       <b> H </b>   -1.19   -0.74    0.90
+   9       <b> H </b>   -1.19   -0.74   -0.90
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_origin"></a>
+<h2>Shifting the origin - O(CH<sub>3</sub>)<sub>2</sub></h2>
+
+The coordinates of the atoms may not be convenient for centering
+in the integration box, either because constructing the molecule
+proves easier without considering its orientation, or because
+the coordinates were obtained from elsewhere and are arranged
+in such a way that they would be skewed to one side of the box.
+This would then require that the user either (1) use a bigger
+(and more wasteful) supercell that encompasses the full molecule
+(2) or shifting the atomic coordinates by hand to align the
+molecule in the center of a smaller box.  It is possible to
+instruct the code to itself offset all the atomic coordinates.
+<p>
+The keyword to offset the atomic coordinates and thereby recenter the
+supercell is "origin offset".  It appears immediately after the last
+atomic coordinate, and as its input takes the location where you wish
+the integration box to be centered.  In this example, we have the same
+dimethyl ether as the above example, except that we built the molecule
+beginning with the oxygen atom at the coordinate origin.  With this
+orientation, however, the atoms extend from 0.0 to -1.44 A, or 0.0 to
+2.7 bohr in the <i>y</i>-direction, and we would need a box +/-12.7, or
+25.4 bohr across if we wanted a 10 bohr buffer between all atoms and the
+box edge. That would include a lot of empty space on the oxygen side.
+When we offset the origin -0.70 A, the molecule is centered in
+box, and can use a smaller, more efficient supercell.
+
+<pre>
+do setup
+do iters
+setup data
+notes 
+ O(CH3)2 dimethyl ether
+ Example: Shifting the origin.
+end_notes
+functional
+ LDA
+dimension of system (0=cluster ... 3=bulk)
+ 0
+scale   (1 Angstrom = 1.8897265 bohr, 1 bohr = .529177 A )
+ 1.8897265
+primitive lattice vectors
+  24.00   0.00   0.00
+   0.00  24.00   0.00
+   0.00   0.00  22.00
+grid dimensions
+    80     80     72
+atom types
+   3
+atom file
+ C = c.atm
+atom file
+ H= h.atm
+atom file
+ O =/library/lda/o.atm
+number of atoms in unit cell
+   9
+atom, type, position vector
+   1   O   <b> 0.00    0.00    0.00 </b>
+   2     C   <b> 1.15   -0.80    0.00 </b>
+   3       H   <b> 2.02   -0.13    0.00 </b>
+   4       H   <b> 1.19   -1.44    0.90 </b>
+   5       H   <b> 1.19   -1.44   -0.90 </b>
+   6     C   <b> -1.15   -0.80    0.00 </b>
+   7       H   <b> -2.02   -0.13    0.00 </b>
+   8       H   <b> -1.19   -1.44    0.90 </b>
+   9       H   <b> -1.19   -1.44   -0.90 </b> <b>
+origin offset
+                0.00   -0.70    0.00  </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_scf"></a>
+<h2>SCF parameters - C<sub>4</sub>H<sub>4</sub></h2>
+
+In this example we show how to modify parameters that are important in the
+self-consistency calculations.  These parameters are modified in the
+<a href="SeqQ_rundata.html"> <tt>run phase</tt> section</a> of the input file.
+The input can be in any order within this section (contrast this with the
+strict order of the input in the setup section).  In the previous examples,
+the convergence criterion had already been specified.
+Here we also specify the maximum number of iterations for the
+self-consistency step, a "<tt>temperature</tt>" (in Ry) for level occupations
+(fermi-broadened, this is only really important for metallic systems,
+not systems with a significant gap.  It aids in convergence in systems
+with many levels near the fermi level, i.e., metals),
+and an initial "<tt>blend ratio</tt>".  The blend parameter can occasionally
+aid convergence.  It sets the proportion of output potential to mix into
+the input potential after the first step of the self-consistency cycle
+(after the first cycle, a modified Broyden blending scheme updates
+the potential).  The blend ratio must take values between zero and one.
+There are other parameters which are also accessible from
+the input file, but these are the most commonly needed.
+
+<pre>
+do setup
+do iters
+setup data
+notes 
+ C4H4 square cyclobutadiene - R(C-C)=1.40 A, R(C-H)~1.08 A
+ Example: Changing settings to modify the SCF.
+end_notes 
+functional
+ CAPZ
+dimension of system (0=cluster ... 3=bulk)
+ 0
+scale   (1 Angstrom = 1.8897265 bohr, 1 bohr = .529177 A )
+ 1.8897265
+primitive lattice vectors
+  26.0   0.0    0.0
+   0.0  26.0    0.0
+   0.0   0.0   20.0
+grid dimensions
+  80  80  64
+atom types
+   2
+atom file
+ C=c.atm
+atom file
+ H = h.atm
+number of atoms in unit cell
+   8
+atom, type, position vector
+   1     C    0.70     0.70  0.00
+   2     C    0.70    -0.70  0.00
+   3     C   -0.70    -0.70  0.00
+   4     C   -0.70     0.70  0.00
+   5     H    1.46     1.46  0.00
+   6     H    1.46    -1.46  0.00
+   7     H   -1.46    -1.46  0.00
+   8     H   -1.46     1.46  0.00
+end setup phase data
+run phase input data                                           <b>
+iterations - maximum number of scf iterations allowed
+ 35
+temperature for occupations (Ry)
+ 0.0030
+blend ratio - initial blend of input/output potential in scf
+ 0.30                                                          </b>
+convergence criterion
+ 0.00050
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_relax"></a>
+<h2>Geometry: structural energy minimization - CH<sub>4</sub></h2>
+
+To do a structural energy minimization, simply "<tt>do force</tt>"
+and "<tt>do relax</tt>" in the command section.  The code will
+automatically do a full energy minimization of the Cartesian
+atomic positions using the computed forces on the atoms.
+
+<pre>
+do setup
+do iters <b>
+do force
+do relax </b>
+setup data
+notes 
+ CH4 methane - LDA structural energy minimization
+ Example: structural energy minimization
+end_notes
+functional
+ LDA
+dimension of system (0=cluster ... 3=bulk)
+ 0
+primitive lattice vectors
+  22.00   0.00   0.00
+   0.00  22.00   0.00
+   0.00   0.00  22.00
+grid dimensions
+    72     72     72
+atom types
+   2
+atom file
+ C = c.atm
+atom file
+ H= h.atm
+number of atoms in unit cell
+   5
+atom, type, position vector
+   1   C   0.00    0.00    0.00
+    2   H   1.18    1.18    1.18
+    3   H   1.18   -1.18   -1.18
+    4   H  -1.18    1.18   -1.18
+    5   H  -1.18   -1.18    1.18
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_geom"></a>
+<h2>Geometry relaxation parameters - O(CH<sub>3</sub>)<sub>2</sub></h2>
+
+The code, by default, will relax all atoms in the problem until the maximum
+force is less than an internally specified force threshold (0.003 Ry/bohr).
+The user can modify how the relaxation is performed in the optional
+<a href="SeqQ_geomdat.html"> geometry section</a> of the input.
+The geometry section of the input is placed inside the run phase section.
+The "<tt>geometry relaxation</tt>" statement begins, and the
+"<tt>end geometry</tt>" statement ends, the section that allows access to a
+variety of parameters that control the relaxation phase of the calculation.
+These inputs can be in any order in the geometry section.
+Here, "<tt>gsteps</tt>" limits the number of geometry steps to 10,
+"<tt>gconv</tt>" sets the force convergence criterion to 0.001 Ry/bohr.
+<p>
+In this example, we also fix the oxygen position and relax all the
+other atoms, by using the "gfixed" keyword.
+This keyword "freezes" all the atoms in the specified sequence, while
+allowing the others to relax.  This keyword can be used repeatedly
+to select multiple sequences to be fixed.
+There are also other methods to select atoms to "freeze" and relax.
+The last optional thing we do is to set the relaxation scheme to "ASD",
+an Accelerated Steepest Descent method.  The default method is a
+modified Broyden method, but with the "<tt>gmethod</tt>" keyword
+we can select between the several methods available in the code.
+<p>
+The energy of a molecule is insensitive to an overall translation
+(and rotation) in space, a fact we took advantage of above to recenter
+the molecule in the box.  This means that we can "freeze" the position
+of a single atom without actually restricting the energy minimization
+of the molecule.  Here, we select to fix the oxygen, for two reasons.
+First, the oxygen is on a symmetry axis, and it is always a good idea
+to apply atomic constraints that are consistent with symmetry (if we
+froze one carbon atom, but not the other, the constraints would be
+symmetry-breaking).  Second, oxygen is a very "hard" atom, and Quest
+computes its forces least accurately (for a given integration grid)
+for the hardest atom in the molecule.  By freezing the oxygen, and
+allowing the other, "softer" atoms to relax, we do the minimization
+with more accurate forces.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ O(CH3)2 dimethyl ether
+ Example: using geometry relaxation parameters.
+end_notes
+functional
+ LDA
+dimension of system (0=cluster ... 3=bulk)
+ 0
+scale   (1 Angstrom = 1.8897265 bohr, 1 bohr = .529177 A )
+ 1.8897265
+primitive lattice vectors
+  24.00   0.00   0.00
+   0.00  24.00   0.00
+   0.00   0.00  22.00
+grid dimensions
+    80     80     72
+atom types
+   3
+atom file
+ C=c.atm
+atom file
+ H = h.atm
+atom file
+ O= /library/lda/o.atm
+number of atoms in unit cell
+   9
+atom, type, position vector
+   1   O   0.00    0.00    0.00
+   2     C   1.15   -0.80    0.00
+   3       H   2.02   -0.13    0.00
+   4       H   1.19   -1.44    0.90
+   5       H   1.19   -1.44   -0.90
+   6     C   -1.15   -0.80    0.00
+   7       H   -2.02   -0.13    0.00
+   8       H   -1.19   -1.44    0.90
+   9       H   -1.19   -1.44   -0.90
+origin offset
+               0.00   -0.70    0.00
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050                <b>
+geometry relaxation
+gsteps - restrict the number of geometries to relax
+ 10
+gconv  - max force convergence criterion
+ 0.0010
+gfixed - fix atoms 1 thru 1 in place while relaxing everything else
+  1 1
+gmethod
+ ASD
+end geometry relaxation </b>
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_sym"></a>
+<h2>Symmetry: Point groups</h2>
+
+Some molecules have symmetry, and the calculation can use it.
+The code takes advantage of symmetry in two ways.  The first and most
+important, however, is not relevant to finite molecular calculations.
+For <i>periodic</i> (slab, bulk) calculations, the code eliminates
+redundant symmetry-equivalent k-points in the Brillouin Zone sample, and
+reduces the sample to be in the irreducible BZ.  This makes the size of
+the bulk calculation smaller, and therefore faster.  The second way is
+that the code will enforce a symmetry on geometry relaxation calculation,
+and preserve symmetry in geometry updates during an energy optimization
+calculation/relaxation.
+<p>
+The code does not automatically detect symmetry, the user must explicitly
+specify the symmetry that is present.  This is done by listing symmetry
+operations that map the molecule onto itself, and serve as generators
+for the point group.  The symmetry operations are defined by a (Cartesian)
+rotation axis and order of rotation (two-fold, three-fold, etc), inversion,
+or reflection (which is equivalent to a two-fold rotation+inversion).
+List the operations respected by a given point group (either by inspection
+or by resorting to character tables for symmetry groups) for a molecule.
+The user need not list all possible symmetry operations, just the minimal
+subset of generators.  The code will automatically expand the input
+symmetry operations into a full group internally.  Adding more does not
+harm anything - the code automatically removes redundancies in the
+process of internally generating the full symmetry group.
+<p>
+We build symmetry into our calculation using the "<tt>symops</tt>" keyword.
+This is the number of symmetry operations which we use to define the
+symmetry group.  Then we provide the "<tt>definitions</tt>" of specify
+these symmetry operations.
+<p>
+Symmetry operations are defined by seven parameters:
+an integer and two three-vectors.
+The integer defines the nature of the symmetry,
+and the first three-vector the Cartesian axis of that symmetry.
+The final three-vector is a translation vector which is not used
+for finite molecules - and must be set to (0,0,0).
+The integer describes the order of a rotation, an inversion,
+or a reflection, and can take the following valid values:
+<pre>
+  2, 3, 4, 6 = an N-fold rotation
+ -2,-3,-4,-6 = an N-fold rotation followed by inversion
+ -1 = an inversion
+</pre>
+Note that the code does NOT accept 5-fold or 7-fold (or greater).
+This is an artifact of the fact that the code also does periodic
+calculations, and that it is not possible to propagate a periodic
+crystal with those symmetries.
+<p>
+A reflection is equivalent to "-2", or a two-fold
+rotation plus inversion.  Thus this symmetry definition:
+<pre>
+  -2  1.0  0.0  0.0    0.0  0.0  0.0
+</pre>
+specifies a rotation around the <i>x</i>-axis plus inversion,
+which is equivalent to a reflection through the <i>y-z</i> plane.
+The following lists some examples of how different symmetries might
+be entered.
+
+
+<a name="eg_symc2v"></a>
+<h3>Symmetry: O(CH<sub>3</sub>)<sub>2</sub> -- C<sub>2v</sub></h3>
+
+The dimethyl ether has C2v symmetry, and atoms are oriented in the
+input, possesses a two-fold rotation around the <i>y</i>-axis,
+a reflection through the <i>y-z</i> plane (along <i>x</i>-axis) and a
+reflection through the <i>x-y</i> plane (along the <i>z</i>-axis).
+These are all the non-identity symmetry operations for C2v symmetry.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ O(CH3)2 dimethyl ether, LDA/CAPZ structural energy minimization
+ Example: using C2v symmetry.
+end_notes
+functional
+ CAPZ
+dimension of system (0=cluster ... 3=bulk)
+ 0
+scale   (1 Angstrom = 1.8897265 bohr, 1 bohr = .529177 A )
+ 1.8897265
+primitive lattice vectors
+  24.00   0.00   0.00
+   0.00  24.00   0.00
+   0.00   0.00  22.00
+grid dimensions
+    80     80     72
+atom types
+   3
+atom file
+ C  = c.atm
+atom file
+ H=h.atm
+atom file
+ O =    /library/lda/o.atm
+number of atoms in unit cell
+   9
+atom, type, position vector
+   1   O   0.00    0.00    0.00
+   2     C   1.15   -0.80    0.00
+   3       H   2.02   -0.13    0.00
+   4       H   1.19   -1.44    0.90
+   5       H   1.19   -1.44   -0.90
+   6     C   -1.15   -0.80    0.00
+   7       H   -2.02   -0.13    0.00
+   8       H   -1.19   -1.44    0.90
+   9       H   -1.19   -1.44   -0.90
+origin offset
+               0.00   -0.70    0.00  <b>
+symops
+  3
+definitions
+  2   0.0  1.0  0.0     0.0 0.0 0.0
+ -2   1.0  0.0  0.0     0.0 0.0 0.0
+ -2   0.0  0.0  1.0     0.0 0.0 0.0 </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+geometry relaxation
+gsteps
+ 10
+gconv
+ 0.0010
+grelax - while keeping all other atoms fixed, relax atoms 2 thru 5 ...
+ 2 5
+grelax -  ... and relax atoms 6 thru 9.   Net effect: only atom 1 is fixed.
+ 6 9
+end geometry relaxation
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_symd6h"></a>
+<h3>Symmetry: C<sub>6</sub>H<sub>6</sub> -- D<sub>6h</sub></h3>
+
+The benzene molecule is D6h symmetry.  We are able to fully define this
+symmetry using four generators: a six-fold rotation around the
+<i>z</i>-axis, a two-fold rotation around the <i>x</i>-axis, a two-fold
+rotation around the <i>y</i>-axis, and an inversion.  You need not specify
+a three-fold (or a two-fold) rotation around the <i>z</i>-axis because
+the six-fold rotation includes those as a subset.  And one need not
+specify all three atom-diagonal, or all three bond-diagonal two-fold
+rotation axes, either.  It is sufficient to list one of each class,
+because the six-fold axis operates on one rotation of a set to generate
+the others of each set.  It would not harm the calculation to list the
+other rotations, but it would be tedious to construct the correct
+rotation axes (to at least six decimal places!), and unnecessary.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ C6H6 benzene molecule, PBE fcnal structural minimization
+ Example: symmetry - D6h.
+end_notes
+functional
+ PBE
+dimension of system (0=cluster ... 3=bulk)
+ 0
+primitive lattice vectors
+  32.00   0.00         0.00
+  16.00  27.71281292   0.00
+   0.00   0.00        20.00
+grid dimensions
+    96     96     64
+atom types
+   2
+atom file
+ C = c.atm
+atom file
+ H = h.atm
+number of atoms in unit cell
+  12
+atom, type, position vector
+   1     C    2.65    0.00         0.00
+   2     C   -2.65    0.00         0.00
+   3     C    1.325   2.29496732   0.00
+   4     C   -1.325   2.29496732   0.00
+   5     C    1.325  -2.29496732   0.00
+   6     C   -1.325  -2.29496732   0.00
+   7     H    4.70    0.00         0.00
+   8     H   -4.70    0.00         0.00
+   9     H    2.35    4.070319398  0.00
+  10     H   -2.35    4.070319398  0.00
+  11     H    2.35   -4.070319398  0.00
+  12     H   -2.35   -4.070319398  0.00 <b>
+symops
+  4
+definitions
+  6   0.00  0.00  1.00    0.0 0.0 0.0
+  2   1.00  0.00  0.00    0.0 0.0 0.0
+  2   0.00  1.00  0.00    0.0 0.0 0.0
+ -1   0.00  0.00  0.00    0.0 0.0 0.0 </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+geometry relaxation section
+gblend  - set update factor for first step R[2] = R[1} + gblend*F[1]
+ 2.0
+end geometry relaxation
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_symtd"></a>
+<h3>Symmetry: CH<sub>4</sub> -- T<sub>d</sub></h3>
+
+Methane has tetrahedral symmetry, which includes a skew symmetry.
+The Td symmetry is fully defined with a four-fold rotation about the
+<i>z</i>-axis (or <i>x</i>- or <i>y</i>-axis) with an inversion, i.e.,
+a four-fold skew.  We have a three-fold axis around the 111-axis.
+And we also have a reflection through the 110-axis.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ CH4 methane - LDA structural minimization
+ Example: symmetry - Td
+end_notes
+functional
+ LDA
+dimension of system (0=cluster ... 3=bulk)
+ 0
+primitive lattice vectors
+  22.00   0.00   0.00
+   0.00  22.00   0.00
+   0.00   0.00  22.00
+grid dimensions
+    72     72     72
+atom types
+   2
+atom file
+ C = c.atm
+atom file
+ H= h.atm
+number of atoms in unit cell
+   5
+atom, type, position vector
+   1   C   0.00    0.00    0.00
+    2   H   1.18    1.18    1.18
+    3   H   1.18   -1.18   -1.18
+    4   H  -1.18    1.18   -1.18
+    5   H  -1.18   -1.18    1.18  <b>
+symops
+  3
+definitions of symmetry operations
+ -4  0.0  0.0  1.0    0.0 0.0 0.0
+  3  1.0  1.0  1.0    0.0 0.0 0.0
+ -2  1.0  1.0  0.0    0.0 0.0 0.0 </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+geometry relaxation section
+grelax  - relax atoms 2 thru 5
+ 2 5
+end geometry
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_symlin"></a>
+<h3>Symmetry: CO -- linear molecules</h3>
+
+Linear molecules such as carbon monoxide, CO, have an infinite rotation axis
+along the bond.  The code does not explicitly support this symmetry, but it
+is not necessary to include the full symmetry to enjoy the full benefits
+of that symmetry.  To keep the C-O linear, and aligned along the bond axis,
+it is sufficient to enforce C4v symmetry, a subset of the full symmetry.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ CH4 methane - LDA/CAPZ structural minimization
+ Example: symmetry - linear molecules
+end_notes
+functional
+ LDA
+dimension of system (0=cluster ... 3=bulk)
+ 0
+primitive lattice vectors
+  22.00   0.00   0.00
+   0.00  22.00   0.00
+   0.00   0.00  22.00
+grid dimensions
+    72     72     72
+atom types
+   2
+atom file
+ C = c.atm
+atom file
+ O = o.atm
+number of atoms in unit cell
+   2
+atom, type, position vector
+   1   C   0.00    0.00    1.00
+   2   O   0.00    0.00    1.15 <b>
+symops
+  2
+definitions of symmetry operations
+  4  0.0  0.0  1.0    0.0 0.0 0.0
+ -2  1.0  0.0  0.0    0.0 0.0 0.0 </b>
+end setup phase data
+run phase input data
+convergence criterion
+ 0.00050
+geometry relaxation section
+gconv
+ 0.0020
+gblend
+ 1.0
+gfixed - freeze atoms 2 thru 2
+ 2 2
+end geometry
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_dipole"></a>
+<h2>Dipoles and supercell approximation - OH radical </h2>
+
+Quest is a supercell code, but unlike standard supercell codes, it
+treats systems with dipole moments and net charge with the correct
+finite boundary conditions.  In other words, while a standard
+periodic code would have a molecule such as OH interacting with
+the dipole moments of all its periodic images, Quest exactly and
+rigorously eliminates all interactions up to dipole.  It uses
+the LMCC method described in:<br>
+"Local electrostatic moments and periodic boundary conditions",
+P. A. Schultz, Phys. Rev B <b>60</b>, 1551 (1999).<br>
+The user need do nothing - the default for
+molecular (dimension=0) systems is for the LMCC to be ON so
+that the correct boundary conditions are applied.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ OH - neutral hydroxyl radical, spin polarized LDA/CAPZ
+ Example: correct boundary conditions in supercell calculation.
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 0
+functional
+ LDA-SP
+spin polarization
+ 1.0
+primitive lattice vectors
+  20.00   0.00   0.00
+   0.00  20.00   0.00
+   0.00   0.00  24.00
+grid dimensions
+  80  80  96
+atom types
+   2
+atom file
+ H = h.atm
+atom file
+ O = o.atm
+number of atoms in unit cell
+   2
+atom, type, position vector
+   1     H     0.0     0.0   1.00
+   2     O     0.0     0.0  -1.00
+symops
+  2
+definitions sym ops (4-fold rotate around z-axis, reflection thru x-axis)
+  4  0.0  0.0  1.0    0.0 0.0 0.0
+ -2  1.0  0.0  0.0    0.0 0.0 0.0
+end setup phase data
+run phase input data
+blend ratio
+ 0.30
+convergence criterion
+ 0.00050
+geometry relaxation parameters
+gconv
+ 0.0010
+end geometry
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_charge"></a>
+<h2>Charged molecular ions - OH[-] </h2>
+
+To apply a charge to a molecule, add the keyword "<tt>charge</tt>"
+immediately before the number of atoms in the cell.
+<i>Note: the input of net charge is subject to change at some
+point in the future.  This is an awkward location to specify
+this property, and it will be changed at some point. </i>
+As for the dipole moment above, the code uses the LMCC method
+described in:<br>
+"Local electrostatic moments and periodic boundary conditions",
+P. A. Schultz, Phys. Rev B <b>60</b>, 1551 (1999).<br>
+to exactly and rigorously remove spurious supercell effects
+that would otherwise be present and corrupt the calculation.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ OH[-] negative hydroxyl ion, LDA/CAPZ
+ Example: net charge, with correct boundary conditions.
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 0
+functional
+ LDA
+primitive lattice vectors
+  20.00   0.00   0.00
+   0.00  20.00   0.00
+   0.00   0.00  24.00
+grid dimensions
+  80  80  96
+atom types
+   2
+atom file
+ H = h.atm
+atom file
+ O = o.atm <b>
+charge   - net charge of -1.0 means exactly one electron is added
+ -1.0     </b>
+number of atoms in unit cell
+   2
+atom, type, position vector
+   1     H     0.0     0.0   1.00
+   2     O     0.0     0.0  -1.00
+symops
+  2
+definitions sym ops (4-fold rotate around z-axis, reflection thru x-axis)
+  4  0.0  0.0  1.0    0.0 0.0 0.0
+ -2  1.0  0.0  0.0    0.0 0.0 0.0
+end setup phase data
+run phase input data
+blend ratio
+ 0.30
+convergence criterion
+ 0.00050
+geometry relaxation parameters
+gconv
+ 0.0010
+end geometry
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_labels"></a>
+<h2>Labeling atoms</h2>
+
+You can label atoms for easier identifications/manipulations.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ OH[-] negative hydroxyl ion, LDA/CAPZ
+ Example: net charge, with correct boundary conditions.
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 0
+functional
+ LDA
+primitive lattice vectors
+  20.00   0.00   0.00
+   0.00  20.00   0.00
+   0.00   0.00  24.00
+grid dimensions
+  80  80  96
+atom types
+   2
+atom file
+ H = h.atm
+atom file
+ O = o.atm
+charge   - net charge of -1.0 means exactly one electron is added
+ -1.0
+number of atoms in unit cell
+   2
+atom, type, position vector
+   <b>atm_1</b>     H     0.0     0.0   1.00
+   <b>atm_2</b>     O     0.0     0.0  -1.00
+symops
+  2
+definitions sym ops (4-fold rotate around z-axis, reflection thru x-axis)
+  4  0.0  0.0  1.0    0.0 0.0 0.0
+ -2  1.0  0.0  0.0    0.0 0.0 0.0
+end setup phase data
+run phase input data
+blend ratio
+ 0.30
+convergence criterion
+ 0.00050
+geometry relaxation parameters
+gconv
+ 0.0010
+end geometry
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+
+<a name="eg_field"></a>
+<h2>External electric field</h2>
+
+As of Version 2.57, the code allows applying an external electric field.
+This is invoked by adding the keyword "<tt>efield</tt>" and the electric
+field vector, after the functional and before the scaling.  For a
+molecule, the field can be in any direction.
+The units of electric field are Ry/bohr, and the field strength
+here, 0.038893 Ry/au, corresponds to applying a field of 100 MV/cm along
+the C-O bond.  Computed forces take into account the external field,
+hence, geometry relaxation will work properly in the presence of the field.
+Note that you can use atom labels in the selection of atoms in constraints.
+
+<pre>
+do setup
+do iters
+do force
+do relax
+setup data
+notes 
+ CO - LDA, with applied electric field 100MV cm along z-axis
+ Example: applying an external electric field
+end_notes
+dimension of system (0=cluster ... 3=bulk)
+ 0
+functional
+ LDA                   <b>
+efield   (Ry/bohr)
+  0.0  0.0  0.038893   </b>
+scale   (1 Angstrom = 1.8897265 bohr, 1 bohr = .529177 A )
+ 1.8897265
+primitive lattice vectors
+  20.00   0.00   0.00
+   0.00  20.00   0.00
+   0.00   0.00  24.00
+grid dimensions
+  80  80  96
+atom types
+   2
+atom file
+ C = c.atm
+atom file
+ O = o.atm
+number of atoms in unit cell
+   2
+atom, type, position vector
+   atm_1     C     0.0     0.0   0.50
+   atm_2     O     0.0     0.0  -0.65
+symops
+  2
+definitions sym ops (4-fold rotate around z-axis, reflection thru x-axis)
+  4  0.0  0.0  1.0    0.0 0.0 0.0
+ -2  1.0  0.0  0.0    0.0 0.0 0.0
+end setup phase data
+run phase input data
+blend ratio
+ 0.30
+convergence criterion
+ 0.00050
+geometry relaxation parameters  <b>
+grelax - relaxes atm_1 (the carbon) through atm_1 (also the carbon)
+ atm_1  atm_1  </b>
+gconv
+ 0.0010
+end geometry
+end run phase data
+</pre>
+<font size=-2><a href="#top">Return to Top</a></font>
+
+<hr>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+at <a href="mailto:paschul@sandia.gov?Subject=Cluster Tutorial">
+      paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i>  June 15, 2015 <!-- notes/end_notes/atm-labels -->
+</font>
+
+</font>
+</body>
+</html>

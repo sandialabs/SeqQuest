@@ -1,0 +1,240 @@
+<html>
+<head>
+<LINK REL="SHORTCUT ICON" href="Qicon.ico">
+<title> SeqQuest input - Command options </title>
+</head>
+
+<body bgcolor="#FFCC66"> <!-- QUESTyellow=FFCC66 -->
+<!-- font face="Arial, Helvetica, Sans Serif" -->
+
+<a name="top"></a>
+<h1>SeqQuest input: Command options</h1>
+
+<!-- RESPONSIBLE PARTY:
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter A. Schultz</a>
+&lt;<a href="mailto:paschul@sandia.gov"> paschul@sandia.gov</a> &gt; <br>
+    Sandia National Laboratories <br>
+    Albuquerque, NM 87185 <br>
+  -->
+
+<hr>
+<table bgcolor="#FFCC66" border=6 cellspacing=4 cellpadding=4>
+<tr>
+   <th> <a href="SeqQ_Home.html">         SeqQuest<br> Home</a> </th>
+   <th> <a href="SeqQ_User_Guides.html">  User<br> Guides</a> </th>
+   <th> <a href="SeqQ_Input_Manual.html"> Input<br> Manual</a> </th>
+</tr>
+</table>
+
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#intro">    Overview</a>
+<li><a href="#inputs">   Input options</a>
+<li><a href="#details">  More detailed explanations</a>
+</ol>
+
+<hr>
+<a name="intro"></a>
+<h2>Overview</h2>
+
+This page gives a description of the "command options" input
+section, which controls the global operation and actions of the code.
+This section begins an input file.
+It tells the code what it will do (scf, forces, relaxation, etc), how
+it will do it (with or without blas/3 libraries, eigensolver or linear
+scaling solver, etc.), and what kind of output (level of output detail,
+or whether to generate certain files for post-processing).
+The entire section is optional -- by default, the code will do a SCF
+calculation and stop -- with the only required input being the
+"<tt>setup data</tt>" which signals the beginning of the
+<a href=SeqQ_setdata.html>setup data input</a> section.
+
+<hr>
+<a name="inputs"></a>
+<h2>Input options</h2>
+
+The command options input section appears at the beginning of the input file.
+All data in this section is optional, with the exception of the
+"<tt>setup data</tt>" statement, which ends the command options section,
+and begins the <a href=SeqQ_setdata.html>setup data input</a> section.
+<p>
+The following are the common input keywords in this section.
+All the keywords are optional, and can appear in any order within this section.
+The keywords must be left-justified.  Most keywords require no data.
+<p>
+Defaults, if the input file includes no commands, are:
+<ul>
+<li> "do iters" - run only to scf and stop, no forces or beyond.
+<li> "no spinopt" - do calculation with fixed polarization.
+<li> "no test " - continue to job completion, do not stop after input tests
+<li> "do blas3" - use BLAS/3 libraries (best if vendor-optimized, else turn off)
+<li> "no post " - do not generate a file for post-processing code
+<li> "do split" - split the atomic basis shells into segmented form
+<li> "no bands" - no band structure calculation
+<li> "keepsym " - trigger error if detect symmetry failure in input
+<li> output level = 2
+</ul>
+
+<hr>
+<font face="courier"><tt>
+<dl>
+<dt>
+  <dd>      ...
+<dt><b> output level </b> - set the amount of output
+  <dd><i>  level_output </i> (int, [0=least:5=most, 2=default,3=fine-timing]) <br>
+            ...
+<dt><b> do setup|iters|force </b> - pick one for extent of calculation
+  <dd>      ...
+<dt><b> do/no tests </b> - stop execution after checking input file/executable
+  <dd>      ...
+<dt><b> do/no dynamics </b> - molecular dynamics, or no
+  <dd>      ...
+<dt><b> do/no relax </b> - relax atomic positions, or no
+  <dd>      ...
+<dt><b> do/no cell </b> - perform cell optimization, or no
+  <dd>      ...
+<dt><b> do/no neb </b> - perform NEB transition state finding calculation, or no
+  <dd>      ...
+<dt><b> do/no spinopt </b> - optimize spin polarization (2.61) (activated only if spin on).
+  <dd>      ...
+<dt><b> do/no bands   </b> - do band structure calculation (2.64)
+  <dd>      ...
+<!-- not yet implemented
+<dt><b> do/no optical </b> - do optical calculation
+  <dd>      ...
+ -->
+<dt><b> keepsym/redusym </b> - enforce (strict-check) symmetry, or allow reduced symmetry
+  <dd>      ...
+<dt><i> ... and development-only options (expert-only) </i>
+<font size=-1>
+<dt><b> set record_length </b> - max length (r*8) for single I/O record in binary files
+  <dd><i>   maxreclen </i> (int) <br>      ...
+<dt><b> do|no dmrho|efrho </b> - compel/forbid a density-matrix or eigenvector based grid-density constructure
+  <dd>      ...
+<dt><b> do/no blas3 </b> - use BLAS/3 routines, or bypass them
+  <dd>      ...
+<dt><b> do|no kparallel </b> - compel/forbid the k-parallel scf (if possible)
+  <dd>      ...
+<dt><b> do|no psolver   </b> - compel/forbid using a parallel eigensolver (if possible, cf. serial solves)
+  <dd>      ...
+<dt><b> do|no kppsolve  </b> - permit/forbid using k-parallel-parallel eigensolvers
+  <dd>      ...
+</font>
+<dt><i> ... and then the (required) end of the options phase input ... </i>
+<dt><b> setup data </b> - begin <i><a href=SeqQ_setdata.html> setup phase data</a></i>
+</dl>
+</tt></font>
+
+<hr>
+<a name="details"></a>
+<h2>Details</h2>
+
+<h4> output level </h4>
+
+The output level is an integer value that ranges from 0 (least) to 5 (most)
+output.  The default is 2.  Setting the level to 3 causes all the timing
+diagnostics to be turned on - useful for debugging crashes (there
+is a flush print buffers embedded in the timing statement) and for
+performance tuning.  Level 4 adds some more output for the code, and level 5
+should only be invoked for small problems, or those with a lot of disk space.
+
+<h4> relax and cell </h4>
+
+The "<tt>do relax</tt>" is sometimes meaningless for a cell optimization.
+For the cell
+optimization, there are crystals (e.g., bcc, Td) where there are no internal
+degrees of freedom, i.e., the atoms are fixed by symmetry, and an atomic
+relaxation is moot.  Also, even for those crystals with internal atomic
+degrees of freedom (e.g. wurtzite), it can be useful to relax the cell shape
+some before doing any atomic relaxation.  The cell optimization is done
+after a geometry relaxation (i.e. the cell parameters are <i>not</i>
+minimized simultaneously with the atomic positions).  Experience has shown it
+to be critical for good convergence that the cell minimization be done using
+stresses computed in cells with fully minimized atomic positions.  Also,
+good forces and good stresses are necessary, frequently beyond the default
+cutoffs set in the code.  Adjusting the force integrals cutoffs
+(cutfrc=0.010-0.001 in the <a href=SeqQ_rundata.html> run phase input data</a>)
+is frequently necessary for high-quality results.
+
+<h4> relax, neb, and cell </h4>
+
+The "<tt>do relax</tt>" is mandatory for a NEB calculation, and the geometry
+relaxation method chosen in the geometry section is the method used
+to relax the NEB images.  Note that one can either do cell or do NEB, but
+not both, i.e., one cannot look at a structural phase transformation that
+takes one crystal unit cell shape to another unit cell shape.
+
+<h4> blas3 </h4>
+
+The code has multiple paths for some expensive computational kernels.
+With a vendor-optimized library, the BLAS/3 paths can be much more efficient
+than the explicitly coded path  (especially for real, i.e., gamma-point;
+the results with complex arithmetic are mixed).
+<b>Note</b>: without vendor (or ATLAS-)optimized BLAS/3 libraries
+(i.e., self-compiled LAPACK), the BLAS/3 path can be up to 3 times
+<i>slower</i> than the explicitly coded paths, and the BLAS/3
+path should be bypassed for better performance.
+If the code is linked to vendor-optimized libraries, the coded default to
+use blas3 should be unchanged.  However, if vendor-optimized libraries are
+unavailable and the code was linked to compiled LAPACK routines that
+are included in the package, the blas3 routines should be
+bypassed using "<tt>no blas3</tt>".
+
+<h4> do post </h4>
+
+The "<tt>do post</tt>" instruction causes the code to generate additional
+output for use in separate post-processing codes.
+For example, output in the file "lcao.post"
+records data in ASCII that can be used to drive a program to
+do Mulliken analyses, density-of-states, etc.
+
+<h4> set record_length </h4>
+
+On some platforms (Alphas), it had been the case that the length of single
+I/O record was limited.  The code could write any record, but a read would
+intermittently and irreproducibly fail on records above a certain length.
+The code wraps all its big I/O such so as to break up a long write/read into
+multiple write/reads that are no longer than a fixed length <tt>maxreclen</tt>.
+This command tells the code to change the max record length to the specified
+value.  An input of '0' tells the code to use its internal default.
+Input less than 0 turns off this module (i.e. sets the limit to infinity).
+The code, in the output file, echoes what it is using as a max record
+length for a given job.  This command is *optional*, and its use is discouraged.
+The better way to deal with this is to alter the configuration (utl) file
+for the compile, to guarantee that *all* runs have the same file
+record lengths (mixing files of different record length limits will fail).
+
+<h4> keepsym/redusym </h4>
+
+By default, the code triggers a failure if the input atomic configuration
+does not conform to the symmetry specified in the input file.
+When "<tt>redusym</tt>" is invoked, the code will reduce the symmetry from the
+input file to those symmetries respected by the atomic/cell coordinates.
+This is dangerous - because the symmetry is a basic check of whether
+you have assembled your input correctly, and allowing the code to reduce
+the symmetry means that an unintentionally flawed input file may run
+to completion, giving nonsensical results.  Caveat user.
+
+<br><br>
+<font size=-2>
+<a href="#top">Return to Top</a>
+or <a href="SeqQ_Input_Manual.html"> Input Manual</a>
+or <a href="SeqQ_User_Guides.html"> User Guides</a>
+or <a href="SeqQ_Home.html"> SeqQuest Home</a>
+</font>
+
+<hr>
+<font size="2">
+<i> Send questions and comments to: </i>
+    <a href="http://www.cs.sandia.gov/~paschul/">
+       Peter Schultz</a>
+ at <a href="mailto:paschul@sandia.gov?Subject=Quest Command Options">
+       paschul@sandia.gov</a> <br>
+
+<i> Last updated: </i> January 17, 2014  <!-- bands, etc. -->
+</font>
+
+</font>
+</body>
+</html>

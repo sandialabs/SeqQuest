@@ -1,0 +1,317 @@
+#
+# Makefile for SeqQuest code
+# Last updated 24May23-PAS for integration into new git environment
+#
+
+# The current release version of the code (This must have NO spaces after it)
+VERS = d269a
+
+###################################
+# INSTRUCTIONS FOR BUILDING QUEST #
+###################################
+
+#########
+#   1   #  Create a new directory (e.g. "obj" or "build") in which to build Quest
+#########
+
+#########
+#   2   #  Copy this Makefile into this build directory
+#########
+
+#########
+#   3   #  Modify the following makefile variables:
+#########
+
+#########
+#  3.0  #  Point QROOT to the Quest root source (git) directory
+#########
+#### general relative location when in git standard build directory:
+# QROOT = ../../PGQuest/
+#### personalized absolute locations ...
+QROOT = /ascldap/users/paschul/lcao/quest/PGQuest/
+# QROOT = /ascldap/users/jemouss/quest.HSE
+
+#########
+#  3.1  #  COMPILER  - Choose compiler (pick one and only one):
+#########
+#### f77+mpi:
+FC = mpif77
+#### pgi compiler:
+# FC = /opt/pgi/linux86-64/7.2-1/bin/pgf77
+#### hse build
+#HSE# FC = mpif77 -g -traceback
+#
+#### general:
+# FC = f77
+#### g77:
+# FC = g77
+#### gfortran (linux/O2, MacOS only tested to O0):
+# FC = gfortran
+
+#########
+#  3.2  #  FFLAGS  -  Set compiler flags (pick one and only one):
+#########
+####   chama/intel-mpi
+FFLAGS = -O2 -xSSE3 -mcmodel medium -shared-intel
+#### general/preferred:
+# FFLAGS = -O -fast
+#### general/when -fast is not available, or with pgi compiler:
+# FFLAGS = -O
+#### the linux gfortran requires only tested to O2 (MacOS tested to O0)
+# FFLAGS = O2
+#### for some g77 type-change (type-casting?) causes compile failure:
+# FFLAGS = -O -fno-globals
+#### on SGI machines:
+# FFLAGS = -O3 -mips4 -OPT:IEEE_arithmetic=3:alias=restrict
+#### various outdated parallel
+# FFLAGS = -O2 -tpp7 -xW
+# FFLAGS = -O2 -tpp7 -xP
+# FFLAGS = -O2 -tpp7 -xP -assume 2underscores
+# FFLAGS = -O2 -xP
+#### hse build
+#HSE# FFLAGS = -O
+
+#########
+#  3.3  #  LFLAGS  - Linker flags
+#########
+####  Usually blank for everyone ...
+# LFLAGS = 
+#### ... except chama/intel
+LFLAGS = -mcmodel medium -shared-intel
+
+#########
+#  3.4  #  MPI-or-NOT - Platform configuration file
+#########
+#### general serial code
+SUBSU = utl_gen.o
+#### general MPI code
+SUBSUTP = utl_mpi.o
+
+#########
+#  3.5  #  MATH  libraries (to find basics for math and links, lapack/blas, mpi ...)
+#########
+#
+# Select appropriate math library to link in.
+# Internally, code default is to use blas/3 routines (flag=doblas3/noblas3)
+# WIth an optimized blas library, this is best performance.
+# Without an optimized blas library, using blas/3 routines is much slower.
+# If your platform does not have an optimized library:
+#  1. You myst use the explicit source listed below
+#  2. You should edit subroutine "DAT0OPT: to set default "doblas3: to .false.
+#
+#### pgi compiler: list is likely overcomplete, but it works
+# MATH = -L/opt/pgi/linux86-64/7.2-1/lib/ -llapack -lblas -lpgftnrtl -lnspgc -lpgc -lm -lstd -lacml
+####  mkl libraries
+MKL_LIB = /opt/intel/16.0/mkl/lib/intel64/
+MATH = -L${MKL_LIB} -lmkl_lapack95_lp64 -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5
+#### explicit source as provided:
+# MATH = lapack.o blas.o
+#### dec math libraries:
+# MATH = -ldxml
+#### compaq renamed math libraries:
+# MATH = -lcxml
+#### SGI math libraries:
+# MATH = -lcomplib.sgimath
+#### linux:
+# MATH = -llapack -lblas
+#### linux/ibm:
+# MATH = -static -llapack -lblas
+#### Rick's atlas on edge:
+# MATH = -L/home/rmuller/Programs/LAPACK/lib/ -llapack \
+#        -L/home/rmuller/Programs/ATLAS/lib/ -lf77blas -lcblas -latlas -ltstatlas \
+#### various old complex math libraries
+# MATH = -L/apps/libraries/l_mkl_p_8.0.1.006/lib/em64t -lmkl -lguide -lmkl_lapack64
+# MATH = -L/apps/x86_64/mpi/mvapich/intel-9.1/mvapich-0.9.8-ofed/lib -lmpich \
+#        -L/projects/global/x86_64/libraries/l_mkl_p_8.0.1.006/lib/em64t \
+#        -lmkl -lguide -lmkl_lapack64
+# MATH = -L/apps/x86_64/mpi/openmpi/intel-9.1/openmpi-1.1.2-ofed/lib -lmpi \
+#        -L/projects/global/x86_64/libraries/l_mkl_p_8.0.1.006/lib/em64t \
+#        -lmkl -lguide -lmkl_lapack64
+# MATH = -L/apps/x86_64/mpi/openmpi/intel-10.0-f025-c025/openmpi-1.2.4_ofed/lib -lmpi \
+#        -L/projects/global/x86_64/libraries/l_mkl_p_8.0.1.006/lib/em64t \
+#        -lmkl -lguide -lmkl_lapack64
+# MATH = -L/apps/x86_64/mpi/openmpi/intel-10.0-f025-c025/openmpi-1.2.4_ofed/lib -lmpi \
+#        -L/projects/global/x86_64/libraries/l_mkl_p_8.0.1.006/lib/em64t \
+#        -lmkl -lguide -lmkl_lapack64
+## OPENMPI/MKLIB withintegrated scalapack 
+# MKL_LIB = /projects/global/x86_64/libraries/l_mkl_10.0.3.020/lib/em64t
+# MATH = -L/apps/x86_64/mpi/openmpi/intel-10.0-f025-c025/openmpi-1.2.4_ofed/lib -lmpi \
+#       -L/projects/global/x86_64/libraries/l_mkl_10.0.3.020/lib/em64t \
+#       #       -lmkl_lapack -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -lguide
+# MKL_LIB = /projects/global/x86_64/compilers/intel/intel-11.1-cprof-064/mkl/lib/em64t
+# MATH = -L/apps/x86_64/mpi/openmpi/intel-11.1-f064-c064/openmpi-1.4.2_static_nomemmgr_oobpr/lib/ -lmpi \
+#       -L/projects/global/x86_64/compilers/intel/intel-11.1-cprof-064/mkl/lib/em64t \
+## note: this needed -liomp5  esolve openmp errors:.
+# OMPI_LIB = /opt/openmpi-1.6-intel/lib/
+# MKL_LIB = /opt/intel-12.1/mkl/lib/intel64/
+# MATH = -L$(OMPI_LIB) -lmpi \
+#       -L$(MKL_LIB) -lmkl_intel_lp64 -lmkl_intel_thread -lmkl_core -liomp5
+
+#########
+#  3.6  #  PMATH  - scalapack/blacs parallel solver libraries
+#########
+####  serial leave blank
+# PMATH = 
+####  mkl libraries
+PMATH = -L${MKL_LIB} -lmkl_scalapack_lp64 -lmkl_blacs_openmpi_lp64
+####  previous/other scalapack/blacs definitions ...
+# PMATHHOME = /apps/libraries/scalapack
+#  PBLACSHOME = /apps/libraries/blacs
+# PMATHHOME = /apps/x86_64/libraries/scalapack/openmpi-1.2.2_mx_intel-9.1-f040-c045/scalapack-1.7.4/lib
+#  PBLACSHOME = /apps/x86_64/libraries/BLACS/openmpi-1.2.2_mx_intel-9.1-f040-c045/BLACS-1.1/lib
+# PMATHHOME = /apps/x86_64/libraries/scalapack/mvapich-0.9.8-ofed-intel-9.1/scalapack-1.7.4/lib
+#  PBLACSHOME = /apps/x86_64/libraries/BLACS/mvapich-0.9.8-ofed-intel-9.1/BLACS-1.1/lib
+# PMATHHOME = /apps/x86_64/libraries/scalapack/openmpi-1.1.2-ofed-intel-9.1/scalapack-1.7.4/lib
+#  PBLACSHOME = /apps/x86_64/libraries/BLACS/openmpi-1.1.2-ofed-intel-9.1/BLACS-1.1/lib
+# PMATHHOME = /apps/x86_64/libraries/scalapack/openmpi-1.2.4_ofed_intel-10.0-f025-c025/scalapack-1.7.4/lib
+#  PBLACSHOME = /apps/x86_64/libraries/BLACS/openmpi-1.2.4_ofed_intel-10.0-f025-c025/BLACS-1.1/lib
+# ####  ... to build a path to the scalapack libraries:
+# PMATH =  \
+# ${PMATHHOME}/libscalapack.a \
+# ${PBLACSHOME}/blacsCinit_MPI-LINUX-0.a \
+# ${PBLACSHOME}/blacsF77init_MPI-LINUX-0.a \
+# ${PBLACSHOME}/blacs_MPI-LINUX-0.a
+
+#########
+#  3.7  #  LAPACK/BLAS - when using explicit source, or to reassign BLAS location
+#########
+#### - usually this will be blank
+# LIBS = 
+####  $BLASLIB is part of the MKL module in standard compute cluster environment at Sandia
+LIBS = $(BLASLIB)
+#### HSE/HEM builds
+#HSE# LIBS = $(BLASLIB) -L${QROOT}/libint-quest/lib/.libs/ -lint2 -lstdc++
+# LIBS = $(BLASLIB) -L/ascldap/users/jemouss/quest.HSE/libint-quest/lib/.libs/ -lint2 -lstdc++
+#### - Compiled blas/lapack (must still list other math libs above)
+# MATH = $(LAPO) $(BLASO)
+#HSE# MATH = $(LINO)
+
+
+#########
+#   4   #  Type "make" in the obj directory. The program should build
+#########  Email any problems to paschul@sandia.gov
+
+#########################################################################
+######   Users should rarely/never change anything below here      ######
+#########################################################################
+
+#########################################################################
+######                     SOURCE FILES
+#########################################################################
+
+## main program
+MVRS=lcaomain.o
+MVRSTP=lcaomain_tp.o
+
+## program subroutines
+SUBS=lcaosubs.o
+TPSUBS=lcaosubs_tp.o
+
+#########################################################################
+######                     BUILD OPTIONS
+#########################################################################
+
+
+quest: quest_${VERS}.x
+
+serial: seqquest_$(VERS).x
+
+seqq-math: seqq-math.x
+
+clean:
+	rm -f *.o *.x
+#	rm -f *.o *.x *.tgz lcaosubs.f lcaosubs_tp.f Makefile_quest
+
+params:
+	rm -f lcao*.o quest_(VERS).x seqquest_(VERS).x
+
+help:
+	@echo "Make SeqQuest program"
+	@echo "Usage: make <platform>"
+	@echo "Standard builds: quest (mpi), serial"
+	@echo "Serial shortcuts: gnu, pgi, atlas, ibm, sgi, dec, win-x86, linux-x86"
+	@echo "You may have to specify location of compiler and blas/lapack libraries"
+
+#########################################################################
+######               SERIAL BUILD SHORTCUTS
+#########################################################################
+
+gnu:
+	$(MAKE) serial   \
+		"FC = g77" \
+		"FFLAGS = -O -fno-globals" \
+		"LFLAGS =  " \
+		"SUBSU = utl_gen.o" \
+		"MATH = -llapack_g77 -lf77blas_g77 -lcblas_g77 -latlas_g77 -ltstatlas_g77 -llapack"
+
+pgi:
+	$(MAKE) serial   \
+		"FC = /opt/pgi/linux86-64/7.2-1/bin/pgf77" \
+		"FFLAGS = -O" \
+		"LFLAGS =  " \
+		"LIBS =  " \
+		"SUBSU = utl_gen.o" \
+		"MATH = -L/opt/pgi/linux86-64/7.2-1/lib/ -llapack -lblas -lpgftnrtl -lnspgc -lpgc -lm -lstd -lacml"
+
+atlas:
+	$(MAKE) serial   \
+		"FC = g77" \
+		"FFLAGS = -O -fno-globals" \
+		"LFLAGS =  " \
+		"SUBSU = utl_gen.o" \
+		"MATH = -L/home/rmuller/Programs/LAPACK/lib/ -llapack \
+		-L/home/rmuller/Programs/ATLAS/lib/ -lf77blas -lcblas -latlas -ltstatlas"
+
+ibm:
+	$(MAKE) serial   \
+		"FC = f77" \
+		"FFLAGS = -O -fno-globals" \
+		"LFLAGS =  " \
+		"SUBSU = utl_gen.o" \
+		"MATH = -static -llapack -lblas"
+
+sgi:
+	$(MAKE) serial   \
+		"FC = f77" \
+		"FFLAGS = -O3 -mips4 -OPT:IEEE_arithmetic=3:alias=restrict" \
+		"LFLAGS =  " \
+		"SUBSU = utl_gen.o" \
+		"MATH = -lcomplib.sgimath"
+
+dec:
+	$(MAKE) serial \
+		"FC = f77" \
+		"FFLAGS = -O -fast" \
+		"LFLAGS =  " \
+		"SUBSU = utl_gen.o" \
+		"MATH = -ldxml"
+
+win-x86:
+	$(MAKE) seqq-math \
+		"FC = g77" \
+		"FFLAGS = -O -fast" \
+		"LFLAGS =  " \
+		"SUBSU = utl_gen.o"
+
+linux-x86:
+	$(MAKE) serial   \
+		"FC = f77" \
+		"FFLAGS = -O -Wall" \
+		"LFLAGS =  " \
+		"SUBSU = utl_gen.o" \
+		"MATH = -llapack -lblas"
+
+#########################################################################
+######                       BUILDS
+#########################################################################
+
+quest_$(VERS).x : $(MVRSTP) $(SUBS) $(TPSUBS) $(SUBSUTP)
+	$(FC) $(LFLAGS)  -o $@  $^  $(LIBS) $(PMATH) $(MATH)
+
+seqquest_$(VERS).x : ${MVRS} ${SUBS} ${SUBSU}
+	$(FC) $(LFLAGS)  -o $@  $^  ${MATH}
+
+seqq-math.x : ${MVRS} ${SUBS} ${SUBSU} lapack.o blas.o
+	$(FC) $(LFLAGS)  -o $@  $^
+
+

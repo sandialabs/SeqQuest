@@ -1,0 +1,54 @@
+birch.f - the source code
+birch.fitdat - an example input file
+
+Code description:
+The code computes crystal structure minima: lattice parameter,
+  bulk modulus, energy, etc., using the Birch-Murnaghan eqn.
+The code does isotropic crystals (sc, Td, fcc, bc), in which
+  the volume is a fixed factor times a0^3, or also by volume.
+The units are assumed to be bohr and Rydberg.
+
+Compilation:
+It is a fully self-contained f77 code, no external dependencies.
+Use g77 or f77 without any flags, and there is nothing to link.
+The birch.f is an interactive, text-menu driven code.
+
+Instructions to run the code:
+Launch it interactively, and the code will ask you a
+series of questions, which include:
+(1) what file is the data in?
+(2) where within that file is the data?
+e.g. how many lines to skip in the data, where on each
+line is the lattice parameter, energy.
+(3) what is the crystal structure?
+This is done to relate the input lattice parameter to
+a volume, necessary to get the bulk modulus right.
+The various options (sc, fcc, td, bcc) apply a scaling factor
+appropriate to a^3 to get a volume (1.0 fr sc, 4.0 for fcc,
+2.0 for bcc) and also allows you to input you own scaling
+factor is you wish.
+(4) What order of polynomial do you wish to use in the fit?
+I have found "3" to be the best answer to this.  Using "2"
+in a harmonic misses important anharmonicity, and larger than
+three is usually looking for noise (and there is something
+in the code which breaks on occasion with much larger poly's)
+
+About the input file:
+After skipping the number of lines indicated by the user,
+the code reads data line-by-line, extracting the data
+it needs from each line, stopping when it reaches an
+error or EOF condition.  E.g.:
+# C diamond 2at/16^3/k8^3/lda                                              
+# a(bohr)     E(Rydberg)
+   6.58    -22.8768965494
+   6.60    -22.8777795944
+   6.62    -22.8784558056
+   6.63    -22.8787174113
+x  6.64    -22.8789420664
+   6.65    -22.8791061150
+EOF
+Here you would tell the code to skip the first two lines,
+find the lattice parameter in position one, and energy in
+position two, and it would read four valid data points,
+ending when it tried to read a number and found a
+character ("x") instead.
